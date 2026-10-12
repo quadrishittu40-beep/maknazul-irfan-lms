@@ -1170,3 +1170,4 @@ export async function updateTopic(
   } catch (error) {
     next(error);
   }
+}

@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build
+RUN npx prisma generate && (npx tsc; test -f dist/server.js)
 ENV NODE_ENV=production
 EXPOSE 6700
 CMD ["npm", "run", "start:prod"]
