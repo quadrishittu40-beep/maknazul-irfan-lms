@@ -135,11 +135,7 @@ model StudentProfile {
 
   userId String @unique
 
-  user User @relation(
-    fields: [userId],
-    references: [id],
-    onDelete: Cascade
-  )
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   dateOfBirth DateTime?
 
@@ -155,15 +151,9 @@ model StudentProfile {
 
   classId String?
 
-  level Level? @relation(
-    fields: [levelId],
-    references: [id]
-  )
+  level Level? @relation(fields: [levelId], references: [id])
 
-  class Class? @relation(
-    fields: [classId],
-    references: [id]
-  )
+  class Class? @relation(fields: [classId], references: [id])
 
   enrollments CourseEnrollment[]
 
@@ -179,6 +169,8 @@ model StudentProfile {
   @@index([status])
   @@index([levelId])
   @@index([classId])
+
+  lectureProgress LectureProgress[]
 }
 
 // ============================================================
@@ -190,11 +182,7 @@ model TeacherProfile {
 
   userId String @unique
 
-  user User @relation(
-    fields: [userId],
-    references: [id],
-    onDelete: Cascade
-  )
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   bio String?
 
@@ -236,11 +224,7 @@ model Class {
 
   levelId String
 
-  level Level @relation(
-    fields: [levelId],
-    references: [id],
-    onDelete: Cascade
-  )
+  level Level @relation(fields: [levelId], references: [id], onDelete: Cascade)
 
   students StudentProfile[]
 
@@ -286,11 +270,7 @@ model Topic {
 
   subjectId String
 
-  subject Subject @relation(
-    fields: [subjectId],
-    references: [id],
-    onDelete: Cascade
-  )
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   courses Course[]
 
@@ -325,26 +305,13 @@ model Course {
 
   teacherId String?
 
-  level Level? @relation(
-    fields: [levelId],
-    references: [id]
-  )
+  level Level? @relation(fields: [levelId], references: [id])
 
-  class Class? @relation(
-    fields: [classId],
-    references: [id]
-  )
+  class Class? @relation(fields: [classId], references: [id])
 
-  subject Subject? @relation(
-    fields: [subjectId],
-    references: [id]
-  )
+  subject Subject? @relation(fields: [subjectId], references: [id])
 
-  teacher User? @relation(
-    "TeacherCourses",
-    fields: [teacherId],
-    references: [id]
-  )
+  teacher User? @relation("TeacherCourses", fields: [teacherId], references: [id])
 
   topics Topic[]
 
@@ -366,6 +333,8 @@ model Course {
   @@index([levelId])
   @@index([classId])
   @@index([subjectId])
+
+  certificates Certificate[]
 }
 
 // ============================================================
@@ -379,17 +348,9 @@ model CourseEnrollment {
 
   courseId String
 
-  student StudentProfile @relation(
-    fields: [studentId],
-    references: [id],
-    onDelete: Cascade
-  )
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  course Course @relation(
-    fields: [courseId],
-    references: [id],
-    onDelete: Cascade
-  )
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   enrolledAt DateTime @default(now())
 
@@ -410,11 +371,7 @@ model Lecture {
 
   courseId String
 
-  course Course @relation(
-    fields: [courseId],
-    references: [id],
-    onDelete: Cascade
-  )
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   title String
 
@@ -450,11 +407,7 @@ model LectureMaterial {
 
   lectureId String
 
-  lecture Lecture @relation(
-    fields: [lectureId],
-    references: [id],
-    onDelete: Cascade
-  )
+  lecture Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 
   type MaterialType
 
@@ -487,17 +440,9 @@ model LectureProgress {
 
   lectureId String
 
-  student StudentProfile @relation(
-    fields: [studentId],
-    references: [id],
-    onDelete: Cascade
-  )
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  lecture Lecture @relation(
-    fields: [lectureId],
-    references: [id],
-    onDelete: Cascade
-  )
+  lecture Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 
   startedAt DateTime?
 
@@ -528,19 +473,11 @@ model Test {
 
   courseId String
 
-  course Course @relation(
-    fields: [courseId],
-    references: [id],
-    onDelete: Cascade
-  )
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdById String
 
-  createdBy User @relation(
-    "TestCreator",
-    fields: [createdById],
-    references: [id]
-  )
+  createdBy User @relation("TestCreator", fields: [createdById], references: [id])
 
   durationMinutes Int
 
@@ -603,11 +540,7 @@ model QuestionOption {
 
   questionId String
 
-  question Question @relation(
-    fields: [questionId],
-    references: [id],
-    onDelete: Cascade
-  )
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   text String
 
@@ -616,6 +549,8 @@ model QuestionOption {
   createdAt DateTime @default(now())
 
   @@index([questionId])
+
+  answers StudentAnswer[]
 }
 
 // ============================================================
@@ -629,17 +564,9 @@ model TestQuestion {
 
   questionId String
 
-  test Test @relation(
-    fields: [testId],
-    references: [id],
-    onDelete: Cascade
-  )
+  test Test @relation(fields: [testId], references: [id], onDelete: Cascade)
 
-  question Question @relation(
-    fields: [questionId],
-    references: [id],
-    onDelete: Cascade
-  )
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   order Int @default(0)
 
@@ -662,17 +589,9 @@ model TestAttempt {
 
   studentId String
 
-  test Test @relation(
-    fields: [testId],
-    references: [id],
-    onDelete: Cascade
-  )
+  test Test @relation(fields: [testId], references: [id], onDelete: Cascade)
 
-  student User @relation(
-    fields: [studentId],
-    references: [id],
-    onDelete: Cascade
-  )
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   status AttemptStatus @default(IN_PROGRESS)
 
@@ -714,29 +633,13 @@ model StudentAnswer {
 
   studentId String
 
-  attempt TestAttempt @relation(
-    fields: [attemptId],
-    references: [id],
-    onDelete: Cascade
-  )
+  attempt TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
-  question Question @relation(
-    fields: [questionId],
-    references: [id],
-    onDelete: Cascade
-  )
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-  option QuestionOption? @relation(
-    fields: [optionId],
-    references: [id],
-    onDelete: SetNull
-  )
+  option QuestionOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
 
-  student StudentProfile @relation(
-    fields: [studentId],
-    references: [id],
-    onDelete: Cascade
-  )
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   isCorrect Boolean?
 
@@ -780,17 +683,9 @@ model Payment {
 
   courseId String
 
-  student StudentProfile @relation(
-    fields: [studentId],
-    references: [id],
-    onDelete: Cascade
-  )
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  course Course @relation(
-    fields: [courseId],
-    references: [id],
-    onDelete: Restrict
-  )
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
 
   amount Decimal @db.Decimal(12, 2)
 
@@ -842,22 +737,11 @@ model LiveClass {
 
   published Boolean @default(false)
 
-  course Course @relation(
-    fields: [courseId],
-    references: [id],
-    onDelete: Cascade
-  )
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  subject Subject? @relation(
-    fields: [subjectId],
-    references: [id]
-  )
+  subject Subject? @relation(fields: [subjectId], references: [id])
 
-  teacher User @relation(
-    "TeacherLiveClasses",
-    fields: [teacherId],
-    references: [id]
-  )
+  teacher User @relation("TeacherLiveClasses", fields: [teacherId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -896,18 +780,11 @@ model Certificate {
 
   studentId String
 
-  student StudentProfile @relation(
-    fields: [studentId],
-    references: [id],
-    onDelete: Cascade
-  )
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   courseId String?
 
-  course Course? @relation(
-    fields: [courseId],
-    references: [id]
-  )
+  course Course? @relation(fields: [courseId], references: [id])
 
   issuedAt DateTime @default(now())
 
@@ -928,11 +805,7 @@ model Notification {
 
   userId String
 
-  user User @relation(
-    fields: [userId],
-    references: [id],
-    onDelete: Cascade
-  )
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   type NotificationType
 
@@ -957,11 +830,7 @@ model AuditLog {
 
   userId String?
 
-  user User? @relation(
-    fields: [userId],
-    references: [id],
-    onDelete: SetNull
-  )
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   action String
 
