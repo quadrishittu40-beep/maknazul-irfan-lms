@@ -1,0 +1,22 @@
+name: Unzip project
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          if [ -f maknazul-irfan-lms-deploy.zip ]; then
+            unzip -o maknazul-irfan-lms-deploy.zip
+            rm maknazul-irfan-lms-deploy.zip
+            git config user.name "github-actions"
+            git config user.email "actions@github.com"
+            git add -A
+            git commit -m "Add project files"
+            git push
+          fi
