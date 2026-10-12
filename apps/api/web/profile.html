@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>My Profile | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f7f5;
+      color: #173b2d;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #075b3b;
+      color: white;
+      padding: 15px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      font-size: 19px;
+      margin-bottom: 4px;
+    }
+
+    .brand p {
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .btn {
+      border: none;
+      border-radius: 7px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .dashboard-btn {
+      background: #d9a441;
+      color: #173b2d;
+    }
+
+    .logout-btn {
+      background: white;
+      color: #075b3b;
+    }
+
+    main {
+      width: 94%;
+      max-width: 950px;
+      margin: 30px auto;
+    }
+
+    .page-title {
+      margin-bottom: 22px;
+    }
+
+    .page-title h2 {
+      color: #075b3b;
+      margin-bottom: 6px;
+    }
+
+    .page-title p {
+      color: #66756e;
+    }
+
+    .message {
+      display: none;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      background: #fdeaea;
+      color: #a12626;
+    }
+
+    .message.success {
+      background: #e8f7ee;
+      color: #17663f;
+    }
+
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 22px;
+    }
+
+    .profile-card,
+    .form-card {
+      background: white;
+      border-radius: 13px;
+      padding: 25px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.07);
+    }
+
+    .profile-card {
+      text-align: center;
+      border-top: 4px solid #075b3b;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: #075b3b;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 15px;
+      font-size: 35px;
+      font-weight: bold;
+    }
+
+    .profile-card h3 {
+      color: #075b3b;
+      margin-bottom: 7px;
+    }
+
+    .profile-card p {
+      color: #718078;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .role-badge,
+    .status-badge {
+      display: inline-block;
+      padding: 6px 11px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      margin: 3px;
+    }
+
+    .role-badge {
+      background: #e8f3ed;
+      color: #075b3b;
+    }
+
+    .status-badge {
+      background: #fff3d6;
+      color: #806014;
+    }
+
+    .form-card h3 {
+      color: #075b3b;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      color: #075b3b;
+      font-size: 15px;
+      margin: 22px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e4ebe7;
+    }
+
+    .section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 13px;
+      color: #40574c;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #d5dfda;
+      border-radius: 7px;
+      background: white;
+      color: #173b2d;
+      font-size: 14px;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #075b3b;
+    }
+
+    input[readonly] {
+      background: #f1f4f2;
+      color: #66756e;
+    }
+
+    .save-btn {
+      margin-top: 22px;
+      background: #075b3b;
+      color: white;
+      min-width: 150px;
+    }
+
+    .save-btn:disabled {
+      background: #9ba8a1;
+      cursor: not-allowed;
+    }
+
+    .account-info {
+      margin-top: 22px;
+      background: #f7faf8;
+      border-radius: 9px;
+      padding: 15px;
+      font-size: 13px;
+      color: #66756e;
+    }
+
+    .account-info strong {
+      color: #075b3b;
+    }
+
+    footer {
+      background: #075b3b;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+      margin-top: 40px;
+    }
+
+    footer img {
+      width: 55px;
+      height: 55px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+      margin-bottom: 10px;
+    }
+
+    footer p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 750px) {
+      .profile-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .academy-logo {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Online Islamic & Arabic Institute</p>
+    </div>
+
+  </div>
+
+  <div class="header-actions">
+    <a href="student.html" class="btn dashboard-btn">
+      Dashboard
+    </a>
+
+    <button
+      class="logout-btn"
+      onclick="logout()"
+    >
+      Logout
+    </button>
+  </div>
+
+</header>
+
+<main>
+
+  <section class="page-title">
+    <h2>My Profile</h2>
+    <p>View and manage your student account information.</p>
+  </section>
+
+  <div id="message" class="message"></div>
+
+  <div class="profile-layout">
+
+    <!-- PROFILE SUMMARY -->
+
+    <aside class="profile-card">
+
+      <div id="avatar" class="avatar">
+        ?
+      </div>
+
+      <h3 id="profileName">
+        Loading...
+      </h3>
+
+      <p id="profileEmail">
+        Loading...
+      </p>
+
+      <div>
+        <span
+          id="roleBadge"
+          class="role-badge"
+        >
+          STUDENT
+        </span>
+
+        <span
+          id="statusBadge"
+          class="status-badge"
+        >
+          —
+        </span>
+      </div>
+
+    </aside>
+
+    <!-- PROFILE FORM -->
+
+    <section class="form-card">
+
+      <h3>Account Information</h3>
+
+      <form id="profileForm">
+
+        <div class="section-title">
+          Personal Information
+        </div>
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="firstName">
+              First Name
+            </label>
+
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              required
+            >
+          </div>
+
+          <div class="field">
+            <label for="lastName">
+              Last Name
+            </label>
+
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              required
+            >
+          </div>
+
+          <div class="field">
+            <label for="email">
+              Email Address
+            </label>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              readonly
+            >
+          </div>
+
+          <div class="field">
+            <label for="phone">
+              Phone Number
+            </label>
+
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              placeholder="Phone number"
+            >
+          </div>
+
+          <div class="field">
+            <label for="dateOfBirth">
+              Date of Birth
+            </label>
+
+            <input
+              id="dateOfBirth"
+              name="dateOfBirth"
+              type="date"
+            >
+          </div>
+
+          <div class="field">
+            <label for="gender">
+              Gender
+            </label>
+
+            <select id="gender" name="gender">
+              <option value="">
+                Select gender
+              </option>
+
+              <option value="MALE">
+                Male
+              </option>
+
+              <option value="FEMALE">
+                Female
+              </option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="section-title">
+          Academic Information
+        </div>
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="level">
+              Level
+            </label>
+
+            <input
+              id="level"
+              type="text"
+              readonly
+            >
+          </div>
+
+          <div class="field">
+            <label for="className">
+              Class
+            </label>
+
+            <input
+              id="className"
+              type="text"
+              readonly
+            >
+          </div>
+
+        </div>
+
+        <button
+          id="saveBtn"
+          type="submit"
+          class="save-btn"
+        >
+          Save Changes
+        </button>
+
+      </form>
+
+      <div class="account-info">
+        <strong>Account security:</strong>
+        Your email address is used for authentication and cannot be
+        changed from this page. Contact the academy administrator if
+        your account information requires administrative correction.
+      </div>
+
+    </section>
+
+  </div>
+
+</main>
+
+<footer>
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo"
+  >
+
+  <p>
+    <strong>MAKNAZUL IRFAN ACADEMY</strong>
+  </p>
+
+  <p>
+    Online Islamic & Arabic Institute
+  </p>
+
+  <p>
+    Knowledge • Faith • Excellence
+  </p>
+
+  <p>
+    © 2026 MAKNAZUL IRFAN ACADEMY. All rights reserved.
+  </p>
+
+</footer>
+
+<script>
+
+  const API = "/api";
+
+  let currentUser = null;
+
+  function showMessage(message, type = "error") {
+
+    const box = document.getElementById("message");
+
+    box.textContent = message;
+
+    box.className =
+      "message show " + type;
+
+    setTimeout(() => {
+      box.className = "message";
+    }, 5000);
+  }
+
+  async function api(path, options = {}) {
+
+    const response = await fetch(API + path, {
+
+      credentials: "include",
+
+      ...options,
+
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+
+    });
+
+    let data = {};
+
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        "Request failed."
+      );
+
+    }
+
+    return data;
+  }
+
+  function extractData(response) {
+    return response?.data ?? response;
+  }
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+  function getInitials(firstName, lastName) {
+
+    const first =
+      String(firstName || "")
+        .trim()
+        .charAt(0);
+
+    const last =
+      String(lastName || "")
+        .trim()
+        .charAt(0);
+
+    return (
+      (first + last || "?")
+        .toUpperCase()
+        .substring(0, 2)
+    );
+
+  }
+
+  function formatDateForInput(value) {
+
+    if (!value) {
+      return "";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(date.getMonth() + 1)
+        .padStart(2, "0");
+
+    const day =
+      String(date.getDate())
+        .padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
+  function getStudentProfile(user) {
+
+    return (
+      user?.studentProfile ||
+      user?.profile ||
+      user?.student ||
+      {}
+    );
+
+  }
+
+  function populateProfile(user) {
+
+    currentUser = user;
+
+    const profile =
+      getStudentProfile(user);
+
+    const firstName =
+      user?.firstName ||
+      profile?.firstName ||
+      "";
+
+    const lastName =
+      user?.lastName ||
+      profile?.lastName ||
+      "";
+
+    const email =
+      user?.email ||
+      "";
+
+    const phone =
+      user?.phone ||
+      profile?.phone ||
+      "";
+
+    const dateOfBirth =
+      user?.dateOfBirth ||
+      profile?.dateOfBirth ||
+      profile?.dob ||
+      "";
+
+    const gender =
+      user?.gender ||
+      profile?.gender ||
+      "";
+
+    const status =
+      profile?.status ||
+      user?.status ||
+      "STUDENT";
+
+    const level =
+      profile?.level?.name ||
+      profile?.levelName ||
+      user?.level?.name ||
+      user?.levelName ||
+      "Not assigned";
+
+    const className =
+      profile?.class?.name ||
+      profile?.className ||
+      user?.class?.name ||
+      user?.className ||
+      "Not assigned";
+
+    document.getElementById(
+      "firstName"
+    ).value = firstName;
+
+    document.getElementById(
+      "lastName"
+    ).value = lastName;
+
+    document.getElementById(
+      "email"
+    ).value = email;
+
+    document.getElementById(
+      "phone"
+    ).value = phone;
+
+    document.getElementById(
+      "dateOfBirth"
+    ).value =
+      formatDateForInput(dateOfBirth);
+
+    document.getElementById(
+      "gender"
+    ).value = gender;
+
+    document.getElementById(
+      "level"
+    ).value = level;
+
+    document.getElementById(
+      "className"
+    ).value = className;
+
+    document.getElementById(
+      "profileName"
+    ).textContent =
+      `${firstName} ${lastName}`.trim() ||
+      "Student";
+
+    document.getElementById(
+      "profileEmail"
+    ).textContent =
+      email || "No email";
+
+    document.getElementById(
+      "avatar"
+    ).textContent =
+      getInitials(firstName, lastName);
+
+    document.getElementById(
+      "roleBadge"
+    ).textContent =
+      String(user?.role || "STUDENT");
+
+    document.getElementById(
+      "statusBadge"
+    ).textContent =
+      String(status);
+
+  }
+
+  async function loadProfile() {
+
+    try {
+
+      const response =
+        await api("/auth/me");
+
+      const data =
+        extractData(response);
+
+      const user =
+        data?.user || data;
+
+      if (!user) {
+
+        location.href =
+          "login.html";
+
+        return false;
+      }
+
+      if (user.role !== "STUDENT") {
+
+        if (user.role === "ADMIN") {
+          location.href = "admin.html";
+        }
+        else if (user.role === "TEACHER") {
+          location.href = "teacher.html";
+        }
+        else {
+          location.href = "login.html";
+        }
+
+        return false;
+      }
+
+      populateProfile(user);
+
+      return true;
+
+    } catch (error) {
+
+      location.href =
+        "login.html";
+
+      return false;
+    }
+
+  }
+
+  document
+    .getElementById("profileForm")
+    .addEventListener("submit", async function(event) {
+
+      event.preventDefault();
+
+      const saveButton =
+        document.getElementById("saveBtn");
+
+      const payload = {
+
+        firstName:
+          document.getElementById(
+            "firstName"
+          ).value.trim(),
+
+        lastName:
+          document.getElementById(
+            "lastName"
+          ).value.trim(),
+
+        phone:
+          document.getElementById(
+            "phone"
+          ).value.trim() || undefined,
+
+        dateOfBirth:
+          document.getElementById(
+            "dateOfBirth"
+          ).value || undefined,
+
+        gender:
+          document.getElementById(
+            "gender"
+          ).value || undefined
+
+      };
+
+      if (!payload.firstName ||
+          !payload.lastName) {
+
+        showMessage(
+          "First name and last name are required."
+        );
+
+        return;
+      }
+
+      saveButton.disabled = true;
+      saveButton.textContent = "Saving...";
+
+      try {
+
+        /*
+          The backend may expose the profile update endpoint
+          when the student-management module is completed.
+          This request is intentionally kept separate from
+          authentication so the page is ready for that endpoint.
+        */
+
+        const response =
+          await api("/students/me", {
+            method: "PATCH",
+            body: JSON.stringify(payload)
+          });
+
+        const data =
+          extractData(response);
+
+        const updatedUser =
+          data?.user ||
+          data?.student ||
+          data;
+
+        if (updatedUser) {
+          populateProfile(updatedUser);
+        }
+
+        showMessage(
+          "Your profile has been updated successfully.",
+          "success"
+        );
+
+      } catch (error) {
+
+        showMessage(
+          error.message ||
+          "Unable to update your profile."
+        );
+
+      } finally {
+
+        saveButton.disabled = false;
+        saveButton.textContent = "Save Changes";
+
+      }
+
+    });
+
+  async function logout() {
+
+    try {
+
+      await api("/auth/logout", {
+        method: "POST"
+      });
+
+    } catch {
+      // Continue to login.
+    }
+
+    location.href =
+      "login.html";
+  }
+
+  async function init() {
+
+    await loadProfile();
+
+  }
+
+  init();
+
+</script>
+
+</body>
+</html>

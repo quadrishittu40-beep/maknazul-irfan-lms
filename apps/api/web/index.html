@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <title>MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f6f8f6;
+      color: #222;
+      line-height: 1.6;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    header {
+      background: #075c3b;
+      color: white;
+      padding: 12px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,.15);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .academy-logo {
+      width: 65px;
+      height: 65px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing: .3px;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      margin-top: 3px;
+      opacity: .9;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      color: #d4af37;
+    }
+
+    .login-btn {
+      background: #d4af37;
+      color: #111 !important;
+      padding: 9px 14px;
+      border-radius: 7px;
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      background:
+        linear-gradient(
+          rgba(0, 65, 42, .92),
+          rgba(0, 65, 42, .92)
+        ),
+        url("assets/logo.png");
+
+      background-size: cover;
+      background-position: center;
+
+      color: white;
+      text-align: center;
+
+      padding: 80px 20px;
+      min-height: 520px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-content {
+      max-width: 850px;
+    }
+
+    .hero-logo {
+      width: 125px;
+      height: 125px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 5px;
+      margin-bottom: 20px;
+    }
+
+    .hero h2 {
+      font-size: 42px;
+      line-height: 1.2;
+      margin-bottom: 18px;
+    }
+
+    .hero h2 span {
+      color: #d4af37;
+    }
+
+    .hero p {
+      max-width: 720px;
+      margin: 0 auto 28px;
+      font-size: 17px;
+      opacity: .95;
+    }
+
+    .hero-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      border: none;
+      border-radius: 8px;
+      padding: 13px 20px;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #d4af37;
+      color: #111;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #075c3b;
+    }
+
+    /* =========================
+       SECTIONS
+    ========================= */
+
+    section {
+      padding: 65px 5%;
+    }
+
+    .section-heading {
+      text-align: center;
+      max-width: 750px;
+      margin: 0 auto 35px;
+    }
+
+    .section-heading h2 {
+      color: #075c3b;
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    .section-heading p {
+      color: #666;
+    }
+
+    /* =========================
+       LEARNING AREAS
+    ========================= */
+
+    .learning-grid {
+      max-width: 1100px;
+      margin: auto;
+
+      display: grid;
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 18px;
+    }
+
+    .learning-card {
+      background: white;
+      padding: 25px 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 3px 12px rgba(0,0,0,.07);
+      border-top: 4px solid #075c3b;
+    }
+
+    .learning-card .icon {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .learning-card h3 {
+      color: #075c3b;
+      margin-bottom: 8px;
+    }
+
+    .learning-card p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* =========================
+       ABOUT
+    ========================= */
+
+    .about {
+      background: white;
+    }
+
+    .about-content {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .about-text {
+      text-align: center;
+    }
+
+    .about-text h2 {
+      color: #075c3b;
+      margin-bottom: 15px;
+      font-size: 30px;
+    }
+
+    .about-text p {
+      color: #555;
+      margin-bottom: 13px;
+    }
+
+    .motto {
+      color: #075c3b;
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 15px;
+    }
+
+    /* =========================
+       WHY US
+    ========================= */
+
+    .features {
+      max-width: 1050px;
+      margin: auto;
+
+      display: grid;
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 15px;
+    }
+
+    .feature {
+      background: white;
+      padding: 22px 15px;
+      text-align: center;
+      border-radius: 10px;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
+    }
+
+    .feature strong {
+      display: block;
+      color: #075c3b;
+      margin-bottom: 6px;
+    }
+
+    .feature span {
+      font-size: 13px;
+      color: #666;
+    }
+
+    /* =========================
+       CTA
+    ========================= */
+
+    .cta {
+      background: #075c3b;
+      color: white;
+      text-align: center;
+    }
+
+    .cta h2 {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    .cta p {
+      max-width: 650px;
+      margin: 0 auto 22px;
+      opacity: .9;
+    }
+
+    /* =========================
+       CONTACT
+    ========================= */
+
+    .contact {
+      background: #f6f8f6;
+    }
+
+    .contact-grid {
+      max-width: 850px;
+      margin: auto;
+
+      display: grid;
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 15px;
+    }
+
+    .contact-card {
+      background: white;
+      padding: 22px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
+    }
+
+    .contact-card h3 {
+      color: #075c3b;
+      margin-bottom: 7px;
+    }
+
+    .contact-card p {
+      color: #666;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      background: #043c28;
+      color: white;
+      text-align: center;
+      padding: 28px 20px;
+    }
+
+    footer img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+      margin-bottom: 10px;
+    }
+
+    footer p {
+      font-size: 13px;
+      opacity: .9;
+    }
+
+    .footer-motto {
+      color: #d4af37;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 850px) {
+
+      header {
+        align-items: flex-start;
+      }
+
+      nav {
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .learning-grid {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .features {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+
+      header {
+        padding: 10px 4%;
+      }
+
+      .academy-logo {
+        width: 52px;
+        height: 52px;
+      }
+
+      .brand-text h1 {
+        font-size: 16px;
+      }
+
+      .brand-text p {
+        font-size: 10px;
+      }
+
+      nav {
+        width: 100%;
+        justify-content: center;
+      }
+
+      nav a {
+        font-size: 12px;
+      }
+
+      .hero {
+        padding: 65px 18px;
+        min-height: 500px;
+      }
+
+      .hero-logo {
+        width: 105px;
+        height: 105px;
+      }
+
+      .hero h2 {
+        font-size: 30px;
+      }
+
+      .hero p {
+        font-size: 15px;
+      }
+
+      section {
+        padding: 50px 5%;
+      }
+
+      .learning-grid,
+      .features,
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading h2,
+      .about-text h2,
+      .cta h2 {
+        font-size: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header>
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo">
+
+    <div class="brand-text">
+
+      <h1>
+        MAKNAZUL IRFAN ACADEMY
+      </h1>
+
+      <p>
+        Online Islamic & Arabic Institute
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <nav>
+
+    <a href="index.html">
+      Home
+    </a>
+
+    <a href="courses.html">
+      Courses
+    </a>
+
+    <a href="#about">
+      About
+    </a>
+
+    <a href="#contact">
+      Contact
+    </a>
+
+    <a
+      href="login.html"
+      class="login-btn">
+      Student Login
+    </a>
+
+  </nav>
+
+</header>
+
+
+<!-- =========================
+     HERO
+========================= -->
+
+<section class="hero">
+
+  <div class="hero-content">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="hero-logo">
+
+    <h2>
+      Learn.
+      <span>Understand.</span>
+      Grow.
+    </h2>
+
+    <p>
+      Welcome to MAKNAZUL IRFAN ACADEMY,
+      an online institute dedicated to teaching
+      Arabic and Islamic studies through structured,
+      accessible and meaningful education.
+    </p>
+
+    <div class="hero-buttons">
+
+      <a
+        href="register.html"
+        class="btn btn-primary">
+
+        Register as a Student
+
+      </a>
+
+      <a
+        href="courses.html"
+        class="btn btn-secondary">
+
+        Explore Courses
+
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     LEARNING AREAS
+========================= -->
+
+<section>
+
+  <div class="section-heading">
+
+    <h2>
+      Our Learning Areas
+    </h2>
+
+    <p>
+      Build a strong foundation in Arabic
+      and the essential sciences of Islam.
+    </p>
+
+  </div>
+
+
+  <div class="learning-grid">
+
+    <div class="learning-card">
+
+      <div class="icon">
+        📖
+      </div>
+
+      <h3>
+        Arabic Language
+      </h3>
+
+      <p>
+        Learn Arabic reading, writing,
+        grammar, morphology, vocabulary
+        and communication.
+      </p>
+
+    </div>
+
+
+    <div class="learning-card">
+
+      <div class="icon">
+        📗
+      </div>
+
+      <h3>
+        Qur'an Studies
+      </h3>
+
+      <p>
+        Develop Qur'an reading,
+        recitation, Tajweed and
+        memorization skills.
+      </p>
+
+    </div>
+
+
+    <div class="learning-card">
+
+      <div class="icon">
+        🕌
+      </div>
+
+      <h3>
+        Aqeedah
+      </h3>
+
+      <p>
+        Study the foundations of
+        Islamic belief through
+        structured lessons.
+      </p>
+
+    </div>
+
+
+    <div class="learning-card">
+
+      <div class="icon">
+        ⚖️
+      </div>
+
+      <h3>
+        Fiqh
+      </h3>
+
+      <p>
+        Learn practical Islamic rulings
+        and develop an understanding
+        of Islamic jurisprudence.
+      </p>
+
+    </div>
+
+
+    <div class="learning-card">
+
+      <div class="icon">
+        📜
+      </div>
+
+      <h3>
+        Hadith
+      </h3>
+
+      <p>
+        Study selected Prophetic traditions
+        and their lessons for everyday life.
+      </p>
+
+    </div>
+
+
+    <div class="learning-card">
+
+      <div class="icon">
+        🌙
+      </div>
+
+      <h3>
+        Seerah
+      </h3>
+
+      <p>
+        Explore the life, character
+        and teachings of Prophet Muhammad ﷺ.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     ABOUT
+========================= -->
+
+<section
+  id="about"
+  class="about">
+
+  <div class="about-content">
+
+    <div class="about-text">
+
+      <h2>
+        About MAKNAZUL IRFAN ACADEMY
+      </h2>
+
+      <p>
+        MAKNAZUL IRFAN ACADEMY is an educational
+        institution focused on Arabic language
+        and Islamic studies.
+      </p>
+
+      <p>
+        Our aim is to provide learners with
+        structured education that combines
+        knowledge, faith and excellence.
+      </p>
+
+      <p>
+        Through online courses, lectures,
+        examinations and continuous learning,
+        students can study at their own pace
+        while receiving organized academic
+        guidance.
+      </p>
+
+      <p class="motto">
+        Knowledge • Faith • Excellence
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     WHY LEARN WITH US
+========================= -->
+
+<section>
+
+  <div class="section-heading">
+
+    <h2>
+      Why Learn With Us?
+    </h2>
+
+    <p>
+      A structured digital learning environment
+      designed for students of different levels.
+    </p>
+
+  </div>
+
+
+  <div class="features">
+
+    <div class="feature">
+
+      <strong>
+        Structured Courses
+      </strong>
+
+      <span>
+        Organized lessons and learning materials.
+      </span>
+
+    </div>
+
+
+    <div class="feature">
+
+      <strong>
+        Online Learning
+      </strong>
+
+      <span>
+        Access your lessons from wherever you are.
+      </span>
+
+    </div>
+
+
+    <div class="feature">
+
+      <strong>
+        Online Examinations
+      </strong>
+
+      <span>
+        Complete tests and receive your results.
+      </span>
+
+    </div>
+
+
+    <div class="feature">
+
+      <strong>
+        Student Progress
+      </strong>
+
+      <span>
+        Track your learning and academic progress.
+      </span>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     CTA
+========================= -->
+
+<section class="cta">
+
+  <h2>
+    Begin Your Learning Journey
+  </h2>
+
+  <p>
+    Join MAKNAZUL IRFAN ACADEMY and develop
+    your knowledge of Arabic and Islamic studies.
+  </p>
+
+  <a
+    href="register.html"
+    class="btn btn-primary">
+
+    Register Now
+
+  </a>
+
+</section>
+
+
+<!-- =========================
+     CONTACT
+========================= -->
+
+<section
+  id="contact"
+  class="contact">
+
+  <div class="section-heading">
+
+    <h2>
+      Contact Us
+    </h2>
+
+    <p>
+      Reach out to MAKNAZUL IRFAN ACADEMY
+      for information about our programmes.
+    </p>
+
+  </div>
+
+
+  <div class="contact-grid">
+
+    <div class="contact-card">
+
+      <h3>
+        Location
+      </h3>
+
+      <p>
+        1A Itogbe Street,<br>
+        Orile-Agege, Lagos
+      </p>
+
+    </div>
+
+
+    <div class="contact-card">
+
+      <h3>
+        Email
+      </h3>
+
+      <p>
+        maknazulirfanacademy@gmail.com
+      </p>
+
+    </div>
+
+
+    <div class="contact-card">
+
+      <h3>
+        Online
+      </h3>
+
+      <p>
+        MAKNAZUL IRFAN ACADEMY
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo">
+
+  <p>
+    © 2026 MAKNAZUL IRFAN ACADEMY
+  </p>
+
+  <p>
+    Online Islamic & Arabic Institute
+  </p>
+
+  <p class="footer-motto">
+    KNOWLEDGE • FAITH • EXCELLENCE
+  </p>
+
+</footer>
+
+<script src="app.js"></script>
+
+</body>
+</html>

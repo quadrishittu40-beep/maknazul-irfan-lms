@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Student Dashboard | MAKNAZUL IRFAN</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f8f6;
+      color: #17251e;
+    }
+
+    header {
+      background: #064e3b;
+      color: white;
+      padding: 16px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      font-size: 19px;
+      font-weight: bold;
+    }
+
+    .brand span {
+      display: block;
+      font-size: 11px;
+      font-weight: normal;
+      color: #d8f3dc;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-name {
+      font-size: 14px;
+    }
+
+    .logout {
+      border: none;
+      background: #d4af37;
+      color: #102018;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 68px);
+    }
+
+    aside {
+      width: 235px;
+      background: #032c22;
+      padding: 25px 15px;
+      color: white;
+    }
+
+    aside h3 {
+      font-size: 13px;
+      color: #9fc5b2;
+      margin: 5px 10px 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-btn {
+      display: block;
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 5px;
+      background: transparent;
+      color: #e7f6ed;
+      border: none;
+      border-radius: 6px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.active {
+      background: #087f5b;
+      color: white;
+    }
+
+    main {
+      flex: 1;
+      padding: 30px;
+      max-width: 1300px;
+    }
+
+    .welcome {
+      background: linear-gradient(135deg, #064e3b, #087f5b);
+      color: white;
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 25px;
+    }
+
+    .welcome h1 {
+      margin-bottom: 7px;
+      font-size: 28px;
+    }
+
+    .welcome p {
+      color: #d8eee1;
+      font-size: 14px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .section-title {
+      color: #064e3b;
+      margin-bottom: 20px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(180px, 1fr)
+      );
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .stat {
+      background: white;
+      padding: 22px;
+      border-radius: 10px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    }
+
+    .stat h3 {
+      color: #064e3b;
+      font-size: 25px;
+      margin-bottom: 5px;
+    }
+
+    .stat p {
+      color: #68756d;
+      font-size: 13px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(240px, 1fr)
+      );
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 10px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    }
+
+    .card h3 {
+      color: #064e3b;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: #68756d;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .card button,
+    .action-btn {
+      border: none;
+      background: #064e3b;
+      color: white;
+      padding: 9px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .card button:hover,
+    .action-btn:hover {
+      background: #087f5b;
+    }
+
+    .empty {
+      background: white;
+      padding: 35px;
+      border-radius: 10px;
+      text-align: center;
+      color: #68756d;
+    }
+
+    .loading {
+      color: #68756d;
+      padding: 20px 0;
+    }
+
+    .error {
+      background: #fdecec;
+      color: #a12626;
+      padding: 13px;
+      border-radius: 7px;
+      margin-bottom: 15px;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(220px, 1fr)
+      );
+      gap: 15px;
+    }
+
+    .profile-item {
+      background: white;
+      padding: 18px;
+      border-radius: 8px;
+    }
+
+    .profile-item strong {
+      display: block;
+      color: #064e3b;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .profile-item span {
+      color: #59665e;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 13px;
+      text-align: left;
+      border-bottom: 1px solid #e5ebe7;
+      font-size: 13px;
+    }
+
+    th {
+      background: #064e3b;
+      color: white;
+    }
+
+    td {
+      color: #59665e;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      background: #e8f7ed;
+      color: #176b3a;
+    }
+
+    @media (max-width: 800px) {
+
+      .layout {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+        padding: 10px;
+        display: flex;
+        overflow-x: auto;
+        gap: 5px;
+      }
+
+      aside h3 {
+        display: none;
+      }
+
+      .nav-btn {
+        min-width: max-content;
+        width: auto;
+        margin: 0;
+      }
+
+      main {
+        padding: 20px 15px;
+      }
+
+      header {
+        padding: 14px 15px;
+      }
+
+      .user-name {
+        display: none;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="brand">
+    MAKNAZUL IRFAN
+    <span>Online Islamic & Arabic Institute</span>
+  </div>
+
+<div class="brand">
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo"
+    class="academy-logo"
+  >
+
+  <div>
+    <h1>MAKNAZUL IRFAN ACADEMY</h1>
+    <p>Online Islamic & Arabic Institute</p>
+  </div>
+</div>
+
+    <button
+      class="logout"
+      onclick="logout()"
+    >
+      Logout
+    </button>
+
+  </div>
+
+</header>
+
+
+<div class="layout">
+
+  <aside>
+
+    <h3>Student Portal</h3>
+
+    <button
+      class="nav-btn active"
+      onclick="showSection('dashboard', this)"
+    >
+      Dashboard
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="showSection('courses', this)"
+    >
+      My Courses
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="showSection('tests', this)"
+    >
+      Tests & Exams
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="showSection('results', this)"
+    >
+      My Results
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="showSection('live', this)"
+    >
+      Live Classes
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="showSection('payments', this)"
+    >
+      Payments
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="showSection('certificates', this)"
+    >
+      Certificates
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="showSection('notifications', this)"
+    >
+      Notifications
+    </button>
+
+    <button
+      class="nav-btn"
+      onclick="showSection('profile', this)"
+    >
+      My Profile
+    </button>
+
+  </aside>
+
+
+  <main>
+
+    <!-- DASHBOARD -->
+
+    <section
+      id="dashboard"
+      class="section active"
+    >
+
+      <div class="welcome">
+
+        <h1>
+          Welcome, <span id="welcomeName">Student</span>
+        </h1>
+
+        <p>
+          Continue your Arabic and Islamic studies
+          through MAKNAZUL IRFAN.
+        </p>
+
+      </div>
+
+
+      <div class="stats">
+
+        <div class="stat">
+          <h3 id="courseCount">0</h3>
+          <p>My Courses</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="testCount">0</h3>
+          <p>Available Tests</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="resultCount">0</h3>
+          <p>Results</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="notificationCount">0</h3>
+          <p>Notifications</p>
+        </div>
+
+      </div>
+
+
+      <h2 class="section-title">
+        Continue Learning
+      </h2>
+
+      <div id="dashboardCourses" class="cards">
+        <div class="loading">
+          Loading your courses...
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- COURSES -->
+
+    <section
+      id="courses"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        My Courses
+      </h2>
+
+      <div id="coursesList" class="cards">
+        <div class="loading">
+          Loading courses...
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- TESTS -->
+
+    <section
+      id="tests"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        Tests & Examinations
+      </h2>
+
+      <div id="testsList" class="cards">
+        <div class="loading">
+          Loading tests...
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- RESULTS -->
+
+    <section
+      id="results"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        My Results
+      </h2>
+
+      <div id="resultsList">
+        <div class="loading">
+          Loading results...
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- LIVE CLASSES -->
+
+    <section
+      id="live"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        Live Classes
+      </h2>
+
+      <div id="liveClassesList" class="cards">
+        <div class="loading">
+          Loading live classes...
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- PAYMENTS -->
+
+    <section
+      id="payments"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        Payment History
+      </h2>
+
+      <div id="paymentsList">
+        <div class="loading">
+          Loading payments...
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- CERTIFICATES -->
+
+    <section
+      id="certificates"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        My Certificates
+      </h2>
+
+      <div id="certificatesList" class="cards">
+
+        <div class="empty">
+          Certificates issued to you will appear here.
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- NOTIFICATIONS -->
+
+    <section
+      id="notifications"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        Notifications
+      </h2>
+
+      <div id="notificationsList" class="cards">
+        <div class="loading">
+          Loading notifications...
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- PROFILE -->
+
+    <section
+      id="profile"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        My Profile
+      </h2>
+
+      <div id="profileContent">
+
+        <div class="loading">
+          Loading profile...
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<script>
+
+const API = "/api";
+
+
+let currentUser = null;
+
+
+/* -----------------------------
+   API REQUEST
+----------------------------- */
+
+async function apiRequest(
+  endpoint,
+  options = {}
+) {
+
+  const response =
+    await fetch(API + endpoint, {
+
+      credentials: "include",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        ...(options.headers || {})
+
+      },
+
+      ...options
+
+    });
+
+
+  let data = {};
+
+  try {
+    data = await response.json();
+  } catch (_) {
+    data = {};
+  }
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data.message ||
+      "Request failed."
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+/* -----------------------------
+   NAVIGATION
+----------------------------- */
+
+function showSection(
+  sectionId,
+  button
+) {
+
+  document
+    .querySelectorAll(".section")
+    .forEach(section => {
+
+      section.classList.remove("active");
+
+    });
+
+
+  const section =
+    document.getElementById(sectionId);
+
+  if (section) {
+    section.classList.add("active");
+  }
+
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(btn => {
+
+      btn.classList.remove("active");
+
+    });
+
+
+  if (button) {
+    button.classList.add("active");
+  }
+
+
+  loadSection(sectionId);
+
+}
+
+
+/* -----------------------------
+   AUTHENTICATION
+----------------------------- */
+
+async function loadCurrentUser() {
+
+  try {
+
+    const result =
+      await apiRequest("/auth/me");
+
+
+    currentUser =
+      result.data &&
+      (result.data.user ||
+       result.data);
+
+
+    if (!currentUser) {
+      throw new Error("Not authenticated.");
+    }
+
+
+    const name =
+      (
+        currentUser.firstName ||
+        ""
+      ) +
+      " " +
+      (
+        currentUser.lastName ||
+        ""
+      );
+
+
+    document.getElementById(
+      "userName"
+    ).textContent =
+      name.trim() || "Student";
+
+
+    document.getElementById(
+      "welcomeName"
+    ).textContent =
+      currentUser.firstName ||
+      "Student";
+
+
+  } catch (error) {
+
+    window.location.href =
+      "login.html";
+
+  }
+
+}
+
+
+/* -----------------------------
+   COURSES
+----------------------------- */
+
+async function loadCourses() {
+
+  const targets = [
+    document.getElementById("coursesList"),
+    document.getElementById("dashboardCourses")
+  ];
+
+
+  try {
+
+    const result =
+      await apiRequest("/enrollment/my-courses");
+
+
+    const courses =
+      result.data?.courses ||
+      result.data ||
+      [];
+
+
+    document.getElementById(
+      "courseCount"
+    ).textContent =
+      courses.length;
+
+
+    if (!courses.length) {
+
+      targets.forEach(target => {
+
+        if (target) {
+
+          target.innerHTML = `
+            <div class="empty">
+              You are not enrolled in any course yet.
+            </div>
+          `;
+
+        }
+
+      });
+
+      return;
+    }
+
+
+    const html =
+      courses.map(item => {
+
+        const course =
+          item.course || item;
+
+
+        return `
+          <div class="card">
+
+            <h3>
+              ${escapeHtml(
+                course.title ||
+                "Course"
+              )}
+            </h3>
+
+            <p>
+              ${escapeHtml(
+                course.description ||
+                "No course description available."
+              )}
+            </p>
+
+            <button
+              onclick="openCourse('${course.id}')"
+            >
+              Open Course
+            </button>
+
+          </div>
+        `;
+
+      }).join("");
+
+
+    targets.forEach(target => {
+
+      if (target) {
+        target.innerHTML = html;
+      }
+
+    });
+
+
+  } catch (error) {
+
+    targets.forEach(target => {
+
+      if (target) {
+
+        target.innerHTML = `
+          <div class="error">
+            ${escapeHtml(error.message)}
+          </div>
+        `;
+
+      }
+
+    });
+
+  }
+
+}
+
+
+function openCourse(courseId) {
+
+  window.location.href =
+    "course.html?id=" +
+    encodeURIComponent(courseId);
+
+}
+
+
+/* -----------------------------
+   TESTS
+----------------------------- */
+
+async function loadTests() {
+
+  const container =
+    document.getElementById(
+      "testsList"
+    );
+
+
+  try {
+
+    const result =
+      await apiRequest("/exams/tests");
+
+
+    const tests =
+      result.data?.tests ||
+      result.data ||
+      [];
+
+
+    document.getElementById(
+      "testCount"
+    ).textContent =
+      tests.length;
+
+
+    if (!tests.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          No tests are currently available.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    container.innerHTML =
+      tests.map(test => `
+
+        <div class="card">
+
+          <h3>
+            ${escapeHtml(
+              test.title ||
+              "Test"
+            )}
+          </h3>
+
+          <p>
+            ${escapeHtml(
+              test.description ||
+              "Online assessment"
+            )}
+          </p>
+
+          <p>
+            Duration:
+            ${test.durationMinutes || 0}
+            minutes
+          </p>
+
+          <button
+            onclick="startTest('${test.id}')"
+          >
+            Start Test
+          </button>
+
+        </div>
+
+      `).join("");
+
+
+  } catch (error) {
+
+    container.innerHTML = `
+      <div class="error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+
+  }
+
+}
+
+
+function startTest(testId) {
+
+  window.location.href =
+    "tests.html?id=" +
+    encodeURIComponent(testId);
+
+}
+
+
+/* -----------------------------
+   RESULTS
+----------------------------- */
+
+async function loadResults() {
+
+  const container =
+    document.getElementById(
+      "resultsList"
+    );
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/exams/results/me"
+      );
+
+
+    const results =
+      result.data?.results ||
+      result.data ||
+      [];
+
+
+    document.getElementById(
+      "resultCount"
+    ).textContent =
+      results.length;
+
+
+    if (!results.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          You do not have any examination
+          results yet.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML = `
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Test</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>Status</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${results.map(result => `
+
+            <tr>
+
+              <td>
+                ${escapeHtml(
+                  result.test?.title ||
+                  result.testTitle ||
+                  "Test"
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  String(
+                    result.score ??
+                    "-"
+                  )
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  String(
+                    result.percentage ??
+                    "-"
+                  )
+                )}%
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  result.grade ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+
+                <span class="status">
+
+                  ${
+                    result.passed === true
+                      ? "Passed"
+                      : result.passed === false
+                      ? "Not Passed"
+                      : "Submitted"
+                  }
+
+                </span>
+
+              </td>
+
+            </tr>
+
+          `).join("")}
+
+        </tbody>
+
+      </table>
+
+    `;
+
+
+  } catch (error) {
+
+    container.innerHTML = `
+      <div class="error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* -----------------------------
+   LIVE CLASSES
+----------------------------- */
+
+async function loadLiveClasses() {
+
+  const container =
+    document.getElementById(
+      "liveClassesList"
+    );
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/live-classes"
+      );
+
+
+    const classes =
+      result.data?.liveClasses ||
+      result.data ||
+      [];
+
+
+    if (!classes.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          No live classes are currently scheduled.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      classes.map(item => `
+
+        <div class="card">
+
+          <h3>
+            ${escapeHtml(
+              item.title ||
+              "Live Class"
+            )}
+          </h3>
+
+          <p>
+            ${escapeHtml(
+              item.description ||
+              ""
+            )}
+          </p>
+
+          <p>
+            Start:
+            ${formatDate(
+              item.scheduledStart
+            )}
+          </p>
+
+          <button
+            onclick="joinLiveClass('${item.id}')"
+          >
+            View Class
+          </button>
+
+        </div>
+
+      `).join("");
+
+
+  } catch (error) {
+
+    container.innerHTML = `
+      <div class="error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+
+  }
+
+}
+
+
+async function joinLiveClass(id) {
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/live-classes/" +
+        encodeURIComponent(id)
+      );
+
+
+    const liveClass =
+      result.data?.liveClass ||
+      result.data;
+
+
+    if (
+      liveClass &&
+      liveClass.meetingUrl
+    ) {
+
+      window.open(
+        liveClass.meetingUrl,
+        "_blank"
+      );
+
+    }
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
+
+
+/* -----------------------------
+   PAYMENTS
+----------------------------- */
+
+async function loadPayments() {
+
+  const container =
+    document.getElementById(
+      "paymentsList"
+    );
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/payments/my"
+      );
+
+
+    const payments =
+      result.data?.payments ||
+      result.data ||
+      [];
+
+
+    if (!payments.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          No payment records found.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML = `
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Reference</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${payments.map(payment => `
+
+            <tr>
+
+              <td>
+                ${escapeHtml(
+                  payment.reference ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  String(
+                    payment.amount ??
+                    "-"
+                  )
+                )}
+                ${escapeHtml(
+                  payment.currency ||
+                  "NGN"
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  payment.status ||
+                  "-"
+                )}
+              </td>
+
+              <td>
+                ${formatDate(
+                  payment.createdAt
+                )}
+              </td>
+
+            </tr>
+
+          `).join("")}
+
+        </tbody>
+
+      </table>
+
+    `;
+
+
+  } catch (error) {
+
+    container.innerHTML = `
+      <div class="error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* -----------------------------
+   CERTIFICATES
+----------------------------- */
+
+async function loadCertificates() {
+
+  const container =
+    document.getElementById(
+      "certificatesList"
+    );
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/certificates/my"
+      );
+
+
+    const certificates =
+      result.data?.certificates ||
+      result.data ||
+      [];
+
+
+    if (!certificates.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          No certificates have been issued yet.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      certificates.map(cert => `
+
+        <div class="card">
+
+          <h3>
+            Certificate
+          </h3>
+
+          <p>
+            Number:
+            ${escapeHtml(
+              cert.certificateNumber ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            Issued:
+            ${formatDate(
+              cert.issuedAt
+            )}
+          </p>
+
+          ${
+            cert.certificateUrl
+              ? `
+                <button
+                  onclick="window.open(
+                    '${escapeAttribute(
+                      cert.certificateUrl
+                    )}',
+                    '_blank'
+                  )"
+                >
+                  View Certificate
+                </button>
+              `
+              : ""
+          }
+
+        </div>
+
+      `).join("");
+
+
+  } catch (error) {
+
+    container.innerHTML = `
+      <div class="empty">
+        Certificates will appear here
+        when issued by the Institute.
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* -----------------------------
+   NOTIFICATIONS
+----------------------------- */
+
+async function loadNotifications() {
+
+  const container =
+    document.getElementById(
+      "notificationsList"
+    );
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/notifications"
+      );
+
+
+    const notifications =
+      result.data?.notifications ||
+      result.data ||
+      [];
+
+
+    document.getElementById(
+      "notificationCount"
+    ).textContent =
+      notifications.length;
+
+
+    if (!notifications.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          You have no notifications.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      notifications.map(notification => `
+
+        <div class="card">
+
+          <h3>
+            ${escapeHtml(
+              notification.title ||
+              "Notification"
+            )}
+          </h3>
+
+          <p>
+            ${escapeHtml(
+              notification.message ||
+              ""
+            )}
+          </p>
+
+          <small>
+            ${formatDate(
+              notification.createdAt
+            )}
+          </small>
+
+        </div>
+
+      `).join("");
+
+
+  } catch (error) {
+
+    container.innerHTML = `
+      <div class="empty">
+        No notifications available.
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* -----------------------------
+   PROFILE
+----------------------------- */
+
+function loadProfile() {
+
+  const container =
+    document.getElementById(
+      "profileContent"
+    );
+
+
+  if (!currentUser) {
+
+    container.innerHTML = `
+      <div class="error">
+        Unable to load your profile.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML = `
+
+    <div class="profile-grid">
+
+      <div class="profile-item">
+
+        <strong>
+          First Name
+        </strong>
+
+        <span>
+          ${escapeHtml(
+            currentUser.firstName ||
+            "-"
+          )}
+        </span>
+
+      </div>
+
+
+      <div class="profile-item">
+
+        <strong>
+          Last Name
+        </strong>
+
+        <span>
+          ${escapeHtml(
+            currentUser.lastName ||
+            "-"
+          )}
+        </span>
+
+      </div>
+
+
+      <div class="profile-item">
+
+        <strong>
+          Email
+        </strong>
+
+        <span>
+          ${escapeHtml(
+            currentUser.email ||
+            "-"
+          )}
+        </span>
+
+      </div>
+
+
+      <div class="profile-item">
+
+        <strong>
+          Phone
+        </strong>
+
+        <span>
+          ${escapeHtml(
+            currentUser.phone ||
+            "-"
+          )}
+        </span>
+
+      </div>
+
+
+      <div class="profile-item">
+
+        <strong>
+          Role
+        </strong>
+
+        <span>
+          ${escapeHtml(
+            currentUser.role ||
+            "STUDENT"
+          )}
+        </span>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* -----------------------------
+   SECTION LOADER
+----------------------------- */
+
+function loadSection(sectionId) {
+
+  switch (sectionId) {
+
+    case "dashboard":
+      loadCourses();
+      break;
+
+    case "courses":
+      loadCourses();
+      break;
+
+    case "tests":
+      loadTests();
+      break;
+
+    case "results":
+      loadResults();
+      break;
+
+    case "live":
+      loadLiveClasses();
+      break;
+
+    case "payments":
+      loadPayments();
+      break;
+
+    case "certificates":
+      loadCertificates();
+      break;
+
+    case "notifications":
+      loadNotifications();
+      break;
+
+    case "profile":
+      loadProfile();
+      break;
+
+  }
+
+}
+
+
+/* -----------------------------
+   LOGOUT
+----------------------------- */
+
+async function logout() {
+
+  try {
+
+    await fetch(
+      "/api/auth/logout",
+      {
+        method: "POST",
+        credentials: "include"
+      }
+    );
+
+  } catch (_) {
+    // Continue to login even if
+    // the request fails.
+  }
+
+
+  window.location.href =
+    "login.html";
+
+}
+
+
+/* -----------------------------
+   HELPERS
+----------------------------- */
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttribute(value) {
+
+  return String(value ?? "")
+    .replace(/'/g, "\\'")
+    .replace(/"/g, "&quot;");
+
+}
+
+
+function formatDate(value) {
+
+  if (!value) {
+    return "-";
+  }
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "-";
+  }
+
+  return date.toLocaleString();
+
+}
+
+
+/* -----------------------------
+   START
+----------------------------- */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  async function() {
+
+    await loadCurrentUser();
+
+    loadCourses();
+
+  }
+);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f7f4;
+      color: #17231b;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .topbar {
+      background: #075b3a;
+      color: white;
+      min-height: 76px;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      margin-bottom: 3px;
+    }
+
+    .brand p {
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dashboard-btn,
+    .logout-btn {
+      border-radius: 7px;
+      padding: 9px 14px;
+    }
+
+    .dashboard-btn {
+      border: 1px solid rgba(255,255,255,.45);
+      background: transparent;
+      color: white;
+    }
+
+    .logout-btn {
+      border: 0;
+      background: #c89b3c;
+      color: white;
+    }
+
+    .container {
+      width: 94%;
+      max-width: 1000px;
+      margin: 30px auto;
+    }
+
+    .page-header {
+      margin-bottom: 20px;
+    }
+
+    .page-header h2 {
+      color: #075b3a;
+      margin-bottom: 5px;
+    }
+
+    .page-header p {
+      color: #68756d;
+      font-size: 14px;
+    }
+
+    .toolbar {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      border: 1px solid #d1dfd6;
+      background: #f7faf8;
+      color: #405048;
+      padding: 8px 13px;
+      border-radius: 7px;
+      font-size: 13px;
+    }
+
+    .filter-btn.active {
+      background: #075b3a;
+      color: white;
+      border-color: #075b3a;
+    }
+
+    .mark-all {
+      border: 0;
+      background: #dceee4;
+      color: #075b3a;
+      padding: 9px 13px;
+      border-radius: 7px;
+      font-size: 13px;
+    }
+
+    .message {
+      display: none;
+      padding: 11px 14px;
+      border-radius: 7px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.success {
+      background: #dff4e8;
+      color: #14683f;
+    }
+
+    .message.error {
+      background: #fde2e2;
+      color: #9c2424;
+    }
+
+    .notifications {
+      display: grid;
+      gap: 12px;
+    }
+
+    .notification {
+      background: white;
+      border-radius: 10px;
+      padding: 17px;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
+      border-left: 4px solid #c9d9cf;
+      transition: .15s;
+    }
+
+    .notification:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,.09);
+    }
+
+    .notification.unread {
+      border-left-color: #075b3a;
+      background: #fbfefc;
+    }
+
+    .notification-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .notification-title {
+      color: #075b3a;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .notification-body {
+      color: #526158;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 8px;
+      white-space: pre-wrap;
+    }
+
+    .notification-date {
+      color: #849088;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .notification-type {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 8px;
+      border-radius: 20px;
+      background: #edf4ef;
+      color: #075b3a;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .notification-actions {
+      margin-top: 13px;
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .notification-actions button {
+      border: 0;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    .read-btn {
+      background: #e3eee8;
+      color: #075b3a;
+    }
+
+    .delete-btn {
+      background: #fde5e5;
+      color: #9c2424;
+    }
+
+    .unread-dot {
+      width: 8px;
+      height: 8px;
+      display: inline-block;
+      background: #075b3a;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+
+    .empty {
+      background: white;
+      border-radius: 10px;
+      padding: 45px 20px;
+      text-align: center;
+      color: #77837b;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
+    }
+
+    .empty h3 {
+      color: #075b3a;
+      margin-bottom: 7px;
+    }
+
+    .loading {
+      background: white;
+      border-radius: 10px;
+      padding: 35px;
+      text-align: center;
+      color: #68756d;
+    }
+
+    .footer {
+      text-align: center;
+      color: #718078;
+      font-size: 12px;
+      padding: 30px 15px;
+    }
+
+    @media (max-width: 700px) {
+      .topbar {
+        padding: 9px 12px;
+      }
+
+      .academy-logo {
+        width: 48px;
+        height: 48px;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .brand p {
+        display: none;
+      }
+
+      .dashboard-btn {
+        display: none;
+      }
+
+      .notification-head {
+        display: block;
+      }
+
+      .notification-date {
+        display: block;
+        margin-top: 7px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Online Islamic & Arabic Institute</p>
+    </div>
+
+  </div>
+
+
+  <div class="top-actions">
+
+    <button
+      class="dashboard-btn"
+      id="dashboardBtn"
+    >
+      Dashboard
+    </button>
+
+    <button
+      class="logout-btn"
+      id="logoutBtn"
+    >
+      Logout
+    </button>
+
+  </div>
+
+</header>
+
+
+<main class="container">
+
+  <div class="page-header">
+
+    <h2>Notifications</h2>
+
+    <p>
+      Stay updated with important academy announcements,
+      courses, examinations, payments and other activities.
+    </p>
+
+  </div>
+
+
+  <div
+    id="message"
+    class="message"
+  ></div>
+
+
+  <div class="toolbar">
+
+    <div class="filter-group">
+
+      <button
+        class="filter-btn active"
+        data-filter="all"
+      >
+        All
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="unread"
+      >
+        Unread
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="SYSTEM"
+      >
+        System
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="COURSE"
+      >
+        Courses
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="EXAM"
+      >
+        Exams
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="PAYMENT"
+      >
+        Payments
+      </button>
+
+    </div>
+
+
+    <button
+      class="mark-all"
+      id="markAllBtn"
+    >
+      Mark all as read
+    </button>
+
+  </div>
+
+
+  <div
+    id="notifications"
+    class="notifications"
+  >
+    <div class="loading">
+      Loading notifications...
+    </div>
+  </div>
+
+</main>
+
+
+<footer class="footer">
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY"
+    style="width:48px;height:48px;object-fit:contain;margin-bottom:8px;"
+  >
+
+  <br>
+
+  © 2026 MAKNAZUL IRFAN ACADEMY
+
+  <br>
+
+  Knowledge • Faith • Excellence
+
+</footer>
+
+
+<script>
+
+  const API = "/api";
+
+  let notifications = [];
+
+  let currentFilter = "all";
+
+
+  async function api(path, options = {}) {
+
+    const response = await fetch(API + path, {
+
+      credentials: "include",
+
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      },
+
+      ...options
+
+    });
+
+
+    let data = {};
+
+    try {
+      data = await response.json();
+    } catch (_) {
+      data = {};
+    }
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        "Request failed."
+      );
+
+    }
+
+
+    return data;
+  }
+
+
+  function unwrap(data, key) {
+
+    if (
+      data &&
+      data[key] !== undefined
+    ) {
+      return data[key];
+    }
+
+
+    if (
+      data &&
+      data.data &&
+      data.data[key] !== undefined
+    ) {
+      return data.data[key];
+    }
+
+
+    if (
+      data &&
+      data.data !== undefined
+    ) {
+      return data.data;
+    }
+
+
+    return data;
+  }
+
+
+  function arrayFrom(data, key) {
+
+    const value =
+      unwrap(data, key);
+
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+
+    if (
+      value &&
+      Array.isArray(value.items)
+    ) {
+      return value.items;
+    }
+
+
+    if (
+      value &&
+      Array.isArray(value.results)
+    ) {
+      return value.results;
+    }
+
+
+    return [];
+  }
+
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+
+  function formatDate(value) {
+
+    if (!value) {
+      return "—";
+    }
+
+
+    const date =
+      new Date(value);
+
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return value;
+    }
+
+
+    return date.toLocaleString(
+      "en-NG",
+      {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }
+    );
+  }
+
+
+  function showMessage(
+    text,
+    type = "success"
+  ) {
+
+    const element =
+      document.getElementById(
+        "message"
+      );
+
+
+    element.textContent =
+      text;
+
+    element.className =
+      `message show ${type}`;
+
+
+    setTimeout(() => {
+
+      element.className =
+        "message";
+
+    }, 4000);
+  }
+
+
+  async function checkAuthentication() {
+
+    try {
+
+      const data =
+        await api("/auth/me");
+
+
+      const user =
+        unwrap(data, "user") ||
+        data.user ||
+        data;
+
+
+      if (!user) {
+        location.href =
+          "login.html";
+        return false;
+      }
+
+
+      return true;
+
+    } catch (_) {
+
+      location.href =
+        "login.html";
+
+      return false;
+    }
+  }
+
+
+  async function loadNotifications() {
+
+    const container =
+      document.getElementById(
+        "notifications"
+      );
+
+
+    container.innerHTML =
+      `<div class="loading">
+        Loading notifications...
+      </div>`;
+
+
+    try {
+
+      const data =
+        await api(
+          "/notifications"
+        );
+
+
+      notifications =
+        arrayFrom(
+          data,
+          "notifications"
+        );
+
+
+      renderNotifications();
+
+    } catch (error) {
+
+      container.innerHTML = `
+        <div class="empty">
+
+          <h3>Unable to load notifications</h3>
+
+          <p>
+            ${escapeHtml(error.message)}
+          </p>
+
+        </div>
+      `;
+
+    }
+  }
+
+
+  function getNotificationType(
+    notification
+  ) {
+
+    return String(
+      notification.type ||
+      notification.notificationType ||
+      "SYSTEM"
+    ).toUpperCase();
+
+  }
+
+
+  function isUnread(
+    notification
+  ) {
+
+    if (
+      notification.read === true ||
+      notification.isRead === true
+    ) {
+      return false;
+    }
+
+
+    if (
+      notification.readAt
+    ) {
+      return false;
+    }
+
+
+    return true;
+  }
+
+
+  function renderNotifications() {
+
+    const container =
+      document.getElementById(
+        "notifications"
+      );
+
+
+    let filtered =
+      [...notifications];
+
+
+    if (
+      currentFilter ===
+      "unread"
+    ) {
+
+      filtered =
+        filtered.filter(
+          isUnread
+        );
+
+    } else if (
+      currentFilter !==
+      "all"
+    ) {
+
+      filtered =
+        filtered.filter(
+          notification =>
+            getNotificationType(
+              notification
+            ) ===
+            currentFilter
+        );
+
+    }
+
+
+    filtered.sort(
+      (a, b) =>
+        new Date(
+          b.createdAt ||
+          b.date ||
+          0
+        ) -
+        new Date(
+          a.createdAt ||
+          a.date ||
+          0
+        )
+    );
+
+
+    if (!filtered.length) {
+
+      container.innerHTML = `
+
+        <div class="empty">
+
+          <h3>No notifications</h3>
+
+          <p>
+            There are no notifications
+            matching this filter.
+          </p>
+
+        </div>
+
+      `;
+
+      return;
+    }
+
+
+    container.innerHTML =
+      filtered
+        .map(
+          notification =>
+            notificationCard(
+              notification
+            )
+        )
+        .join("");
+  }
+
+
+  function notificationCard(
+    notification
+  ) {
+
+    const unread =
+      isUnread(
+        notification
+      );
+
+
+    const id =
+      notification.id;
+
+
+    const title =
+      notification.title ||
+      notification.subject ||
+      "Notification";
+
+
+    const body =
+      notification.message ||
+      notification.body ||
+      notification.content ||
+      "";
+
+
+    const type =
+      getNotificationType(
+        notification
+      );
+
+
+    return `
+
+      <article
+        class="notification ${unread ? "unread" : ""}"
+      >
+
+        <div class="notification-head">
+
+          <div>
+
+            <div class="notification-title">
+
+              ${
+                unread
+                  ? '<span class="unread-dot"></span>'
+                  : ""
+              }
+
+              ${escapeHtml(title)}
+
+            </div>
+
+          </div>
+
+
+          <div class="notification-date">
+
+            ${escapeHtml(
+              formatDate(
+                notification.createdAt ||
+                notification.date
+              )
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div class="notification-body">
+
+          ${escapeHtml(body)}
+
+        </div>
+
+
+        <span class="notification-type">
+
+          ${escapeHtml(type)}
+
+        </span>
+
+
+        ${
+          id
+            ? `
+              <div class="notification-actions">
+
+                ${
+                  unread
+                    ? `
+                      <button
+                        class="read-btn"
+                        onclick="markAsRead('${escapeHtml(id)}')"
+                      >
+                        Mark as read
+                      </button>
+                    `
+                    : ""
+                }
+
+              </div>
+            `
+            : ""
+        }
+
+      </article>
+
+    `;
+  }
+
+
+  async function markAsRead(id) {
+
+    if (!id) {
+      return;
+    }
+
+
+    try {
+
+      /*
+       * The notification backend is expected
+       * to expose this resource action.
+       */
+      await api(
+        `/notifications/${encodeURIComponent(id)}/read`,
+        {
+          method: "PATCH"
+        }
+      );
+
+
+      const notification =
+        notifications.find(
+          item =>
+            item.id === id
+        );
+
+
+      if (notification) {
+
+        notification.read = true;
+
+        notification.isRead = true;
+
+        notification.readAt =
+          new Date().toISOString();
+
+      }
+
+
+      renderNotifications();
+
+
+    } catch (error) {
+
+      showMessage(
+        error.message,
+        "error"
+      );
+
+    }
+  }
+
+
+  async function markAllAsRead() {
+
+    try {
+
+      /*
+       * Marks all notifications belonging
+       * to the authenticated user as read.
+       */
+      await api(
+        "/notifications/read-all",
+        {
+          method: "PATCH"
+        }
+      );
+
+
+      notifications =
+        notifications.map(
+          notification => ({
+            ...notification,
+            read: true,
+            isRead: true,
+            readAt:
+              notification.readAt ||
+              new Date().toISOString()
+          })
+        );
+
+
+      renderNotifications();
+
+
+      showMessage(
+        "All notifications have been marked as read."
+      );
+
+
+    } catch (error) {
+
+      showMessage(
+        error.message,
+        "error"
+      );
+
+    }
+  }
+
+
+  document
+    .querySelectorAll(
+      ".filter-btn"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          document
+            .querySelectorAll(
+              ".filter-btn"
+            )
+            .forEach(
+              item =>
+                item.classList.remove(
+                  "active"
+                )
+            );
+
+
+          button.classList.add(
+            "active"
+          );
+
+
+          currentFilter =
+            button.dataset.filter;
+
+
+          renderNotifications();
+
+        }
+      );
+
+    });
+
+
+  document
+    .getElementById(
+      "markAllBtn"
+    )
+    .addEventListener(
+      "click",
+      markAllAsRead
+    );
+
+
+  document
+    .getElementById(
+      "dashboardBtn"
+    )
+    .addEventListener(
+      "click",
+      () => {
+
+        location.href =
+          "student.html";
+
+      }
+    );
+
+
+  document
+    .getElementById(
+      "logoutBtn"
+    )
+    .addEventListener(
+      "click",
+      async () => {
+
+        try {
+
+          await api(
+            "/auth/logout",
+            {
+              method: "POST"
+            }
+          );
+
+        } catch (_) {}
+
+
+        location.href =
+          "login.html";
+
+      }
+    );
+
+
+  async function startPage() {
+
+    const authenticated =
+      await checkAuthentication();
+
+
+    if (!authenticated) {
+      return;
+    }
+
+
+    await loadNotifications();
+
+  }
+
+
+  startPage();
+
+</script>
+
+</body>
+</html>

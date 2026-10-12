@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Classes | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f7f5;
+      color: #173b2d;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #075b3b;
+      color: white;
+      padding: 15px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      font-size: 19px;
+      margin-bottom: 4px;
+    }
+
+    .brand p {
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .btn {
+      border: none;
+      border-radius: 7px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .dashboard-btn {
+      background: #d9a441;
+      color: #173b2d;
+    }
+
+    .logout-btn {
+      background: white;
+      color: #075b3b;
+    }
+
+    main {
+      width: 94%;
+      max-width: 1150px;
+      margin: 30px auto;
+    }
+
+    .page-title {
+      margin-bottom: 22px;
+    }
+
+    .page-title h2 {
+      color: #075b3b;
+      margin-bottom: 6px;
+    }
+
+    .page-title p {
+      color: #66756e;
+    }
+
+    .message {
+      display: none;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      background: #fdeaea;
+      color: #a12626;
+    }
+
+    .message.success {
+      background: #e8f7ee;
+      color: #17663f;
+    }
+
+    .filters {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.07);
+      margin-bottom: 22px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filters input,
+    .filters select {
+      padding: 11px 12px;
+      border: 1px solid #d8e1dc;
+      border-radius: 7px;
+      background: white;
+      color: #173b2d;
+      min-width: 190px;
+    }
+
+    .classes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .class-card {
+      background: white;
+      border-radius: 13px;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0,0,0,.07);
+      border-top: 4px solid #075b3b;
+    }
+
+    .class-card.live-now {
+      border-top-color: #c43d3d;
+    }
+
+    .class-body {
+      padding: 20px;
+    }
+
+    .provider {
+      display: inline-block;
+      background: #edf5f0;
+      color: #075b3b;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .live-badge {
+      background: #fdeaea;
+      color: #a12626;
+      margin-left: 5px;
+    }
+
+    .class-card h3 {
+      color: #075b3b;
+      font-size: 18px;
+      margin-bottom: 9px;
+    }
+
+    .course-name {
+      color: #66756e;
+      font-size: 13px;
+      margin-bottom: 15px;
+    }
+
+    .class-info {
+      display: grid;
+      gap: 9px;
+      margin-bottom: 18px;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 9px;
+      font-size: 13px;
+    }
+
+    .info-row strong {
+      min-width: 72px;
+      color: #40574c;
+    }
+
+    .info-row span {
+      color: #66756e;
+    }
+
+    .join-btn {
+      width: 100%;
+      background: #075b3b;
+      color: white;
+    }
+
+    .join-btn:hover {
+      background: #064a31;
+    }
+
+    .join-btn.disabled {
+      background: #aeb9b3;
+      cursor: not-allowed;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      background: white;
+      padding: 45px 20px;
+      border-radius: 12px;
+      text-align: center;
+      color: #718078;
+      box-shadow: 0 3px 12px rgba(0,0,0,.07);
+    }
+
+    .empty h3 {
+      color: #075b3b;
+      margin-bottom: 8px;
+    }
+
+    .notice {
+      background: #fff8e7;
+      border-left: 4px solid #d9a441;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 22px;
+      color: #66501d;
+      font-size: 14px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,.58);
+      padding: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: white;
+      border-radius: 14px;
+      padding: 25px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .modal-header h3 {
+      color: #075b3b;
+    }
+
+    .close-btn {
+      background: #eee;
+      color: #333;
+    }
+
+    .modal-content {
+      display: grid;
+      gap: 13px;
+    }
+
+    .detail {
+      padding: 13px;
+      background: #f7faf8;
+      border-radius: 8px;
+    }
+
+    .detail strong {
+      display: block;
+      color: #075b3b;
+      margin-bottom: 5px;
+    }
+
+    .detail span {
+      color: #66756e;
+      font-size: 14px;
+    }
+
+    .meeting-link {
+      display: block;
+      margin-top: 10px;
+      background: #075b3b;
+      color: white;
+      padding: 13px;
+      text-align: center;
+      border-radius: 7px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    footer {
+      background: #075b3b;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+      margin-top: 40px;
+    }
+
+    footer img {
+      width: 55px;
+      height: 55px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+      margin-bottom: 10px;
+    }
+
+    footer p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .classes-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .classes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filters input,
+      .filters select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .academy-logo {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Online Islamic & Arabic Institute</p>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <a href="student.html" class="btn dashboard-btn">Dashboard</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-title">
+    <h2>Live Classes</h2>
+    <p>Attend your scheduled online classes and lessons.</p>
+  </section>
+
+  <div id="message" class="message"></div>
+
+  <div class="notice">
+    <strong>Important:</strong>
+    Meeting links are displayed only to students who have authorised
+    access to the corresponding course.
+  </div>
+
+  <section class="filters">
+    <input
+      type="search"
+      id="searchInput"
+      placeholder="Search live classes..."
+      oninput="renderClasses()"
+    >
+
+    <select id="statusFilter" onchange="renderClasses()">
+      <option value="ALL">All Classes</option>
+      <option value="UPCOMING">Upcoming</option>
+      <option value="LIVE">Live Now</option>
+      <option value="ENDED">Ended</option>
+    </select>
+  </section>
+
+  <section id="classesGrid" class="classes-grid">
+    <div class="empty">
+      Loading live classes...
+    </div>
+  </section>
+
+</main>
+
+<div id="classModal" class="modal">
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <h3>Live Class Details</h3>
+      <button
+        class="close-btn btn"
+        onclick="closeModal()"
+      >
+        Close
+      </button>
+    </div>
+
+    <div id="modalContent" class="modal-content"></div>
+
+  </div>
+
+</div>
+
+<footer>
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo"
+  >
+
+  <p><strong>MAKNAZUL IRFAN ACADEMY</strong></p>
+  <p>Online Islamic & Arabic Institute</p>
+  <p>Knowledge • Faith • Excellence</p>
+  <p>© 2026 MAKNAZUL IRFAN ACADEMY. All rights reserved.</p>
+</footer>
+
+<script>
+  const API = "/api";
+
+  let liveClasses = [];
+
+  function showMessage(message, type = "error") {
+    const box = document.getElementById("message");
+
+    box.textContent = message;
+    box.className = "message show " + type;
+
+    setTimeout(() => {
+      box.className = "message";
+    }, 5000);
+  }
+
+  async function api(path, options = {}) {
+    const response = await fetch(API + path, {
+      credentials: "include",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    });
+
+    let data = {};
+
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        "Request failed."
+      );
+    }
+
+    return data;
+  }
+
+  function extractData(response) {
+    return response?.data ?? response;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function getClassTitle(item) {
+    return (
+      item?.title ||
+      item?.name ||
+      item?.topic ||
+      "Live Class"
+    );
+  }
+
+  function getCourseName(item) {
+    return (
+      item?.course?.title ||
+      item?.course?.name ||
+      item?.courseTitle ||
+      "Online Course"
+    );
+  }
+
+  function getStart(item) {
+    return (
+      item?.startAt ||
+      item?.startsAt ||
+      item?.startTime ||
+      item?.scheduledAt ||
+      null
+    );
+  }
+
+  function getEnd(item) {
+    return (
+      item?.endAt ||
+      item?.endsAt ||
+      item?.endTime ||
+      null
+    );
+  }
+
+  function getProvider(item) {
+    return String(
+      item?.provider ||
+      item?.liveClassProvider ||
+      "ZOOM"
+    ).toUpperCase();
+  }
+
+  function getMeetingUrl(item) {
+    return (
+      item?.meetingUrl ||
+      item?.joinUrl ||
+      item?.url ||
+      ""
+    );
+  }
+
+  function parseDate(value) {
+    if (!value) return null;
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date;
+  }
+
+  function formatDate(value) {
+    const date = parseDate(value);
+
+    if (!date) return "Not specified";
+
+    return date.toLocaleDateString("en-NG", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  }
+
+  function formatTime(value) {
+    const date = parseDate(value);
+
+    if (!date) return "Not specified";
+
+    return date.toLocaleTimeString("en-NG", {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  }
+
+  function getClassState(item) {
+    const now = Date.now();
+
+    const start = parseDate(getStart(item));
+    const end = parseDate(getEnd(item));
+
+    if (!start) {
+      return "UPCOMING";
+    }
+
+    if (end && now >= end.getTime()) {
+      return "ENDED";
+    }
+
+    if (now >= start.getTime() &&
+        (!end || now < end.getTime())) {
+      return "LIVE";
+    }
+
+    return "UPCOMING";
+  }
+
+  function stateLabel(state) {
+    if (state === "LIVE") return "LIVE NOW";
+    if (state === "ENDED") return "ENDED";
+    return "UPCOMING";
+  }
+
+  function renderClasses() {
+    const grid = document.getElementById("classesGrid");
+
+    const search =
+      document
+        .getElementById("searchInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const selectedStatus =
+      document.getElementById("statusFilter").value;
+
+    const filtered = liveClasses.filter(item => {
+
+      const title = getClassTitle(item).toLowerCase();
+      const course = getCourseName(item).toLowerCase();
+
+      const matchesSearch =
+        !search ||
+        title.includes(search) ||
+        course.includes(search);
+
+      const state = getClassState(item);
+
+      const matchesStatus =
+        selectedStatus === "ALL" ||
+        selectedStatus === state;
+
+      return matchesSearch && matchesStatus;
+    });
+
+    if (!filtered.length) {
+      grid.innerHTML = `
+        <div class="empty">
+          <h3>No Live Classes Found</h3>
+          <p>
+            There are currently no classes matching your selection.
+          </p>
+        </div>
+      `;
+
+      return;
+    }
+
+    grid.innerHTML = filtered.map(item => {
+
+      const originalIndex =
+        liveClasses.indexOf(item);
+
+      const state = getClassState(item);
+      const provider = getProvider(item);
+
+      return `
+        <article class="class-card ${state === "LIVE" ? "live-now" : ""}">
+
+          <div class="class-body">
+
+            <span class="provider">
+              ${escapeHtml(provider)}
+            </span>
+
+            <span class="provider live-badge">
+              ${escapeHtml(stateLabel(state))}
+            </span>
+
+            <h3>
+              ${escapeHtml(getClassTitle(item))}
+            </h3>
+
+            <p class="course-name">
+              ${escapeHtml(getCourseName(item))}
+            </p>
+
+            <div class="class-info">
+
+              <div class="info-row">
+                <strong>Date:</strong>
+                <span>
+                  ${escapeHtml(formatDate(getStart(item)))}
+                </span>
+              </div>
+
+              <div class="info-row">
+                <strong>Time:</strong>
+                <span>
+                  ${escapeHtml(formatTime(getStart(item)))}
+                  —
+                  ${escapeHtml(formatTime(getEnd(item)))}
+                </span>
+              </div>
+
+              <div class="info-row">
+                <strong>Teacher:</strong>
+                <span>
+                  ${escapeHtml(
+                    item?.teacher?.firstName
+                      ? (
+                        item.teacher.firstName +
+                        " " +
+                        (item.teacher.lastName || "")
+                      )
+                      : item?.teacher?.name ||
+                        item?.teacherName ||
+                        "Academy Teacher"
+                  )}
+                </span>
+              </div>
+
+            </div>
+
+            <button
+              class="join-btn"
+              onclick="viewClass(${originalIndex})"
+            >
+              ${state === "LIVE" ? "Join Live Class" : "View Class"}
+            </button>
+
+          </div>
+
+        </article>
+      `;
+    }).join("");
+  }
+
+  function viewClass(index) {
+    const item = liveClasses[index];
+
+    if (!item) return;
+
+    const state = getClassState(item);
+    const provider = getProvider(item);
+    const meetingUrl = getMeetingUrl(item);
+
+    const description =
+      item?.description ||
+      item?.details ||
+      "No additional description was provided.";
+
+    const teacher =
+      item?.teacher?.firstName
+        ? (
+          item.teacher.firstName +
+          " " +
+          (item.teacher.lastName || "")
+        )
+        : item?.teacher?.name ||
+          item?.teacherName ||
+          "Academy Teacher";
+
+    let joinButton = "";
+
+    if (meetingUrl && state !== "ENDED") {
+      joinButton = `
+        <a
+          class="meeting-link"
+          href="${escapeHtml(meetingUrl)}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          ${state === "LIVE"
+            ? "Join Live Class"
+            : "Open Meeting Link"}
+        </a>
+      `;
+    } else if (state === "ENDED") {
+      joinButton = `
+        <div class="detail">
+          <strong>Class Status</strong>
+          <span>This live class has ended.</span>
+        </div>
+      `;
+    } else {
+      joinButton = `
+        <div class="detail">
+          <strong>Meeting Link</strong>
+          <span>
+            The meeting link is not currently available.
+          </span>
+        </div>
+      `;
+    }
+
+    document.getElementById("modalContent").innerHTML = `
+
+      <div class="detail">
+        <strong>Class</strong>
+        <span>
+          ${escapeHtml(getClassTitle(item))}
+        </span>
+      </div>
+
+      <div class="detail">
+        <strong>Course</strong>
+        <span>
+          ${escapeHtml(getCourseName(item))}
+        </span>
+      </div>
+
+      <div class="detail">
+        <strong>Teacher</strong>
+        <span>
+          ${escapeHtml(teacher)}
+        </span>
+      </div>
+
+      <div class="detail">
+        <strong>Platform</strong>
+        <span>
+          ${escapeHtml(provider)}
+        </span>
+      </div>
+
+      <div class="detail">
+        <strong>Date</strong>
+        <span>
+          ${escapeHtml(formatDate(getStart(item)))}
+        </span>
+      </div>
+
+      <div class="detail">
+        <strong>Time</strong>
+        <span>
+          ${escapeHtml(formatTime(getStart(item)))}
+          —
+          ${escapeHtml(formatTime(getEnd(item)))}
+        </span>
+      </div>
+
+      <div class="detail">
+        <strong>Description</strong>
+        <span>
+          ${escapeHtml(description)}
+        </span>
+      </div>
+
+      ${joinButton}
+    `;
+
+    document
+      .getElementById("classModal")
+      .classList.add("show");
+  }
+
+  function closeModal() {
+    document
+      .getElementById("classModal")
+      .classList.remove("show");
+  }
+
+  async function loadProfile() {
+    try {
+      const response = await api("/auth/me");
+
+      const data = extractData(response);
+      const user = data?.user || data;
+
+      if (!user) {
+        location.href = "login.html";
+        return false;
+      }
+
+      if (user.role !== "STUDENT") {
+
+        if (user.role === "ADMIN") {
+          location.href = "admin.html";
+        } else if (user.role === "TEACHER") {
+          location.href = "teacher.html";
+        } else {
+          location.href = "login.html";
+        }
+
+        return false;
+      }
+
+      return true;
+
+    } catch {
+      location.href = "login.html";
+      return false;
+    }
+  }
+
+  async function loadClasses() {
+    try {
+      const response = await api("/live-classes");
+
+      const data = extractData(response);
+
+      if (Array.isArray(data)) {
+        liveClasses = data;
+      } else {
+        liveClasses =
+          data?.liveClasses ||
+          data?.classes ||
+          data?.items ||
+          data?.results ||
+          [];
+      }
+
+      renderClasses();
+
+    } catch (error) {
+
+      liveClasses = [];
+
+      document.getElementById("classesGrid").innerHTML = `
+        <div class="empty">
+          <h3>Unable to Load Live Classes</h3>
+          <p>
+            ${escapeHtml(error.message)}
+          </p>
+        </div>
+      `;
+
+      showMessage(error.message);
+    }
+  }
+
+  async function logout() {
+    try {
+      await api("/auth/logout", {
+        method: "POST"
+      });
+    } catch {
+      // Continue to login.
+    }
+
+    location.href = "login.html";
+  }
+
+  document
+    .getElementById("classModal")
+    .addEventListener("click", function(event) {
+      if (event.target === this) {
+        closeModal();
+      }
+    });
+
+  async function init() {
+    const authenticated = await loadProfile();
+
+    if (!authenticated) {
+      return;
+    }
+
+    await loadClasses();
+
+    /*
+      Refresh class states periodically so a scheduled class
+      automatically changes to LIVE NOW without reloading.
+    */
+    setInterval(renderClasses, 30000);
+  }
+
+  init();
+</script>
+
+</body>
+</html>

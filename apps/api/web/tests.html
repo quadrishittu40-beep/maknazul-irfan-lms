@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <title>
+    Tests & Exams | MAKNAZUL IRFAN ACADEMY
+  </title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f8f6;
+      color: #222;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #075c3b;
+      color: white;
+      padding: 12px 5%;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 20px;
+      flex-wrap: wrap;
+
+      box-shadow:
+        0 2px 10px rgba(0,0,0,.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 62px;
+      height: 62px;
+
+      object-fit: contain;
+
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      font-size: 19px;
+      line-height: 1.2;
+    }
+
+    .brand p {
+      font-size: 12px;
+      margin-top: 3px;
+      opacity: .9;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+
+      font-size: 13px;
+      font-weight: bold;
+
+      padding: 8px 10px;
+    }
+
+    nav a:hover {
+      color: #d4af37;
+    }
+
+    .page {
+      width: 92%;
+      max-width: 1100px;
+
+      margin: 30px auto 60px;
+    }
+
+    .notice {
+      display: none;
+
+      padding: 13px 15px;
+
+      border-radius: 8px;
+
+      margin-bottom: 20px;
+
+      font-size: 13px;
+    }
+
+    .notice.success {
+      display: block;
+      background: #e8f6ed;
+      color: #075c3b;
+    }
+
+    .notice.error {
+      display: block;
+      background: #fff0f0;
+      color: #a00000;
+    }
+
+    /* =========================
+       TEST SELECTION
+    ========================= */
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .page-title h2 {
+      color: #075c3b;
+      font-size: 30px;
+      margin-bottom: 7px;
+    }
+
+    .page-title p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .test-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 20px;
+    }
+
+    .test-card {
+      background: white;
+
+      border-radius: 13px;
+
+      padding: 23px;
+
+      box-shadow:
+        0 3px 14px rgba(0,0,0,.06);
+    }
+
+    .test-card h3 {
+      color: #075c3b;
+      margin-bottom: 8px;
+      font-size: 20px;
+    }
+
+    .test-description {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 17px;
+    }
+
+    .test-meta {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 8px;
+
+      margin-bottom: 17px;
+    }
+
+    .meta {
+      background: #f3f7f4;
+
+      border-radius: 7px;
+
+      padding: 9px;
+
+      font-size: 11px;
+    }
+
+    .meta strong {
+      display: block;
+      color: #075c3b;
+      font-size: 14px;
+    }
+
+    .start-btn {
+      width: 100%;
+
+      border: 0;
+
+      border-radius: 8px;
+
+      padding: 12px;
+
+      background: #075c3b;
+
+      color: white;
+
+      font-size: 13px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+    }
+
+    .start-btn:hover {
+      background: #064a30;
+    }
+
+    .start-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    /* =========================
+       EXAM AREA
+    ========================= */
+
+    #examArea {
+      display: none;
+    }
+
+    .exam-header {
+      background: #075c3b;
+
+      color: white;
+
+      border-radius: 13px;
+
+      padding: 20px 23px;
+
+      margin-bottom: 20px;
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 20px;
+    }
+
+    .exam-title h2 {
+      font-size: 22px;
+      margin-bottom: 3px;
+    }
+
+    .exam-title p {
+      font-size: 12px;
+      color: #e5f1eb;
+    }
+
+    .timer {
+      min-width: 120px;
+
+      text-align: center;
+
+      background: #d4af37;
+
+      color: #111;
+
+      border-radius: 9px;
+
+      padding: 10px 15px;
+
+      font-weight: bold;
+    }
+
+    .timer-label {
+      display: block;
+
+      font-size: 10px;
+
+      text-transform: uppercase;
+    }
+
+    .timer-value {
+      display: block;
+
+      font-size: 23px;
+
+      margin-top: 2px;
+    }
+
+    .timer.warning {
+      background: #f4a62a;
+    }
+
+    .timer.danger {
+      background: #d64545;
+      color: white;
+    }
+
+    .exam-layout {
+      display: grid;
+
+      grid-template-columns:
+        1fr 240px;
+
+      gap: 20px;
+
+      align-items: start;
+    }
+
+    .question-card {
+      background: white;
+
+      border-radius: 13px;
+
+      padding: 28px;
+
+      box-shadow:
+        0 3px 14px rgba(0,0,0,.06);
+    }
+
+    .question-number {
+      color: #075c3b;
+
+      font-weight: bold;
+
+      font-size: 13px;
+
+      margin-bottom: 13px;
+    }
+
+    .question-text {
+      font-size: 19px;
+
+      font-weight: bold;
+
+      margin-bottom: 22px;
+    }
+
+    .options {
+      display: grid;
+      gap: 11px;
+    }
+
+    .option {
+      border: 1px solid #dfe7e2;
+
+      border-radius: 9px;
+
+      padding: 13px;
+
+      cursor: pointer;
+
+      display: flex;
+
+      align-items: flex-start;
+
+      gap: 10px;
+
+      transition:
+        background .15s,
+        border .15s;
+    }
+
+    .option:hover {
+      background: #f4f9f5;
+    }
+
+    .option.selected {
+      background: #e8f6ed;
+
+      border-color: #075c3b;
+    }
+
+    .option input {
+      margin-top: 4px;
+    }
+
+    .option-label {
+      font-weight: bold;
+
+      color: #075c3b;
+    }
+
+    .question-controls {
+      display: flex;
+
+      justify-content: space-between;
+
+      gap: 10px;
+
+      margin-top: 25px;
+
+      padding-top: 20px;
+
+      border-top:
+        1px solid #edf0ee;
+    }
+
+    .control-btn {
+      border: 0;
+
+      border-radius: 7px;
+
+      padding: 11px 17px;
+
+      font-size: 12px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+      background: #edf5ef;
+
+      color: #075c3b;
+    }
+
+    .control-btn.primary {
+      background: #075c3b;
+      color: white;
+    }
+
+    .control-btn.submit {
+      background: #d4af37;
+      color: #111;
+    }
+
+    .control-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    /* =========================
+       QUESTION MAP
+    ========================= */
+
+    .question-map {
+      background: white;
+
+      border-radius: 13px;
+
+      padding: 20px;
+
+      box-shadow:
+        0 3px 14px rgba(0,0,0,.06);
+
+      position: sticky;
+
+      top: 15px;
+    }
+
+    .question-map h3 {
+      color: #075c3b;
+
+      font-size: 17px;
+
+      margin-bottom: 14px;
+    }
+
+    .map-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 7px;
+    }
+
+    .map-btn {
+      border: 0;
+
+      background: #edf0ee;
+
+      color: #555;
+
+      border-radius: 6px;
+
+      padding: 8px 3px;
+
+      font-size: 11px;
+
+      cursor: pointer;
+    }
+
+    .map-btn.current {
+      background: #075c3b;
+      color: white;
+    }
+
+    .map-btn.answered {
+      background: #d4af37;
+      color: #111;
+    }
+
+    .exam-info {
+      margin-top: 18px;
+
+      padding-top: 15px;
+
+      border-top:
+        1px solid #edf0ee;
+
+      font-size: 11px;
+
+      color: #777;
+    }
+
+    .exam-info strong {
+      color: #075c3b;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      background: #043c28;
+
+      color: white;
+
+      text-align: center;
+
+      padding: 28px 20px;
+    }
+
+    footer img {
+      width: 68px;
+      height: 68px;
+
+      object-fit: contain;
+
+      background: white;
+
+      border-radius: 50%;
+
+      padding: 3px;
+
+      margin-bottom: 9px;
+    }
+
+    footer p {
+      font-size: 13px;
+      opacity: .9;
+    }
+
+    .footer-motto {
+      color: #d4af37;
+
+      font-weight: bold;
+
+      margin-top: 5px;
+    }
+
+    @media (max-width: 850px) {
+
+      .test-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .exam-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .question-map {
+        position: static;
+        order: -1;
+      }
+
+      .map-grid {
+        grid-template-columns:
+          repeat(8, 1fr);
+      }
+
+    }
+
+    @media (max-width: 600px) {
+
+      header {
+        padding: 10px 4%;
+      }
+
+      .academy-logo {
+        width: 52px;
+        height: 52px;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .brand p {
+        font-size: 10px;
+      }
+
+      nav {
+        width: 100%;
+        justify-content: center;
+      }
+
+      nav a {
+        font-size: 12px;
+      }
+
+      .page-title h2 {
+        font-size: 26px;
+      }
+
+      .exam-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+      }
+
+      .timer {
+        width: 100%;
+      }
+
+      .question-card {
+        padding: 20px;
+      }
+
+      .question-text {
+        font-size: 17px;
+      }
+
+      .map-grid {
+        grid-template-columns:
+          repeat(5, 1fr);
+      }
+
+      .question-controls {
+        flex-wrap: wrap;
+      }
+
+      .control-btn {
+        flex: 1;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo">
+
+    <div>
+
+      <h1>
+        MAKNAZUL IRFAN ACADEMY
+      </h1>
+
+      <p>
+        Online Islamic & Arabic Institute
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <nav>
+
+    <a href="index.html">
+      Home
+    </a>
+
+    <a href="courses.html">
+      Courses
+    </a>
+
+    <a href="student.html">
+      Dashboard
+    </a>
+
+  </nav>
+
+</header>
+
+
+<main class="page">
+
+
+  <div
+    id="notice"
+    class="notice">
+  </div>
+
+
+  <!-- =====================
+       TEST LIST
+  ====================== -->
+
+  <section
+    id="testSelection">
+
+    <div class="page-title">
+
+      <h2>
+        Tests & Examinations
+      </h2>
+
+      <p>
+        Test your knowledge and monitor
+        your academic progress.
+      </p>
+
+    </div>
+
+
+    <div
+      id="testLoading"
+      style="
+        background:white;
+        padding:40px;
+        text-align:center;
+        border-radius:12px;
+        color:#666;
+      ">
+
+      Loading examinations...
+
+    </div>
+
+
+    <div
+      id="testGrid"
+      class="test-grid">
+    </div>
+
+  </section>
+
+
+  <!-- =====================
+       EXAM AREA
+  ====================== -->
+
+  <section
+    id="examArea">
+
+
+    <div class="exam-header">
+
+      <div class="exam-title">
+
+        <h2 id="examTitle">
+          Examination
+        </h2>
+
+        <p id="examDescription">
+        </p>
+
+      </div>
+
+
+      <div
+        id="timer"
+        class="timer">
+
+        <span class="timer-label">
+          Time Remaining
+        </span>
+
+        <span
+          id="timerValue"
+          class="timer-value">
+
+          20:00
+
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="exam-layout">
+
+
+      <!-- QUESTION -->
+
+      <div>
+
+        <div class="question-card">
+
+          <div
+            id="questionNumber"
+            class="question-number">
+
+          </div>
+
+
+          <div
+            id="questionText"
+            class="question-text">
+
+          </div>
+
+
+          <div
+            id="options"
+            class="options">
+
+          </div>
+
+
+          <div class="question-controls">
+
+            <button
+              id="previousBtn"
+              class="control-btn">
+
+              ← Previous
+
+            </button>
+
+
+            <button
+              id="nextBtn"
+              class="control-btn primary">
+
+              Next →
+
+            </button>
+
+
+            <button
+              id="submitBtn"
+              class="control-btn submit">
+
+              Submit Exam
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- QUESTION MAP -->
+
+      <aside class="question-map">
+
+        <h3>
+          Questions
+        </h3>
+
+
+        <div
+          id="mapGrid"
+          class="map-grid">
+
+        </div>
+
+
+        <div class="exam-info">
+
+          <p>
+            Answered:
+            <strong
+              id="answeredCount">
+              0
+            </strong>
+          </p>
+
+          <p>
+            Total:
+            <strong
+              id="totalCount">
+              0
+            </strong>
+          </p>
+
+          <p style="margin-top:8px;">
+            Questions left blank will
+            be marked incorrect.
+          </p>
+
+        </div>
+
+      </aside>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<footer>
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo">
+
+  <p>
+    © 2026 MAKNAZUL IRFAN ACADEMY
+  </p>
+
+  <p>
+    Online Islamic & Arabic Institute
+  </p>
+
+  <p class="footer-motto">
+    KNOWLEDGE • FAITH • EXCELLENCE
+  </p>
+
+</footer>
+
+
+<script>
+
+const API = "/api";
+
+
+let tests = [];
+
+let currentTest = null;
+
+let attempt = null;
+
+let questions = [];
+
+let answers = {};
+
+let currentQuestion = 0;
+
+let remainingSeconds = 20 * 60;
+
+let timerInterval = null;
+
+let submitting = false;
+
+
+/* =========================
+   API
+========================= */
+
+async function apiRequest(
+  url,
+  options = {}
+) {
+
+  const response =
+    await fetch(
+      API + url,
+      {
+        credentials: "include",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          ...(options.headers || {})
+        },
+
+        ...options
+      }
+    );
+
+
+  let data = {};
+
+  try {
+
+    data =
+      await response.json();
+
+  } catch {
+
+    data = {};
+
+  }
+
+
+  if (!response.ok) {
+
+    const error =
+      new Error(
+        data.message ||
+        data.error ||
+        "Request failed"
+      );
+
+    error.status =
+      response.status;
+
+    throw error;
+  }
+
+
+  return data;
+}
+
+
+/* =========================
+   ESCAPE
+========================= */
+
+function escapeHtml(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
+
+  }
+
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+/* =========================
+   NOTICE
+========================= */
+
+function showNotice(
+  message,
+  type = "error"
+) {
+
+  const notice =
+    document.getElementById(
+      "notice"
+    );
+
+
+  notice.className =
+    "notice " + type;
+
+
+  notice.textContent =
+    message;
+
+
+  notice.style.display =
+    "block";
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+/* =========================
+   LOAD TESTS
+========================= */
+
+async function loadTests() {
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/exams/tests"
+      );
+
+
+    tests =
+      result.data ||
+      result.tests ||
+      result;
+
+
+    if (
+      tests &&
+      !Array.isArray(tests) &&
+      Array.isArray(tests.tests)
+    ) {
+
+      tests =
+        tests.tests;
+    }
+
+
+    if (
+      !Array.isArray(tests)
+    ) {
+
+      tests = [];
+    }
+
+
+    renderTests();
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    document.getElementById(
+      "testLoading"
+    ).textContent =
+      error.message ||
+      "Unable to load examinations.";
+
+  }
+
+}
+
+
+/* =========================
+   RENDER TESTS
+========================= */
+
+function renderTests() {
+
+  const loading =
+    document.getElementById(
+      "testLoading"
+    );
+
+
+  loading.style.display =
+    "none";
+
+
+  const grid =
+    document.getElementById(
+      "testGrid"
+    );
+
+
+  grid.innerHTML = "";
+
+
+  if (!tests.length) {
+
+    grid.innerHTML = `
+
+      <div
+        style="
+          grid-column:1/-1;
+          background:white;
+          padding:35px;
+          border-radius:12px;
+          text-align:center;
+          color:#777;
+        ">
+
+        No examinations are currently
+        available.
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  tests.forEach(
+    test => {
+
+      const card =
+        document.createElement(
+          "article"
+        );
+
+
+      card.className =
+        "test-card";
+
+
+      const title =
+        test.title ||
+        "Untitled Examination";
+
+
+      const description =
+        test.description ||
+        "Test your knowledge through this examination.";
+
+
+      const questionCount =
+        test.questionCount ||
+        test._count?.questions ||
+        test.questions?.length ||
+        0;
+
+
+      const duration =
+        test.durationMinutes ||
+        test.duration ||
+        20;
+
+
+      const passMark =
+        test.passMark ??
+        50;
+
+
+      const attempts =
+        test.maxAttempts ||
+        "—";
+
+
+      card.innerHTML = `
+
+        <h3>
+          ${escapeHtml(title)}
+        </h3>
+
+        <p class="test-description">
+          ${escapeHtml(description)}
+        </p>
+
+
+        <div class="test-meta">
+
+          <div class="meta">
+
+            Questions
+
+            <strong>
+              ${questionCount}
+            </strong>
+
+          </div>
+
+
+          <div class="meta">
+
+            Duration
+
+            <strong>
+              ${duration} min
+            </strong>
+
+          </div>
+
+
+          <div class="meta">
+
+            Pass Mark
+
+            <strong>
+              ${passMark}%
+            </strong>
+
+          </div>
+
+
+          <div class="meta">
+
+            Attempts
+
+            <strong>
+              ${escapeHtml(attempts)}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <button
+          class="start-btn"
+          data-id="${escapeHtml(test.id)}">
+
+          Start Examination
+
+        </button>
+
+      `;
+
+
+      const button =
+        card.querySelector(
+          ".start-btn"
+        );
+
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          startExam(
+            test,
+            button
+          );
+
+        }
+      );
+
+
+      grid.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   START EXAM
+========================= */
+
+async function startExam(
+  test,
+  button
+) {
+
+  if (submitting) {
+    return;
+  }
+
+
+  const confirmed =
+    window.confirm(
+      "Start this examination now?\n\n" +
+      "The examination is timed. " +
+      "Once started, your attempt will be recorded."
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  button.disabled =
+    true;
+
+
+  button.textContent =
+    "Starting...";
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/exams/tests/" +
+        encodeURIComponent(
+          test.id
+        ) +
+        "/start",
+        {
+          method: "POST"
+        }
+      );
+
+
+    const data =
+      result.data ||
+      result;
+
+
+    attempt =
+      data.attempt ||
+      data;
+
+
+    currentTest =
+      data.test ||
+      test;
+
+
+    questions =
+      data.questions ||
+      attempt.questions ||
+      [];
+
+
+    /*
+      Some backend responses may place
+      questions directly under data.
+    */
+
+    if (
+      !Array.isArray(
+        questions
+      )
+    ) {
+
+      questions = [];
+
+    }
+
+
+    if (!questions.length) {
+
+      throw new Error(
+        "No questions were returned for this examination."
+      );
+
+    }
+
+
+    answers = {};
+
+    currentQuestion = 0;
+
+
+    /*
+      Use server duration if supplied.
+      Otherwise default to 20 minutes.
+    */
+
+    const duration =
+      Number(
+        data.durationMinutes ||
+        currentTest.durationMinutes ||
+        20
+      );
+
+
+    remainingSeconds =
+      duration * 60;
+
+
+    /*
+      If backend provides an expiry
+      timestamp, calculate remaining time
+      from it.
+    */
+
+    if (
+      data.expiresAt
+    ) {
+
+      const expiry =
+        new Date(
+          data.expiresAt
+        ).getTime();
+
+
+      const now =
+        Date.now();
+
+
+      const calculated =
+        Math.floor(
+          (expiry - now) / 1000
+        );
+
+
+      if (
+        calculated > 0
+      ) {
+
+        remainingSeconds =
+          calculated;
+
+      }
+
+    }
+
+
+    document.getElementById(
+      "testSelection"
+    ).style.display =
+      "none";
+
+
+    document.getElementById(
+      "examArea"
+    ).style.display =
+      "block";
+
+
+    document.getElementById(
+      "examTitle"
+    ).textContent =
+      currentTest.title ||
+      "Examination";
+
+
+    document.getElementById(
+      "examDescription"
+    ).textContent =
+      currentTest.description ||
+      "Answer all questions carefully.";
+
+
+    document.getElementById(
+      "totalCount"
+    ).textContent =
+      questions.length;
+
+
+    renderQuestionMap();
+
+    renderQuestion();
+
+    startTimer();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    if (
+      error.status === 401 ||
+      error.status === 403
+    ) {
+
+      showNotice(
+        "Please log in as a student before starting an examination.",
+        "error"
+      );
+
+    } else {
+
+      showNotice(
+        error.message ||
+        "Unable to start the examination.",
+        "error"
+      );
+
+    }
+
+
+    button.disabled =
+      false;
+
+
+    button.textContent =
+      "Start Examination";
+
+  }
+
+}
+
+
+/* =========================
+   RENDER QUESTION
+========================= */
+
+function renderQuestion() {
+
+  if (
+    !questions.length
+  ) {
+
+    return;
+
+  }
+
+
+  const question =
+    questions[
+      currentQuestion
+    ];
+
+
+  const number =
+    currentQuestion + 1;
+
+
+  document.getElementById(
+    "questionNumber"
+  ).textContent =
+    "Question " +
+    number +
+    " of " +
+    questions.length;
+
+
+  document.getElementById(
+    "questionText"
+  ).textContent =
+    question.text ||
+    question.questionText ||
+    question.question ||
+    "";
+
+
+  const options =
+    document.getElementById(
+      "options"
+    );
+
+
+  options.innerHTML = "";
+
+
+  const questionOptions =
+    question.options ||
+    question.questionOptions ||
+    [];
+
+
+  questionOptions.forEach(
+    (option, index) => {
+
+      const optionId =
+        option.id ||
+        option.optionId;
+
+
+      const selected =
+        answers[
+          question.id
+        ] === optionId;
+
+
+      const label =
+        String.fromCharCode(
+          65 + index
+        );
+
+
+      const wrapper =
+        document.createElement(
+          "label"
+        );
+
+
+      wrapper.className =
+        "option" +
+        (
+          selected
+            ? " selected"
+            : ""
+        );
+
+
+      wrapper.innerHTML = `
+
+        <input
+          type="radio"
+          name="question-${escapeHtml(
+            question.id
+          )}"
+          value="${escapeHtml(
+            optionId
+          )}"
+          ${selected ? "checked" : ""}>
+
+        <span>
+
+          <span class="option-label">
+            ${label}.
+          </span>
+
+          ${escapeHtml(
+            option.text ||
+            option.label ||
+            option.optionText ||
+            ""
+          )}
+
+        </span>
+
+      `;
+
+
+      const radio =
+        wrapper.querySelector(
+          "input"
+        );
+
+
+      radio.addEventListener(
+        "change",
+        function () {
+
+          answers[
+            question.id
+          ] =
+            optionId;
+
+
+          renderQuestionMap();
+
+
+          updateAnsweredCount();
+
+        }
+      );
+
+
+      options.appendChild(
+        wrapper
+      );
+
+    }
+  );
+
+
+  document.getElementById(
+    "previousBtn"
+  ).disabled =
+    currentQuestion === 0;
+
+
+  document.getElementById(
+    "nextBtn"
+  ).disabled =
+    currentQuestion ===
+    questions.length - 1;
+
+
+  /*
+    Last question:
+    hide Next button and emphasize
+    Submit Exam.
+  */
+
+  if (
+    currentQuestion ===
+    questions.length - 1
+  ) {
+
+    document.getElementById(
+      "nextBtn"
+    ).textContent =
+      "Last Question";
+
+  } else {
+
+    document.getElementById(
+      "nextBtn"
+    ).textContent =
+      "Next →";
+
+  }
+
+}
+
+
+/* =========================
+   QUESTION MAP
+========================= */
+
+function renderQuestionMap() {
+
+  const map =
+    document.getElementById(
+      "mapGrid"
+    );
+
+
+  map.innerHTML = "";
+
+
+  questions.forEach(
+    (question, index) => {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.className =
+        "map-btn";
+
+
+      if (
+        index ===
+        currentQuestion
+      ) {
+
+        button.classList.add(
+          "current"
+        );
+
+      }
+
+
+      if (
+        answers[
+          question.id
+        ]
+      ) {
+
+        button.classList.add(
+          "answered"
+        );
+
+      }
+
+
+      button.textContent =
+        index + 1;
+
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          currentQuestion =
+            index;
+
+
+          renderQuestion();
+
+          renderQuestionMap();
+
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+
+        }
+      );
+
+
+      map.appendChild(
+        button
+      );
+
+    }
+  );
+
+
+  updateAnsweredCount();
+
+}
+
+
+/* =========================
+   ANSWER COUNT
+========================= */
+
+function updateAnsweredCount() {
+
+  const count =
+    Object.keys(
+      answers
+    ).length;
+
+
+  document.getElementById(
+    "answeredCount"
+  ).textContent =
+    count;
+
+}
+
+
+/* =========================
+   NEXT
+========================= */
+
+document.getElementById(
+  "nextBtn"
+).addEventListener(
+  "click",
+  function () {
+
+    if (
+      currentQuestion <
+      questions.length - 1
+    ) {
+
+      currentQuestion++;
+
+      renderQuestion();
+
+      renderQuestionMap();
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================
+   PREVIOUS
+========================= */
+
+document.getElementById(
+  "previousBtn"
+).addEventListener(
+  "click",
+  function () {
+
+    if (
+      currentQuestion > 0
+    ) {
+
+      currentQuestion--;
+
+      renderQuestion();
+
+      renderQuestionMap();
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================
+   TIMER
+========================= */
+
+function startTimer() {
+
+  clearInterval(
+    timerInterval
+  );
+
+
+  updateTimer();
+
+
+  timerInterval =
+    setInterval(
+      function () {
+
+        remainingSeconds--;
+
+
+        updateTimer();
+
+
+        if (
+          remainingSeconds <= 0
+        ) {
+
+          clearInterval(
+            timerInterval
+          );
+
+
+          autoSubmit();
+
+        }
+
+      },
+      1000
+    );
+
+}
+
+
+/* =========================
+   UPDATE TIMER
+========================= */
+
+function updateTimer() {
+
+  const minutes =
+    Math.floor(
+      remainingSeconds / 60
+    );
+
+
+  const seconds =
+    remainingSeconds % 60;
+
+
+  document.getElementById(
+    "timerValue"
+  ).textContent =
+    String(minutes).padStart(
+      2,
+      "0"
+    ) +
+    ":" +
+    String(seconds).padStart(
+      2,
+      "0"
+    );
+
+
+  const timer =
+    document.getElementById(
+      "timer"
+    );
+
+
+  timer.classList.remove(
+    "warning",
+    "danger"
+  );
+
+
+  if (
+    remainingSeconds <= 300
+  ) {
+
+    timer.classList.add(
+      "danger"
+    );
+
+  } else if (
+    remainingSeconds <= 600
+  ) {
+
+    timer.classList.add(
+      "warning"
+    );
+
+  }
+
+}
+
+
+/* =========================
+   SUBMIT BUTTON
+========================= */
+
+document.getElementById(
+  "submitBtn"
+).addEventListener(
+  "click",
+  function () {
+
+    submitExam(false);
+
+  }
+);
+
+
+/* =========================
+   AUTO SUBMIT
+========================= */
+
+function autoSubmit() {
+
+  showNotice(
+    "Time is up. Your examination is being submitted automatically.",
+    "error"
+  );
+
+
+  submitExam(true);
+
+}
+
+
+/* =========================
+   SUBMIT EXAM
+========================= */
+
+async function submitExam(
+  automatic = false
+) {
+
+  if (
+    submitting ||
+    !attempt
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    !automatic
+  ) {
+
+    const unanswered =
+      questions.length -
+      Object.keys(
+        answers
+      ).length;
+
+
+    let message =
+      "Submit your examination now?";
+
+
+    if (
+      unanswered > 0
+    ) {
+
+      message +=
+        "\n\n" +
+        unanswered +
+        " question(s) are unanswered. " +
+        "Unanswered questions will be marked incorrect.";
+
+    }
+
+
+    const confirmed =
+      window.confirm(
+        message
+      );
+
+
+    if (!confirmed) {
+
+      return;
+
+    }
+
+  }
+
+
+  submitting = true;
+
+
+  clearInterval(
+    timerInterval
+  );
+
+
+  const submitButton =
+    document.getElementById(
+      "submitBtn"
+    );
+
+
+  submitButton.disabled =
+    true;
+
+
+  submitButton.textContent =
+    automatic
+      ? "Submitting..."
+      : "Submitting...";
+
+
+  /*
+    Convert local answer object
+    to backend format.
+  */
+
+  const submittedAnswers =
+    questions.map(
+      question => {
+
+        return {
+          questionId:
+            question.id,
+
+          optionId:
+            answers[
+              question.id
+            ] || null
+        };
+
+      }
+    );
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/exams/attempts/" +
+        encodeURIComponent(
+          attempt.id
+        ) +
+        "/submit",
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            answers:
+              submittedAnswers
+          })
+        }
+      );
+
+
+    /*
+      Store the returned result temporarily
+      so the results page can use it if needed.
+    */
+
+    try {
+
+      sessionStorage.setItem(
+        "lastExamResult",
+        JSON.stringify(
+          result.data ||
+          result
+        )
+      );
+
+    } catch {
+      // Ignore storage errors.
+    }
+
+
+    window.location.href =
+      "results.html?attempt=" +
+      encodeURIComponent(
+        attempt.id
+      );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    submitting = false;
+
+
+    submitButton.disabled =
+      false;
+
+
+    submitButton.textContent =
+      "Submit Exam";
+
+
+    showNotice(
+      error.message ||
+      "Unable to submit the examination. Please try again.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================
+   LOAD
+========================= */
+
+loadTests();
+
+</script>
+
+</body>
+</html>

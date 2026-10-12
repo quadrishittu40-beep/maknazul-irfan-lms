@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <title>
+    Lecture | MAKNAZUL IRFAN ACADEMY
+  </title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f8f6;
+      color: #222;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #075c3b;
+      color: white;
+      padding: 12px 5%;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 20px;
+      flex-wrap: wrap;
+
+      box-shadow:
+        0 2px 10px rgba(0,0,0,.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 62px;
+      height: 62px;
+
+      object-fit: contain;
+
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      font-size: 19px;
+      line-height: 1.2;
+    }
+
+    .brand p {
+      font-size: 12px;
+      margin-top: 3px;
+      opacity: .9;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+
+      font-size: 13px;
+      font-weight: bold;
+
+      padding: 8px 10px;
+    }
+
+    nav a:hover {
+      color: #d4af37;
+    }
+
+    .page {
+      width: 92%;
+      max-width: 1100px;
+
+      margin: 30px auto 60px;
+    }
+
+    .back-link {
+      display: inline-block;
+
+      margin-bottom: 20px;
+
+      color: #075c3b;
+      text-decoration: none;
+
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .notice {
+      display: none;
+
+      padding: 13px 15px;
+
+      border-radius: 8px;
+
+      margin-bottom: 20px;
+
+      font-size: 13px;
+    }
+
+    .notice.success {
+      display: block;
+
+      background: #e8f6ed;
+      color: #075c3b;
+    }
+
+    .notice.error {
+      display: block;
+
+      background: #fff0f0;
+      color: #a00000;
+    }
+
+    .loading {
+      background: white;
+
+      padding: 45px;
+
+      text-align: center;
+
+      border-radius: 12px;
+
+      color: #666;
+    }
+
+    .lecture-header {
+      background: #075c3b;
+      color: white;
+
+      border-radius: 14px;
+
+      padding: 32px;
+
+      margin-bottom: 25px;
+    }
+
+    .course-name {
+      color: #d4af37;
+
+      font-size: 13px;
+      font-weight: bold;
+
+      margin-bottom: 8px;
+    }
+
+    .lecture-header h2 {
+      font-size: 31px;
+
+      margin-bottom: 10px;
+    }
+
+    .lecture-header p {
+      color: #e8f3ed;
+
+      max-width: 800px;
+    }
+
+    .layout {
+      display: grid;
+
+      grid-template-columns:
+        minmax(0, 1fr)
+        310px;
+
+      gap: 25px;
+
+      align-items: start;
+    }
+
+    .panel {
+      background: white;
+
+      border-radius: 13px;
+
+      padding: 24px;
+
+      margin-bottom: 20px;
+
+      box-shadow:
+        0 3px 14px rgba(0,0,0,.06);
+    }
+
+    .panel h3 {
+      color: #075c3b;
+
+      font-size: 20px;
+
+      margin-bottom: 17px;
+    }
+
+    .content-box {
+      color: #555;
+
+      white-space: pre-wrap;
+
+      font-size: 15px;
+    }
+
+    /* VIDEO */
+
+    .video-container {
+      background: #111;
+
+      border-radius: 10px;
+
+      overflow: hidden;
+
+      margin-bottom: 20px;
+    }
+
+    video {
+      width: 100%;
+      display: block;
+      max-height: 520px;
+      background: #000;
+    }
+
+    audio {
+      width: 100%;
+    }
+
+    /* MATERIALS */
+
+    .material {
+      border: 1px solid #e2e9e4;
+
+      border-radius: 9px;
+
+      padding: 15px;
+
+      margin-bottom: 11px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 15px;
+    }
+
+    .material:last-child {
+      margin-bottom: 0;
+    }
+
+    .material-info {
+      flex: 1;
+    }
+
+    .material-info strong {
+      display: block;
+
+      margin-bottom: 3px;
+    }
+
+    .material-info small {
+      color: #777;
+    }
+
+    .material-type {
+      display: inline-block;
+
+      background: #edf5ef;
+      color: #075c3b;
+
+      padding: 4px 7px;
+
+      border-radius: 5px;
+
+      font-size: 10px;
+      font-weight: bold;
+
+      margin-right: 7px;
+    }
+
+    .material-btn {
+      background: #075c3b;
+
+      color: white;
+
+      border: 0;
+
+      border-radius: 7px;
+
+      padding: 9px 12px;
+
+      text-decoration: none;
+
+      font-size: 12px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+      white-space: nowrap;
+    }
+
+    .material-btn:hover {
+      background: #064a30;
+    }
+
+    /* PROGRESS */
+
+    .progress-card {
+      background: white;
+
+      border-radius: 13px;
+
+      padding: 22px;
+
+      margin-bottom: 20px;
+
+      box-shadow:
+        0 3px 14px rgba(0,0,0,.06);
+    }
+
+    .progress-card h3 {
+      color: #075c3b;
+
+      font-size: 18px;
+
+      margin-bottom: 14px;
+    }
+
+    .progress-track {
+      width: 100%;
+
+      height: 11px;
+
+      background: #e6ece8;
+
+      border-radius: 20px;
+
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+
+      height: 100%;
+
+      background: #075c3b;
+
+      transition:
+        width .3s ease;
+    }
+
+    .progress-text {
+      margin-top: 8px;
+
+      color: #666;
+
+      font-size: 12px;
+
+      text-align: right;
+    }
+
+    /* SIDEBAR */
+
+    .side-card {
+      background: white;
+
+      border-radius: 13px;
+
+      padding: 21px;
+
+      margin-bottom: 20px;
+
+      box-shadow:
+        0 3px 14px rgba(0,0,0,.06);
+    }
+
+    .side-card h3 {
+      color: #075c3b;
+
+      font-size: 18px;
+
+      margin-bottom: 15px;
+    }
+
+    .info-row {
+      display: flex;
+
+      justify-content: space-between;
+
+      gap: 10px;
+
+      padding: 9px 0;
+
+      border-bottom:
+        1px solid #edf0ee;
+
+      font-size: 13px;
+    }
+
+    .info-row:last-child {
+      border-bottom: 0;
+    }
+
+    .info-row span:first-child {
+      color: #777;
+    }
+
+    .info-row span:last-child {
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .action-btn {
+      width: 100%;
+
+      border: 0;
+
+      border-radius: 8px;
+
+      padding: 12px;
+
+      background: #075c3b;
+
+      color: white;
+
+      font-size: 13px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+      margin-top: 12px;
+    }
+
+    .action-btn:hover {
+      background: #064a30;
+    }
+
+    .action-btn.gold {
+      background: #d4af37;
+      color: #111;
+    }
+
+    .action-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    /* NAVIGATION */
+
+    .lecture-navigation {
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 12px;
+
+      margin-top: 10px;
+    }
+
+    .nav-btn {
+      display: block;
+
+      padding: 12px;
+
+      background: #edf5ef;
+
+      color: #075c3b;
+
+      text-decoration: none;
+
+      border-radius: 8px;
+
+      font-size: 12px;
+
+      font-weight: bold;
+
+      text-align: center;
+    }
+
+    .nav-btn:hover {
+      background: #dcece1;
+    }
+
+    .nav-btn.disabled {
+      opacity: .4;
+      pointer-events: none;
+    }
+
+    .empty {
+      background: #fafcfb;
+
+      border: 1px dashed #ccd8d0;
+
+      border-radius: 9px;
+
+      padding: 25px;
+
+      text-align: center;
+
+      color: #777;
+
+      font-size: 14px;
+    }
+
+    footer {
+      background: #043c28;
+
+      color: white;
+
+      text-align: center;
+
+      padding: 28px 20px;
+    }
+
+    footer img {
+      width: 68px;
+      height: 68px;
+
+      object-fit: contain;
+
+      background: white;
+
+      border-radius: 50%;
+
+      padding: 3px;
+
+      margin-bottom: 9px;
+    }
+
+    footer p {
+      font-size: 13px;
+      opacity: .9;
+    }
+
+    .footer-motto {
+      color: #d4af37;
+
+      font-weight: bold;
+
+      margin-top: 5px;
+    }
+
+    @media (max-width: 850px) {
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+    @media (max-width: 600px) {
+
+      header {
+        padding: 10px 4%;
+      }
+
+      .academy-logo {
+        width: 52px;
+        height: 52px;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .brand p {
+        font-size: 10px;
+      }
+
+      nav {
+        width: 100%;
+        justify-content: center;
+      }
+
+      nav a {
+        font-size: 12px;
+      }
+
+      .lecture-header {
+        padding: 25px 20px;
+      }
+
+      .lecture-header h2 {
+        font-size: 25px;
+      }
+
+      .material {
+        align-items: flex-start;
+      }
+
+      .material-btn {
+        font-size: 11px;
+        padding: 8px 10px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo">
+
+    <div>
+
+      <h1>
+        MAKNAZUL IRFAN ACADEMY
+      </h1>
+
+      <p>
+        Online Islamic & Arabic Institute
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <nav>
+
+    <a href="index.html">
+      Home
+    </a>
+
+    <a href="courses.html">
+      Courses
+    </a>
+
+    <a href="student.html">
+      Dashboard
+    </a>
+
+  </nav>
+
+</header>
+
+
+<main class="page">
+
+
+  <a
+    href="courses.html"
+    id="backToCourse"
+    class="back-link">
+
+    ← Back to Course
+
+  </a>
+
+
+  <div
+    id="notice"
+    class="notice">
+  </div>
+
+
+  <div
+    id="loading"
+    class="loading">
+
+    Loading lecture...
+
+  </div>
+
+
+  <div
+    id="content"
+    style="display:none;">
+
+
+    <!-- LECTURE HEADER -->
+
+    <section class="lecture-header">
+
+      <div
+        id="courseName"
+        class="course-name">
+
+      </div>
+
+      <h2
+        id="lectureTitle">
+
+      </h2>
+
+      <p
+        id="lectureDescription">
+
+      </p>
+
+    </section>
+
+
+    <div class="layout">
+
+
+      <!-- MAIN -->
+
+      <div>
+
+
+        <!-- VIDEO / AUDIO -->
+
+        <section
+          id="mediaPanel"
+          class="panel"
+          style="display:none;">
+
+          <h3>
+            Lesson
+          </h3>
+
+          <div
+            id="mediaContainer">
+
+          </div>
+
+        </section>
+
+
+        <!-- CONTENT -->
+
+        <section class="panel">
+
+          <h3>
+            Lecture Content
+          </h3>
+
+          <div
+            id="lectureContent"
+            class="content-box">
+
+          </div>
+
+        </section>
+
+
+        <!-- MATERIALS -->
+
+        <section class="panel">
+
+          <h3>
+            Learning Materials
+          </h3>
+
+          <div
+            id="materials">
+
+          </div>
+
+        </section>
+
+
+        <!-- NAVIGATION -->
+
+        <section class="panel">
+
+          <h3>
+            Continue Learning
+          </h3>
+
+          <div
+            class="lecture-navigation">
+
+            <a
+              id="previousLecture"
+              class="nav-btn disabled"
+              href="#">
+
+              ← Previous Lecture
+
+            </a>
+
+
+            <a
+              id="nextLecture"
+              class="nav-btn disabled"
+              href="#">
+
+              Next Lecture →
+
+            </a>
+
+          </div>
+
+        </section>
+
+
+      </div>
+
+
+      <!-- SIDEBAR -->
+
+      <aside>
+
+
+        <!-- PROGRESS -->
+
+        <div class="progress-card">
+
+          <h3>
+            Your Progress
+          </h3>
+
+
+          <div class="progress-track">
+
+            <div
+              id="progressBar"
+              class="progress-bar">
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="progressText"
+            class="progress-text">
+
+            0%
+
+          </div>
+
+        </div>
+
+
+        <!-- LECTURE INFORMATION -->
+
+        <div class="side-card">
+
+          <h3>
+            Lecture Information
+          </h3>
+
+
+          <div class="info-row">
+
+            <span>
+              Lecture
+            </span>
+
+            <span id="lectureNumber">
+              —
+            </span>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <span>
+              Duration
+            </span>
+
+            <span id="lectureDuration">
+              —
+            </span>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <span>
+              Status
+            </span>
+
+            <span id="lectureStatus">
+              —
+            </span>
+
+          </div>
+
+
+          <button
+            id="completeBtn"
+            class="action-btn">
+
+            Mark Lecture Complete
+
+          </button>
+
+        </div>
+
+
+        <!-- COURSE -->
+
+        <div class="side-card">
+
+          <h3>
+            Course
+          </h3>
+
+
+          <p
+            id="courseDescriptionSide"
+            style="
+              color:#666;
+              font-size:13px;
+            ">
+
+          </p>
+
+
+          <a
+            id="courseLink"
+            href="#"
+            class="action-btn"
+            style="
+              display:block;
+              text-align:center;
+              text-decoration:none;
+            ">
+
+            View Course
+
+          </a>
+
+        </div>
+
+
+      </aside>
+
+    </div>
+
+  </div>
+
+</main>
+
+
+<footer>
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo">
+
+  <p>
+    © 2026 MAKNAZUL IRFAN ACADEMY
+  </p>
+
+  <p>
+    Online Islamic & Arabic Institute
+  </p>
+
+  <p class="footer-motto">
+    KNOWLEDGE • FAITH • EXCELLENCE
+  </p>
+
+</footer>
+
+
+<script>
+
+const API = "/api";
+
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+
+const lectureId =
+  params.get("id");
+
+
+let lecture = null;
+
+let courseLectures = [];
+
+let currentProgress = null;
+
+let videoElement = null;
+
+
+/* =========================
+   API REQUEST
+========================= */
+
+async function apiRequest(
+  url,
+  options = {}
+) {
+
+  const response =
+    await fetch(
+      API + url,
+      {
+        credentials: "include",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          ...(options.headers || {})
+        },
+
+        ...options
+      }
+    );
+
+
+  let data = {};
+
+  try {
+
+    data =
+      await response.json();
+
+  } catch {
+
+    data = {};
+
+  }
+
+
+  if (!response.ok) {
+
+    const error =
+      new Error(
+        data.message ||
+        data.error ||
+        "Request failed"
+      );
+
+    error.status =
+      response.status;
+
+    throw error;
+  }
+
+
+  return data;
+}
+
+
+/* =========================
+   ESCAPE HTML
+========================= */
+
+function escapeHtml(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
+
+  }
+
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+}
+
+
+/* =========================
+   NOTICE
+========================= */
+
+function showNotice(
+  message,
+  type = "success"
+) {
+
+  const notice =
+    document.getElementById(
+      "notice"
+    );
+
+
+  notice.className =
+    "notice " + type;
+
+
+  notice.textContent =
+    message;
+
+
+  notice.style.display =
+    "block";
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+/* =========================
+   LOAD LECTURE
+========================= */
+
+async function loadLecture() {
+
+  if (!lectureId) {
+
+    document.getElementById(
+      "loading"
+    ).textContent =
+      "No lecture was selected.";
+
+    return;
+  }
+
+
+  try {
+
+    /*
+      Get lecture.
+    */
+
+    const result =
+      await apiRequest(
+        "/lectures/" +
+        encodeURIComponent(
+          lectureId
+        )
+      );
+
+
+    lecture =
+      result.data ||
+      result.lecture ||
+      result;
+
+
+    /*
+      Load course lectures for
+      previous/next navigation.
+    */
+
+    if (
+      lecture.courseId
+    ) {
+
+      try {
+
+        const lectureResult =
+          await apiRequest(
+            "/lectures/course/" +
+            encodeURIComponent(
+              lecture.courseId
+            )
+          );
+
+
+        courseLectures =
+          lectureResult.data ||
+          lectureResult.lectures ||
+          lectureResult;
+
+
+        if (
+          courseLectures &&
+          !Array.isArray(
+            courseLectures
+          ) &&
+          Array.isArray(
+            courseLectures.lectures
+          )
+        ) {
+
+          courseLectures =
+            courseLectures.lectures;
+        }
+
+
+        if (
+          !Array.isArray(
+            courseLectures
+          )
+        ) {
+
+          courseLectures = [];
+        }
+
+      } catch (error) {
+
+        console.warn(
+          "Could not load lecture list:",
+          error
+        );
+
+      }
+
+    }
+
+
+    /*
+      Load progress.
+    */
+
+    try {
+
+      const progressResult =
+        await apiRequest(
+          "/progress/lecture/" +
+          encodeURIComponent(
+            lectureId
+          )
+        );
+
+
+      currentProgress =
+        progressResult.data ||
+        progressResult.progress ||
+        progressResult;
+
+    } catch (error) {
+
+      console.warn(
+        "Progress unavailable:",
+        error
+      );
+
+    }
+
+
+    renderLecture();
+
+
+    /*
+      Start lecture progress
+      for an authenticated student.
+    */
+
+    try {
+
+      await apiRequest(
+        "/progress/lecture/" +
+        encodeURIComponent(
+          lectureId
+        ) +
+        "/start",
+        {
+          method: "POST"
+        }
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Could not start lecture progress:",
+        error
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    document.getElementById(
+      "loading"
+    ).textContent =
+      error.message ||
+      "Unable to load this lecture.";
+
+
+    if (
+      error.status === 401 ||
+      error.status === 403
+    ) {
+
+      showNotice(
+        "Please log in and make sure you are enrolled in this course.",
+        "error"
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
+
+function renderLecture() {
+
+  if (!lecture) {
+
+    return;
+  }
+
+
+  document.getElementById(
+    "loading"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "content"
+  ).style.display =
+    "block";
+
+
+  const title =
+    lecture.title ||
+    "Untitled Lecture";
+
+
+  const description =
+    lecture.description ||
+    "No lecture description available.";
+
+
+  const content =
+    lecture.content ||
+    lecture.body ||
+    lecture.notes ||
+    "No additional lecture content is available.";
+
+
+  document.getElementById(
+    "lectureTitle"
+  ).textContent =
+    title;
+
+
+  document.getElementById(
+    "lectureDescription"
+  ).textContent =
+    description;
+
+
+  document.getElementById(
+    "lectureContent"
+  ).textContent =
+    content;
+
+
+  const course =
+    lecture.course || {};
+
+
+  const courseName =
+    course.title ||
+    course.name ||
+    lecture.courseTitle ||
+    "MAKNAZUL IRFAN ACADEMY";
+
+
+  document.getElementById(
+    "courseName"
+  ).textContent =
+    courseName;
+
+
+  document.getElementById(
+    "courseDescriptionSide"
+  ).textContent =
+    course.description ||
+    "Continue your learning through the MAKNAZUL IRFAN ACADEMY online learning platform.";
+
+
+  document.getElementById(
+    "lectureDuration"
+  ).textContent =
+    formatDuration(
+      lecture.durationSeconds ||
+      lecture.duration ||
+      0
+    );
+
+
+  document.getElementById(
+    "lectureNumber"
+  ).textContent =
+    getLectureNumber();
+
+
+  document.getElementById(
+    "lectureStatus"
+  ).textContent =
+    isCompleted()
+      ? "Completed"
+      : "In Progress";
+
+
+  updateProgressDisplay();
+
+
+  renderMedia();
+
+
+  renderMaterials();
+
+
+  renderNavigation();
+
+
+  document.getElementById(
+    "courseLink"
+  ).href =
+    "course.html?id=" +
+    encodeURIComponent(
+      lecture.courseId ||
+      course.id ||
+      ""
+    );
+
+}
+
+
+/* =========================
+   MEDIA
+========================= */
+
+function renderMedia() {
+
+  const panel =
+    document.getElementById(
+      "mediaPanel"
+    );
+
+
+  const container =
+    document.getElementById(
+      "mediaContainer"
+    );
+
+
+  container.innerHTML = "";
+
+
+  /*
+    Some backend versions may expose
+    videoUrl/audioUrl directly.
+  */
+
+  const videoUrl =
+    lecture.videoUrl ||
+    lecture.videoURL ||
+    null;
+
+
+  const audioUrl =
+    lecture.audioUrl ||
+    lecture.audioURL ||
+    null;
+
+
+  if (videoUrl) {
+
+    panel.style.display =
+      "block";
+
+
+    container.innerHTML = `
+
+      <div class="video-container">
+
+        <video
+          id="lectureVideo"
+          controls
+          preload="metadata">
+
+          <source
+            src="${escapeHtml(videoUrl)}">
+
+          Your browser does not support
+          video playback.
+
+        </video>
+
+      </div>
+
+    `;
+
+
+    videoElement =
+      document.getElementById(
+        "lectureVideo"
+      );
+
+
+    attachVideoTracking();
+
+    return;
+  }
+
+
+  if (audioUrl) {
+
+    panel.style.display =
+      "block";
+
+
+    container.innerHTML = `
+
+      <audio
+        id="lectureAudio"
+        controls>
+
+        <source
+          src="${escapeHtml(audioUrl)}">
+
+        Your browser does not support
+        audio playback.
+
+      </audio>
+
+    `;
+
+
+    return;
+  }
+
+
+  panel.style.display =
+    "none";
+
+}
+
+
+/* =========================
+   VIDEO TRACKING
+========================= */
+
+function attachVideoTracking() {
+
+  if (!videoElement) {
+    return;
+  }
+
+
+  /*
+    Restore previous position.
+  */
+
+  const previous =
+    Number(
+      currentProgress?.videoPositionSeconds ||
+      currentProgress?.positionSeconds ||
+      0
+    );
+
+
+  if (
+    previous > 0 &&
+    Number.isFinite(previous)
+  ) {
+
+    videoElement.currentTime =
+      previous;
+
+  }
+
+
+  let lastSent = 0;
+
+
+  videoElement.addEventListener(
+    "timeupdate",
+    async function () {
+
+      const current =
+        Math.floor(
+          videoElement.currentTime
+        );
+
+
+      /*
+        Send progress approximately
+        every 10 seconds.
+      */
+
+      if (
+        current - lastSent < 10
+      ) {
+
+        return;
+      }
+
+
+      lastSent =
+        current;
+
+
+      await updateVideoProgress(
+        current
+      );
+
+    }
+  );
+
+
+  videoElement.addEventListener(
+    "ended",
+    async function () {
+
+      await updateVideoProgress(
+        Math.floor(
+          videoElement.duration ||
+          0
+        )
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   UPDATE VIDEO PROGRESS
+========================= */
+
+async function updateVideoProgress(
+  seconds
+) {
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/progress/lecture/" +
+        encodeURIComponent(
+          lectureId
+        ) +
+        "/video",
+        {
+          method: "PATCH",
+
+          body: JSON.stringify({
+            positionSeconds:
+              seconds
+          })
+        }
+      );
+
+
+    currentProgress =
+      result.data ||
+      result.progress ||
+      result;
+
+
+    updateProgressDisplay();
+
+  } catch (error) {
+
+    console.warn(
+      "Video progress update failed:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
+   MATERIALS
+========================= */
+
+function renderMaterials() {
+
+  const container =
+    document.getElementById(
+      "materials"
+    );
+
+
+  container.innerHTML = "";
+
+
+  const materials =
+    Array.isArray(
+      lecture.materials
+    )
+      ? lecture.materials
+      : [];
+
+
+  if (!materials.length) {
+
+    container.innerHTML = `
+
+      <div class="empty">
+
+        No learning materials have
+        been attached to this lecture.
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  materials.forEach(
+    material => {
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "material";
+
+
+      const type =
+        material.type ||
+        material.materialType ||
+        "OTHER";
+
+
+      const name =
+        material.originalName ||
+        material.title ||
+        material.name ||
+        "Learning Material";
+
+
+      item.innerHTML = `
+
+        <div class="material-info">
+
+          <strong>
+
+            <span class="material-type">
+
+              ${escapeHtml(type)}
+
+            </span>
+
+            ${escapeHtml(name)}
+
+          </strong>
+
+          <small>
+
+            ${
+              escapeHtml(
+                material.mimeType ||
+                "Learning resource"
+              )
+            }
+
+          </small>
+
+        </div>
+
+
+        <button
+          class="material-btn"
+          data-id="${escapeHtml(
+            material.id
+          )}">
+
+          Open
+
+        </button>
+
+      `;
+
+
+      const button =
+        item.querySelector(
+          ".material-btn"
+        );
+
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          openMaterial(
+            material.id,
+            button
+          );
+
+        }
+      );
+
+
+      container.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   OPEN MATERIAL
+========================= */
+
+async function openMaterial(
+  materialId,
+  button
+) {
+
+  if (!materialId) {
+
+    showNotice(
+      "This material does not have a valid ID.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  button.disabled =
+    true;
+
+
+  button.textContent =
+    "Opening...";
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/lectures/materials/" +
+        encodeURIComponent(
+          materialId
+        ) +
+        "/url"
+      );
+
+
+    const data =
+      result.data ||
+      result;
+
+
+    const url =
+      data.url ||
+      data.downloadUrl ||
+      data.signedUrl;
+
+
+    if (!url) {
+
+      throw new Error(
+        "No material URL was returned."
+      );
+
+    }
+
+
+    window.open(
+      url,
+      "_blank"
+    );
+
+
+  } catch (error) {
+
+    showNotice(
+      error.message ||
+      "Unable to open this material.",
+      "error"
+    );
+
+  } finally {
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      "Open";
+
+  }
+
+}
+
+
+/* =========================
+   COMPLETE LECTURE
+========================= */
+
+async function completeLecture() {
+
+  const button =
+    document.getElementById(
+      "completeBtn"
+    );
+
+
+  button.disabled =
+    true;
+
+
+  button.textContent =
+    "Saving...";
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "/progress/lecture/" +
+        encodeURIComponent(
+          lectureId
+        ) +
+        "/complete",
+        {
+          method: "POST"
+        }
+      );
+
+
+    currentProgress =
+      result.data ||
+      result.progress ||
+      result;
+
+
+    updateProgressDisplay();
+
+
+    document.getElementById(
+      "lectureStatus"
+    ).textContent =
+      "Completed";
+
+
+    button.textContent =
+      "Lecture Completed";
+
+
+    button.classList.add(
+      "gold"
+    );
+
+
+    showNotice(
+      "Lecture completed successfully.",
+      "success"
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    showNotice(
+      error.message ||
+      "Unable to complete the lecture.",
+      "error"
+    );
+
+
+    button.disabled =
+      false;
+
+
+    button.textContent =
+      "Mark Lecture Complete";
+
+  }
+
+}
+
+
+/* =========================
+   PROGRESS DISPLAY
+========================= */
+
+function updateProgressDisplay() {
+
+  let percentage =
+    Number(
+      currentProgress?.percentage ||
+      currentProgress?.progressPercentage ||
+      0
+    );
+
+
+  if (
+    !Number.isFinite(
+      percentage
+    )
+  ) {
+
+    percentage = 0;
+
+  }
+
+
+  percentage =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        percentage
+      )
+    );
+
+
+  if (
+    isCompleted()
+  ) {
+
+    percentage = 100;
+
+  }
+
+
+  document.getElementById(
+    "progressBar"
+  ).style.width =
+    percentage + "%";
+
+
+  document.getElementById(
+    "progressText"
+  ).textContent =
+    Math.round(
+      percentage
+    ) + "%";
+
+
+  const button =
+    document.getElementById(
+      "completeBtn"
+    );
+
+
+  if (isCompleted()) {
+
+    button.textContent =
+      "Lecture Completed";
+
+
+    button.classList.add(
+      "gold"
+    );
+
+
+    button.disabled =
+      true;
+
+  }
+
+}
+
+
+/* =========================
+   COMPLETION CHECK
+========================= */
+
+function isCompleted() {
+
+  return Boolean(
+    currentProgress?.completedAt ||
+    currentProgress?.completed === true ||
+    currentProgress?.isCompleted === true
+  );
+
+}
+
+
+/* =========================
+   LECTURE NUMBER
+========================= */
+
+function getLectureNumber() {
+
+  if (
+    !Array.isArray(
+      courseLectures
+    )
+  ) {
+
+    return "—";
+
+  }
+
+
+  const index =
+    courseLectures.findIndex(
+      item =>
+        item.id === lectureId
+    );
+
+
+  if (index === -1) {
+
+    return "—";
+
+  }
+
+
+  return (
+    index + 1
+  ) +
+  " / " +
+  courseLectures.length;
+
+}
+
+
+/* =========================
+   PREVIOUS / NEXT
+========================= */
+
+function renderNavigation() {
+
+  if (
+    !Array.isArray(
+      courseLectures
+    )
+  ) {
+
+    return;
+  }
+
+
+  const index =
+    courseLectures.findIndex(
+      item =>
+        item.id === lectureId
+    );
+
+
+  if (index === -1) {
+
+    return;
+  }
+
+
+  const previous =
+    courseLectures[
+      index - 1
+    ];
+
+
+  const next =
+    courseLectures[
+      index + 1
+    ];
+
+
+  const previousButton =
+    document.getElementById(
+      "previousLecture"
+    );
+
+
+  const nextButton =
+    document.getElementById(
+      "nextLecture"
+    );
+
+
+  if (previous) {
+
+    previousButton.href =
+      "lecture.html?id=" +
+      encodeURIComponent(
+        previous.id
+      );
+
+
+    previousButton.classList.remove(
+      "disabled"
+    );
+
+  } else {
+
+    previousButton.classList.add(
+      "disabled"
+    );
+
+  }
+
+
+  if (next) {
+
+    nextButton.href =
+      "lecture.html?id=" +
+      encodeURIComponent(
+        next.id
+      );
+
+
+    nextButton.classList.remove(
+      "disabled"
+    );
+
+  } else {
+
+    nextButton.classList.add(
+      "disabled"
+    );
+
+  }
+
+}
+
+
+/* =========================
+   DURATION
+========================= */
+
+function formatDuration(
+  seconds
+) {
+
+  const value =
+    Number(seconds);
+
+
+  if (
+    !value ||
+    value <= 0
+  ) {
+
+    return "Not specified";
+
+  }
+
+
+  const minutes =
+    Math.floor(
+      value / 60
+    );
+
+
+  const remaining =
+    Math.floor(
+      value % 60
+    );
+
+
+  if (
+    minutes >= 60
+  ) {
+
+    const hours =
+      Math.floor(
+        minutes / 60
+      );
+
+
+    const mins =
+      minutes % 60;
+
+
+    return (
+      hours +
+      "h " +
+      mins +
+      "m"
+    );
+
+  }
+
+
+  return (
+    minutes +
+    "m " +
+    remaining +
+    "s"
+  );
+
+}
+
+
+/* =========================
+   COMPLETE BUTTON
+========================= */
+
+document.getElementById(
+  "completeBtn"
+).addEventListener(
+  "click",
+  completeLecture
+);
+
+
+/* =========================
+   START
+========================= */
+
+loadLecture();
+
+</script>
+
+</body>
+</html>

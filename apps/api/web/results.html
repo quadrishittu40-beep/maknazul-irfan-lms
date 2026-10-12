@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Results | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7f5;
+      color: #1f2937;
+    }
+
+    header {
+      background: #064e3b;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 62px;
+      height: 62px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .btn {
+      border: none;
+      border-radius: 7px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-light {
+      background: white;
+      color: #064e3b;
+    }
+
+    .btn-gold {
+      background: #d4af37;
+      color: #172b24;
+    }
+
+    .container {
+      width: 94%;
+      max-width: 1050px;
+      margin: 25px auto;
+    }
+
+    .page-title {
+      margin-bottom: 20px;
+    }
+
+    .page-title h2 {
+      margin: 0;
+      color: #064e3b;
+    }
+
+    .page-title p {
+      margin-top: 6px;
+      color: #64748b;
+    }
+
+    .message {
+      display: none;
+      padding: 13px 15px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+
+    .message.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .message.success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .result-card {
+      display: none;
+      background: white;
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.08);
+      margin-bottom: 28px;
+    }
+
+    .result-header {
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 22px;
+      margin-bottom: 22px;
+    }
+
+    .result-header img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+
+    .result-header h3 {
+      margin: 5px 0;
+      color: #064e3b;
+      font-size: 24px;
+    }
+
+    .result-header p {
+      margin: 5px 0;
+      color: #64748b;
+    }
+
+    .score-box {
+      text-align: center;
+      margin: 20px 0 28px;
+    }
+
+    .score {
+      font-size: 52px;
+      font-weight: bold;
+      color: #064e3b;
+    }
+
+    .percentage {
+      font-size: 20px;
+      color: #475569;
+      margin-top: 5px;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .status.pass {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status.fail {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .detail {
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .detail span {
+      display: block;
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .detail strong {
+      color: #1e293b;
+    }
+
+    .result-actions {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .history-card {
+      background: white;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.06);
+    }
+
+    .history-card h3 {
+      color: #064e3b;
+      margin-top: 0;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    th,
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge.pass {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge.fail {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .view-btn {
+      background: #064e3b;
+      color: white;
+      padding: 7px 11px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #64748b;
+    }
+
+    footer {
+      margin-top: 45px;
+      background: #064e3b;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+    }
+
+    footer img {
+      width: 55px;
+      height: 55px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+      margin-bottom: 8px;
+    }
+
+    footer p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 650px) {
+      .academy-logo {
+        width: 52px;
+        height: 52px;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .brand p {
+        font-size: 11px;
+      }
+
+      .details {
+        grid-template-columns: 1fr;
+      }
+
+      .result-card {
+        padding: 20px 15px;
+      }
+
+      .score {
+        font-size: 42px;
+      }
+    }
+
+    @media print {
+      header,
+      footer,
+      .history-card,
+      .result-actions,
+      .page-title {
+        display: none !important;
+      }
+
+      body {
+        background: white;
+      }
+
+      .container {
+        width: 100%;
+        margin: 0;
+      }
+
+      .result-card {
+        display: block !important;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Online Islamic & Arabic Institute</p>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <a href="student.html" class="btn btn-light">Dashboard</a>
+    <a href="tests.html" class="btn btn-gold">Tests & Exams</a>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="page-title">
+    <h2>My Examination Results</h2>
+    <p>View your latest examination result and previous attempts.</p>
+  </section>
+
+  <div id="message" class="message"></div>
+
+  <!-- CURRENT RESULT -->
+  <section id="resultCard" class="result-card">
+
+    <div class="result-header">
+
+      <img
+        src="assets/logo.png"
+        alt="MAKNAZUL IRFAN ACADEMY"
+      >
+
+      <h3 id="resultTestTitle">
+        Examination Result
+      </h3>
+
+      <p id="resultStudent">
+        Student Result
+      </p>
+
+    </div>
+
+    <div class="score-box">
+
+      <div class="score" id="score">
+        —
+      </div>
+
+      <div class="percentage" id="percentage">
+        —
+      </div>
+
+      <div id="status" class="status">
+        —
+      </div>
+
+    </div>
+
+    <div class="details">
+
+      <div class="detail">
+        <span>Correct Answers</span>
+        <strong id="correctAnswers">—</strong>
+      </div>
+
+      <div class="detail">
+        <span>Total Questions</span>
+        <strong id="totalQuestions">—</strong>
+      </div>
+
+      <div class="detail">
+        <span>Grade</span>
+        <strong id="grade">—</strong>
+      </div>
+
+      <div class="detail">
+        <span>Pass Mark</span>
+        <strong id="passMark">—</strong>
+      </div>
+
+      <div class="detail">
+        <span>Submitted</span>
+        <strong id="submittedAt">—</strong>
+      </div>
+
+      <div class="detail">
+        <span>Attempt ID</span>
+        <strong id="attemptId">—</strong>
+      </div>
+
+    </div>
+
+    <div class="result-actions">
+      <button
+        class="btn btn-gold"
+        onclick="window.print()"
+      >
+        Print Result
+      </button>
+
+      <a
+        href="tests.html"
+        class="btn"
+        style="background:#064e3b;color:white;"
+      >
+        Take Another Test
+      </a>
+    </div>
+
+  </section>
+
+  <!-- RESULT HISTORY -->
+  <section class="history-card">
+
+    <h3>Result History</h3>
+
+    <div id="historyLoading" class="loading">
+      Loading results...
+    </div>
+
+    <div
+      id="historyEmpty"
+      class="loading"
+      style="display:none;"
+    >
+      No examination results found.
+    </div>
+
+    <div
+      id="historyTable"
+      class="table-wrapper"
+      style="display:none;"
+    >
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="historyBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo"
+  >
+
+  <p>
+    <strong>MAKNAZUL IRFAN ACADEMY</strong>
+  </p>
+
+  <p>
+    Online Islamic & Arabic Institute
+  </p>
+
+  <p>
+    Knowledge • Faith • Excellence
+  </p>
+
+  <p>
+    © 2026 MAKNAZUL IRFAN ACADEMY. All rights reserved.
+  </p>
+
+</footer>
+
+<script>
+  const API = "/api";
+
+  const messageBox = document.getElementById("message");
+
+  function showMessage(message, type = "error") {
+    messageBox.textContent = message;
+    messageBox.className = "message " + type;
+  }
+
+  function clearMessage() {
+    messageBox.textContent = "";
+    messageBox.className = "message";
+  }
+
+  async function apiFetch(url, options = {}) {
+
+    const response = await fetch(API + url, {
+      credentials: "include",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    });
+
+    let result = {};
+
+    try {
+      result = await response.json();
+    } catch {
+      result = {};
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        result.message ||
+        result.error ||
+        "Request failed."
+      );
+    }
+
+    return result;
+  }
+
+  function extractData(result) {
+    return result?.data ?? result;
+  }
+
+  function formatDate(value) {
+
+    if (!value) return "—";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleString();
+  }
+
+  function getResultObject(data) {
+
+    return (
+      data?.result ||
+      data?.attempt ||
+      data
+    );
+  }
+
+  function getTestTitle(result) {
+
+    return (
+      result?.test?.title ||
+      result?.testTitle ||
+      result?.title ||
+      "Examination Result"
+    );
+  }
+
+  function getScore(result) {
+
+    return (
+      result?.score ??
+      result?.marks ??
+      result?.points ??
+      0
+    );
+  }
+
+  function getTotal(result) {
+
+    return (
+      result?.totalQuestions ??
+      result?.total ??
+      result?.questionCount ??
+      0
+    );
+  }
+
+  function getPercentage(result) {
+
+    if (result?.percentage !== undefined) {
+      return Number(result.percentage);
+    }
+
+    const total = getTotal(result);
+    const score = getScore(result);
+
+    if (!total) return 0;
+
+    return (Number(score) / Number(total)) * 100;
+  }
+
+  function getPassed(result) {
+
+    if (result?.passed !== undefined) {
+      return Boolean(result.passed);
+    }
+
+    if (result?.status) {
+      return (
+        String(result.status).toUpperCase() === "PASSED" ||
+        String(result.status).toUpperCase() === "PASS"
+      );
+    }
+
+    const percentage = getPercentage(result);
+    const passMark = Number(
+      result?.passMark ??
+      result?.test?.passMark ??
+      50
+    );
+
+    return percentage >= passMark;
+  }
+
+  function displayResult(result) {
+
+    const score = getScore(result);
+    const total = getTotal(result);
+    const percentage = getPercentage(result);
+    const passed = getPassed(result);
+
+    const grade =
+      result?.grade ||
+      result?.gradeLetter ||
+      "—";
+
+    const passMark =
+      result?.passMark ??
+      result?.test?.passMark ??
+      "—";
+
+    document.getElementById("resultTestTitle").textContent =
+      getTestTitle(result);
+
+    const studentName =
+      result?.student?.user?.firstName &&
+      result?.student?.user?.lastName
+        ? result.student.user.firstName +
+          " " +
+          result.student.user.lastName
+        : result?.studentName ||
+          result?.user?.name ||
+          "Student";
+
+    document.getElementById("resultStudent").textContent =
+      studentName;
+
+    document.getElementById("score").textContent =
+      `${score} / ${total}`;
+
+    document.getElementById("percentage").textContent =
+      `${Number(percentage).toFixed(2)}%`;
+
+    document.getElementById("correctAnswers").textContent =
+      score;
+
+    document.getElementById("totalQuestions").textContent =
+      total;
+
+    document.getElementById("grade").textContent =
+      grade;
+
+    document.getElementById("passMark").textContent =
+      `${passMark}%`;
+
+    document.getElementById("submittedAt").textContent =
+      formatDate(
+        result?.submittedAt ||
+        result?.completedAt ||
+        result?.createdAt
+      );
+
+    document.getElementById("attemptId").textContent =
+      result?.id ||
+      result?.attemptId ||
+      "—";
+
+    const status = document.getElementById("status");
+
+    status.textContent =
+      passed ? "PASSED" : "NOT PASSED";
+
+    status.className =
+      "status " +
+      (passed ? "pass" : "fail");
+
+    document.getElementById("resultCard").style.display =
+      "block";
+  }
+
+  function findAttemptId() {
+
+    const params =
+      new URLSearchParams(window.location.search);
+
+    const queryAttempt =
+      params.get("attempt");
+
+    if (queryAttempt) {
+      return queryAttempt;
+    }
+
+    const stored =
+      sessionStorage.getItem("mia_last_result");
+
+    if (stored) {
+
+      try {
+
+        const data = JSON.parse(stored);
+
+        return (
+          data?.attemptId ||
+          data?.id ||
+          data?.attempt?.id ||
+          null
+        );
+
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  async function loadCurrentResult() {
+
+    const attemptId = findAttemptId();
+
+    if (!attemptId) {
+      return;
+    }
+
+    try {
+
+      const response =
+        await apiFetch(
+          `/exams/results/${encodeURIComponent(attemptId)}`
+        );
+
+      const data =
+        extractData(response);
+
+      const result =
+        getResultObject(data);
+
+      displayResult(result);
+
+    } catch (error) {
+
+      console.error(error);
+
+      showMessage(
+        "The latest examination result could not be loaded. Your result may still be available in Result History."
+      );
+    }
+  }
+
+  async function loadHistory() {
+
+    const loading =
+      document.getElementById("historyLoading");
+
+    const empty =
+      document.getElementById("historyEmpty");
+
+    const table =
+      document.getElementById("historyTable");
+
+    const body =
+      document.getElementById("historyBody");
+
+    try {
+
+      const response =
+        await apiFetch("/exams/results/me");
+
+      const data =
+        extractData(response);
+
+      let results =
+        data?.results ||
+        data?.attempts ||
+        data;
+
+      if (!Array.isArray(results)) {
+        results = [];
+      }
+
+      loading.style.display = "none";
+
+      if (results.length === 0) {
+
+        empty.style.display = "block";
+        return;
+      }
+
+      table.style.display = "block";
+
+      body.innerHTML = "";
+
+      results.forEach(result => {
+
+        const score = getScore(result);
+        const total = getTotal(result);
+        const percentage = getPercentage(result);
+        const passed = getPassed(result);
+
+        const grade =
+          result?.grade ||
+          result?.gradeLetter ||
+          "—";
+
+        const date =
+          result?.submittedAt ||
+          result?.completedAt ||
+          result?.createdAt;
+
+        const attemptId =
+          result?.id ||
+          result?.attemptId;
+
+        const row =
+          document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${escapeHtml(getTestTitle(result))}</td>
+
+          <td>
+            ${escapeHtml(String(score))}
+            /
+            ${escapeHtml(String(total))}
+          </td>
+
+          <td>
+            ${Number(percentage).toFixed(2)}%
+          </td>
+
+          <td>
+            ${escapeHtml(String(grade))}
+          </td>
+
+          <td>
+            <span class="badge ${passed ? "pass" : "fail"}">
+              ${passed ? "PASSED" : "NOT PASSED"}
+            </span>
+          </td>
+
+          <td>
+            ${escapeHtml(formatDate(date))}
+          </td>
+
+          <td>
+            ${
+              attemptId
+                ? `
+                  <button
+                    class="view-btn"
+                    onclick="viewResult('${escapeHtml(attemptId)}')"
+                  >
+                    View
+                  </button>
+                `
+                : "—"
+            }
+          </td>
+        `;
+
+        body.appendChild(row);
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      loading.style.display = "none";
+
+      empty.style.display = "block";
+      empty.textContent =
+        "Unable to load result history.";
+    }
+  }
+
+  async function viewResult(attemptId) {
+
+    if (!attemptId) return;
+
+    try {
+
+      clearMessage();
+
+      const response =
+        await apiFetch(
+          `/exams/results/${encodeURIComponent(attemptId)}`
+        );
+
+      const data =
+        extractData(response);
+
+      const result =
+        getResultObject(data);
+
+      displayResult(result);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    } catch (error) {
+
+      showMessage(
+        error.message ||
+        "Unable to load this result."
+      );
+    }
+  }
+
+  function escapeHtml(value) {
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  async function checkLogin() {
+
+    try {
+
+      const response =
+        await apiFetch("/auth/me");
+
+      const data =
+        extractData(response);
+
+      const user =
+        data?.user ||
+        data;
+
+      if (
+        user?.role &&
+        String(user.role).toUpperCase() !== "STUDENT"
+      ) {
+
+        if (
+          String(user.role).toUpperCase() === "ADMIN"
+        ) {
+          window.location.href = "admin.html";
+          return;
+        }
+
+        if (
+          String(user.role).toUpperCase() === "TEACHER"
+        ) {
+          window.location.href = "teacher.html";
+          return;
+        }
+      }
+
+    } catch (error) {
+
+      window.location.href = "login.html";
+    }
+  }
+
+  async function init() {
+
+    await checkLogin();
+
+    await Promise.all([
+      loadCurrentResult(),
+      loadHistory()
+    ]);
+  }
+
+  init();
+</script>
+
+</body>
+</html>

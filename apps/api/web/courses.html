@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7f5;
+      color: #1f2937;
+    }
+
+    header {
+      background: #064e3b;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 62px;
+      height: 62px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      border: none;
+      border-radius: 7px;
+      padding: 10px 15px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-light {
+      background: white;
+      color: #064e3b;
+    }
+
+    .btn-gold {
+      background: #d4af37;
+      color: #172b24;
+    }
+
+    main {
+      width: 94%;
+      max-width: 1150px;
+      margin: 28px auto 50px;
+    }
+
+    .page-heading {
+      margin-bottom: 25px;
+    }
+
+    .page-heading h2 {
+      margin: 0;
+      color: #064e3b;
+      font-size: 28px;
+    }
+
+    .page-heading p {
+      color: #64748b;
+      margin-top: 8px;
+    }
+
+    .message {
+      display: none;
+      padding: 13px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .message.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .message.success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .filters {
+      background: white;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.05);
+      margin-bottom: 25px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      flex: 1;
+      min-width: 220px;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .search:focus {
+      border-color: #064e3b;
+    }
+
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .course-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 18px rgba(0,0,0,.07);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .course-top {
+      height: 115px;
+      background: #064e3b;
+      color: white;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .course-top h3 {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .course-body {
+      padding: 18px;
+      flex: 1;
+    }
+
+    .course-description {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 65px;
+    }
+
+    .course-meta {
+      margin-top: 15px;
+      display: grid;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 7px;
+    }
+
+    .meta-row span:first-child {
+      color: #64748b;
+    }
+
+    .meta-row strong {
+      color: #334155;
+      text-align: right;
+    }
+
+    .course-footer {
+      padding: 15px 18px 18px;
+    }
+
+    .course-footer .btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .price {
+      font-size: 17px;
+      font-weight: bold;
+      color: #064e3b;
+      margin-bottom: 12px;
+    }
+
+    .free {
+      color: #166534;
+    }
+
+    .loading,
+    .empty {
+      text-align: center;
+      padding: 50px 20px;
+      color: #64748b;
+      background: white;
+      border-radius: 10px;
+    }
+
+    .empty {
+      display: none;
+    }
+
+    footer {
+      background: #064e3b;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+    }
+
+    footer img {
+      width: 55px;
+      height: 55px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+      margin-bottom: 8px;
+    }
+
+    footer p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .course-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .academy-logo {
+        width: 52px;
+        height: 52px;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .course-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-heading h2 {
+        font-size: 23px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Online Islamic & Arabic Institute</p>
+    </div>
+
+  </div>
+
+  <div class="header-actions">
+
+    <a
+      href="student.html"
+      class="btn btn-light"
+    >
+      Dashboard
+    </a>
+
+    <a
+      href="login.html"
+      class="btn btn-gold"
+      id="loginButton"
+    >
+      Login
+    </a>
+
+  </div>
+
+</header>
+
+<main>
+
+  <section class="page-heading">
+
+    <h2>Our Courses</h2>
+
+    <p>
+      Explore Arabic and Islamic studies courses offered by
+      MAKNAZUL IRFAN ACADEMY.
+    </p>
+
+  </section>
+
+  <div id="message" class="message"></div>
+
+  <section class="filters">
+
+    <input
+      type="search"
+      id="search"
+      class="search"
+      placeholder="Search courses..."
+    >
+
+  </section>
+
+  <div
+    id="loading"
+    class="loading"
+  >
+    Loading courses...
+  </div>
+
+  <div
+    id="empty"
+    class="empty"
+  >
+    No published courses are currently available.
+  </div>
+
+  <section
+    id="courseGrid"
+    class="course-grid"
+  ></section>
+
+</main>
+
+<footer>
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo"
+  >
+
+  <p>
+    <strong>MAKNAZUL IRFAN ACADEMY</strong>
+  </p>
+
+  <p>
+    Online Islamic & Arabic Institute
+  </p>
+
+  <p>
+    Knowledge • Faith • Excellence
+  </p>
+
+  <p>
+    © 2026 MAKNAZUL IRFAN ACADEMY. All rights reserved.
+  </p>
+
+</footer>
+
+<script>
+
+  const API = "/api";
+
+  let allCourses = [];
+
+  const loading =
+    document.getElementById("loading");
+
+  const empty =
+    document.getElementById("empty");
+
+  const grid =
+    document.getElementById("courseGrid");
+
+  const search =
+    document.getElementById("search");
+
+  const message =
+    document.getElementById("message");
+
+  function showMessage(text, type = "error") {
+
+    message.textContent = text;
+
+    message.className =
+      "message " + type;
+
+  }
+
+  function clearMessage() {
+
+    message.textContent = "";
+
+    message.className = "message";
+
+  }
+
+  async function apiFetch(url, options = {}) {
+
+    const response = await fetch(
+      API + url,
+      {
+        credentials: "include",
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        }
+      }
+    );
+
+    let result = {};
+
+    try {
+      result = await response.json();
+    } catch {
+      result = {};
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        result.message ||
+        result.error ||
+        "Request failed."
+      );
+
+    }
+
+    return result;
+
+  }
+
+  function extractData(result) {
+
+    return result?.data ?? result;
+
+  }
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+  function formatPrice(course) {
+
+    const price =
+      Number(
+        course?.price ??
+        course?.amount ??
+        0
+      );
+
+    if (!price || price <= 0) {
+
+      return `
+        <div class="price free">
+          Free
+        </div>
+      `;
+
+    }
+
+    return `
+      <div class="price">
+        ₦${price.toLocaleString()}
+      </div>
+    `;
+
+  }
+
+  function getCourseId(course) {
+
+    return (
+      course?.id ||
+      course?.courseId ||
+      ""
+    );
+
+  }
+
+  function getCourseName(course) {
+
+    return (
+      course?.title ||
+      course?.name ||
+      "Untitled Course"
+    );
+
+  }
+
+  function getDescription(course) {
+
+    return (
+      course?.description ||
+      "Structured Arabic and Islamic studies course provided by MAKNAZUL IRFAN ACADEMY."
+    );
+
+  }
+
+  function getTeacher(course) {
+
+    return (
+      course?.teacher?.user?.firstName &&
+      course?.teacher?.user?.lastName
+        ? course.teacher.user.firstName +
+          " " +
+          course.teacher.user.lastName
+        : course?.teacher?.name ||
+          course?.teacherName ||
+          "MAKNAZUL IRFAN ACADEMY"
+    );
+
+  }
+
+  function getSubject(course) {
+
+    return (
+      course?.subject?.name ||
+      course?.subjectName ||
+      "Islamic & Arabic Studies"
+    );
+
+  }
+
+  function getLevel(course) {
+
+    return (
+      course?.level?.name ||
+      course?.levelName ||
+      "All Levels"
+    );
+
+  }
+
+  function renderCourses(courses) {
+
+    grid.innerHTML = "";
+
+    if (!courses.length) {
+
+      empty.style.display = "block";
+
+      return;
+
+    }
+
+    empty.style.display = "none";
+
+    courses.forEach(course => {
+
+      const id =
+        getCourseId(course);
+
+      const card =
+        document.createElement("article");
+
+      card.className =
+        "course-card";
+
+      card.innerHTML = `
+
+        <div class="course-top">
+
+          <h3>
+            ${escapeHtml(
+              getCourseName(course)
+            )}
+          </h3>
+
+        </div>
+
+        <div class="course-body">
+
+          <div class="course-description">
+
+            ${escapeHtml(
+              getDescription(course)
+            )}
+
+          </div>
+
+          <div class="course-meta">
+
+            <div class="meta-row">
+              <span>Subject</span>
+              <strong>
+                ${escapeHtml(
+                  getSubject(course)
+                )}
+              </strong>
+            </div>
+
+            <div class="meta-row">
+              <span>Level</span>
+              <strong>
+                ${escapeHtml(
+                  getLevel(course)
+                )}
+              </strong>
+            </div>
+
+            <div class="meta-row">
+              <span>Teacher</span>
+              <strong>
+                ${escapeHtml(
+                  getTeacher(course)
+                )}
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="course-footer">
+
+          ${formatPrice(course)}
+
+          <a
+            class="btn btn-gold"
+            href="course.html?id=${encodeURIComponent(id)}"
+          >
+            View Course
+          </a>
+
+        </div>
+
+      `;
+
+      grid.appendChild(card);
+
+    });
+
+  }
+
+  function filterCourses() {
+
+    const term =
+      search.value
+        .trim()
+        .toLowerCase();
+
+    if (!term) {
+
+      renderCourses(allCourses);
+
+      return;
+
+    }
+
+    const filtered =
+      allCourses.filter(course => {
+
+        const text = [
+
+          getCourseName(course),
+
+          getDescription(course),
+
+          getSubject(course),
+
+          getLevel(course),
+
+          getTeacher(course)
+
+        ]
+        .join(" ")
+        .toLowerCase();
+
+        return text.includes(term);
+
+      });
+
+    renderCourses(filtered);
+
+  }
+
+  async function loadCourses() {
+
+    try {
+
+      clearMessage();
+
+      loading.style.display = "block";
+
+      empty.style.display = "none";
+
+      const response =
+        await apiFetch("/academic/courses");
+
+      const data =
+        extractData(response);
+
+      let courses =
+        data?.courses ||
+        data?.items ||
+        data;
+
+      if (!Array.isArray(courses)) {
+        courses = [];
+      }
+
+      /*
+       * The public API should return published
+       * courses. This extra filter prevents
+       * accidental display of drafts if the
+       * backend returns them.
+       */
+
+      allCourses =
+        courses.filter(course => {
+
+          if (!course?.status) {
+            return true;
+          }
+
+          return (
+            String(course.status).toUpperCase() ===
+            "PUBLISHED"
+          );
+
+        });
+
+      loading.style.display = "none";
+
+      renderCourses(allCourses);
+
+    } catch (error) {
+
+      console.error(error);
+
+      loading.style.display = "none";
+
+      showMessage(
+        error.message ||
+        "Unable to load courses."
+      );
+
+      empty.style.display = "block";
+
+    }
+
+  }
+
+  async function checkLogin() {
+
+    try {
+
+      const response =
+        await apiFetch("/auth/me");
+
+      const data =
+        extractData(response);
+
+      const user =
+        data?.user ||
+        data;
+
+      if (user) {
+
+        document.getElementById(
+          "loginButton"
+        ).textContent = "My Dashboard";
+
+        document.getElementById(
+          "loginButton"
+        ).href = "student.html";
+
+      }
+
+    } catch {
+
+      /*
+       * Visitor is not logged in.
+       * Courses remain publicly visible.
+       */
+
+    }
+
+  }
+
+  search.addEventListener(
+    "input",
+    filterCourses
+  );
+
+  async function init() {
+
+    await Promise.all([
+      loadCourses(),
+      checkLogin()
+    ]);
+
+  }
+
+  init();
+
+</script>
+
+</body>
+</html>

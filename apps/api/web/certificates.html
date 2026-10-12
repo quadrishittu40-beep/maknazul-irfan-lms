@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Certificates | MAKNAZUL IRFAN ACADEMY</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+  <style>
+    .certificate-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .certificate-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e5e7eb;
+    }
+
+    .certificate-card h3 {
+      margin: 0 0 10px;
+      color: #123d2a;
+    }
+
+    .certificate-number {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 18px;
+      word-break: break-word;
+    }
+
+    .certificate-info {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .certificate-info div {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 7px;
+    }
+
+    .certificate-info strong {
+      color: #555;
+    }
+
+    .certificate-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .certificate-actions button,
+    .certificate-actions a {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #176b45;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e8f3ed;
+      color: #176b45;
+    }
+
+    .empty-state {
+      background: #fff;
+      border-radius: 16px;
+      padding: 45px 20px;
+      text-align: center;
+      border: 1px dashed #cfd8d3;
+      color: #666;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .error-box {
+      background: #fff1f1;
+      color: #a40000;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    /* Printable certificate */
+
+    .certificate-print {
+      display: none;
+    }
+
+    .certificate-paper {
+      width: 100%;
+      max-width: 1000px;
+      min-height: 700px;
+      margin: auto;
+      padding: 70px;
+      box-sizing: border-box;
+      border: 12px double #176b45;
+      background: #fff;
+      text-align: center;
+      position: relative;
+    }
+
+    .certificate-paper img {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      margin-bottom: 15px;
+    }
+
+    .certificate-paper h1 {
+      font-size: 36px;
+      margin: 10px 0;
+      color: #176b45;
+    }
+
+    .certificate-paper h2 {
+      font-size: 28px;
+      margin: 25px 0 10px;
+    }
+
+    .certificate-paper .recipient {
+      font-size: 32px;
+      font-weight: bold;
+      color: #176b45;
+      margin: 25px 0;
+    }
+
+    .certificate-paper .course-name {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+
+    .certificate-paper .certificate-meta {
+      margin-top: 45px;
+      display: flex;
+      justify-content: space-between;
+      text-align: left;
+    }
+
+    .certificate-paper .signature {
+      border-top: 1px solid #444;
+      width: 220px;
+      padding-top: 8px;
+      text-align: center;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+
+      .certificate-print,
+      .certificate-print * {
+        visibility: visible !important;
+      }
+
+      .certificate-print {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+
+      .certificate-paper {
+        max-width: none;
+        width: 100%;
+        min-height: 100vh;
+        border: 12px double #176b45;
+      }
+
+      @page {
+        size: landscape;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header class="topbar">
+    <div class="brand">
+      <img
+        src="assets/logo.png"
+        alt="MAKNAZUL IRFAN ACADEMY"
+      >
+
+      <div>
+        <strong>MAKNAZUL IRFAN ACADEMY</strong>
+        <small>Knowledge • Faith • Excellence</small>
+      </div>
+    </div>
+
+    <a
+      href="student.html"
+      class="btn-secondary"
+    >
+      Student Dashboard
+    </a>
+  </header>
+
+
+  <!-- =====================================================
+       MAIN
+  ====================================================== -->
+
+  <main class="container">
+
+    <div class="page-header">
+      <h1>My Certificates</h1>
+
+      <p>
+        View and print certificates issued by
+        MAKNAZUL IRFAN ACADEMY.
+      </p>
+    </div>
+
+    <div id="loading" class="loading">
+      Loading certificates...
+    </div>
+
+    <div
+      id="error"
+      class="error-box"
+      style="display:none;"
+    ></div>
+
+    <div
+      id="certificateGrid"
+      class="certificate-grid"
+    ></div>
+
+  </main>
+
+
+  <!-- =====================================================
+       PRINTABLE CERTIFICATE
+  ====================================================== -->
+
+  <section
+    id="certificatePrint"
+    class="certificate-print"
+  >
+    <div class="certificate-paper">
+
+      <img
+        src="assets/logo.png"
+        alt="MAKNAZUL IRFAN ACADEMY"
+      >
+
+      <h1>
+        MAKNAZUL IRFAN ACADEMY
+      </h1>
+
+      <div>
+        for Arabic and Islamic Studies
+      </div>
+
+      <h2>
+        CERTIFICATE OF COMPLETION
+      </h2>
+
+      <p>
+        This certificate is proudly presented to
+      </p>
+
+      <div
+        id="printStudentName"
+        class="recipient"
+      ></div>
+
+      <p>
+        in recognition of successful completion
+        of the academic programme
+      </p>
+
+      <div
+        id="printCourse"
+        class="course-name"
+      ></div>
+
+      <p>
+        Awarded by MAKNAZUL IRFAN ACADEMY
+      </p>
+
+      <div class="certificate-meta">
+
+        <div>
+          <div
+            id="printDate"
+            class="signature"
+          ></div>
+
+          <div>
+            Date Issued
+          </div>
+        </div>
+
+        <div>
+          <div
+            id="printNumber"
+            class="signature"
+          ></div>
+
+          <div>
+            Certificate Number
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <script>
+    const API_BASE = "/api";
+
+    const loading =
+      document.getElementById("loading");
+
+    const errorBox =
+      document.getElementById("error");
+
+    const certificateGrid =
+      document.getElementById(
+        "certificateGrid"
+      );
+
+    let certificates = [];
+
+
+    /* =====================================================
+       API HELPER
+    ====================================================== */
+
+    async function apiRequest(
+      endpoint,
+      options = {}
+    ) {
+      const response = await fetch(
+        API_BASE + endpoint,
+        {
+          credentials: "include",
+
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          },
+
+          ...options
+        }
+      );
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = {
+          success: false,
+          message: "Invalid server response."
+        };
+      }
+
+      if (!response.ok || data.success === false) {
+        throw new Error(
+          data.message ||
+          "Request failed."
+        );
+      }
+
+      return data;
+    }
+
+
+    /* =====================================================
+       ESCAPE HTML
+    ====================================================== */
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+
+    /* =====================================================
+       DATE FORMAT
+    ====================================================== */
+
+    function formatDate(dateValue) {
+      if (!dateValue) {
+        return "—";
+      }
+
+      const date =
+        new Date(dateValue);
+
+      if (Number.isNaN(date.getTime())) {
+        return "—";
+      }
+
+      return date.toLocaleDateString(
+        "en-NG",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        }
+      );
+    }
+
+
+    /* =====================================================
+       LOAD CERTIFICATES
+    ====================================================== */
+
+    async function loadCertificates() {
+      loading.style.display = "block";
+      errorBox.style.display = "none";
+
+      try {
+        const data =
+          await apiRequest(
+            "/certificates/my"
+          );
+
+        certificates =
+          data.certificates || [];
+
+        renderCertificates();
+
+      } catch (error) {
+        console.error(error);
+
+        errorBox.textContent =
+          error.message ||
+          "Unable to load certificates.";
+
+        errorBox.style.display = "block";
+
+      } finally {
+        loading.style.display = "none";
+      }
+    }
+
+
+    /* =====================================================
+       RENDER CERTIFICATES
+    ====================================================== */
+
+    function renderCertificates() {
+      certificateGrid.innerHTML = "";
+
+      if (!certificates.length) {
+        certificateGrid.innerHTML = `
+          <div class="empty-state">
+            <h3>No certificates yet</h3>
+
+            <p>
+              Certificates issued after successful
+              completion of an academic programme
+              will appear here.
+            </p>
+          </div>
+        `;
+
+        return;
+      }
+
+      certificates.forEach(
+        (certificate, index) => {
+
+          const courseName =
+            certificate.course?.title ||
+            "Academic Programme";
+
+          const card =
+            document.createElement("div");
+
+          card.className =
+            "certificate-card";
+
+          card.innerHTML = `
+            <h3>
+              ${escapeHtml(courseName)}
+            </h3>
+
+            <div class="certificate-number">
+              Certificate No:
+              <strong>
+                ${escapeHtml(
+                  certificate.certificateNumber
+                )}
+              </strong>
+            </div>
+
+            <div class="certificate-info">
+
+              <div>
+                <strong>Issued</strong>
+                <span>
+                  ${formatDate(
+                    certificate.issuedAt
+                  )}
+                </span>
+              </div>
+
+              <div>
+                <strong>Status</strong>
+                <span>
+                  Issued
+                </span>
+              </div>
+
+            </div>
+
+            <div class="certificate-actions">
+
+              <button
+                class="btn-primary"
+                onclick="printCertificate(${index})"
+              >
+                Print Certificate
+              </button>
+
+              ${
+                certificate.certificateUrl
+                  ? `
+                    <a
+                      class="btn-secondary"
+                      href="${escapeHtml(
+                        certificate.certificateUrl
+                      )}"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      View File
+                    </a>
+                  `
+                  : ""
+              }
+
+            </div>
+          `;
+
+          certificateGrid.appendChild(card);
+        }
+      );
+    }
+
+
+    /* =====================================================
+       PRINT CERTIFICATE
+    ====================================================== */
+
+    function printCertificate(index) {
+      const certificate =
+        certificates[index];
+
+      if (!certificate) {
+        return;
+      }
+
+      const firstName =
+        certificate.student?.user?.firstName ||
+        "";
+
+      const lastName =
+        certificate.student?.user?.lastName ||
+        "";
+
+      const studentName =
+        `${firstName} ${lastName}`
+          .trim();
+
+      document.getElementById(
+        "printStudentName"
+      ).textContent =
+        studentName || "Student";
+
+      document.getElementById(
+        "printCourse"
+      ).textContent =
+        certificate.course?.title ||
+        "Academic Programme";
+
+      document.getElementById(
+        "printDate"
+      ).textContent =
+        formatDate(
+          certificate.issuedAt
+        );
+
+      document.getElementById(
+        "printNumber"
+      ).textContent =
+        certificate.certificateNumber ||
+        "—";
+
+      window.print();
+    }
+
+
+    /* =====================================================
+       AUTHENTICATION CHECK
+    ====================================================== */
+
+    async function checkAuthentication() {
+      try {
+        const data =
+          await apiRequest(
+            "/auth/me"
+          );
+
+        const user =
+          data.user;
+
+        if (!user) {
+          window.location.href =
+            "login.html";
+
+          return false;
+        }
+
+        if (user.role !== "STUDENT") {
+          window.location.href =
+            "index.html";
+
+          return false;
+        }
+
+        return true;
+
+      } catch {
+        window.location.href =
+          "login.html";
+
+        return false;
+      }
+    }
+
+
+    /* =====================================================
+       START
+    ====================================================== */
+
+    (async function init() {
+      const authenticated =
+        await checkAuthentication();
+
+      if (!authenticated) {
+        return;
+      }
+
+      await loadCertificates();
+    })();
+  </script>
+
+</body>
+</html>

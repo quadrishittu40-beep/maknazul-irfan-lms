@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7f5;
+      color: #1f2937;
+    }
+
+    header {
+      background: #064e3b;
+      color: white;
+      min-height: 76px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 7px;
+      padding: 10px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .btn-light {
+      background: white;
+      color: #064e3b;
+    }
+
+    .btn-gold {
+      background: #d4af37;
+      color: #172b24;
+    }
+
+    .btn-red {
+      background: #b91c1c;
+      color: white;
+    }
+
+    .btn-green {
+      background: #064e3b;
+      color: white;
+    }
+
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 76px);
+    }
+
+    aside {
+      width: 245px;
+      background: #ffffff;
+      border-right: 1px solid #e5e7eb;
+      padding: 18px 12px;
+      flex-shrink: 0;
+    }
+
+    .teacher-profile {
+      text-align: center;
+      padding: 10px 5px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 12px;
+    }
+
+    .avatar {
+      width: 65px;
+      height: 65px;
+      margin: auto;
+      border-radius: 50%;
+      background: #064e3b;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .teacher-profile h3 {
+      margin: 10px 0 3px;
+      color: #064e3b;
+      font-size: 16px;
+    }
+
+    .teacher-profile p {
+      margin: 0;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    nav button {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 12px;
+      margin-bottom: 3px;
+      border-radius: 7px;
+      cursor: pointer;
+      color: #334155;
+      font-size: 14px;
+    }
+
+    nav button:hover,
+    nav button.active {
+      background: #ecfdf5;
+      color: #064e3b;
+      font-weight: bold;
+    }
+
+    main {
+      flex: 1;
+      padding: 25px;
+      min-width: 0;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-title {
+      margin-bottom: 22px;
+    }
+
+    .page-title h2 {
+      color: #064e3b;
+      margin: 0;
+    }
+
+    .page-title p {
+      margin: 6px 0 0;
+      color: #64748b;
+    }
+
+    .message {
+      display: none;
+      padding: 13px 15px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+
+    .message.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .message.success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.05);
+    }
+
+    .stat span {
+      display: block;
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat strong {
+      font-size: 28px;
+      color: #064e3b;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.05);
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #064e3b;
+    }
+
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .course-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 9px;
+      padding: 16px;
+    }
+
+    .course-card h4 {
+      margin: 0 0 8px;
+      color: #064e3b;
+    }
+
+    .course-card p {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .course-card .actions {
+      margin-top: 15px;
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .course-card .btn {
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    th,
+    td {
+      padding: 11px 9px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #334155;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .badge.green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge.gold {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge.red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .empty {
+      padding: 35px 15px;
+      text-align: center;
+      color: #64748b;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .quick-action {
+      padding: 18px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 9px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .quick-action strong {
+      display: block;
+      color: #064e3b;
+      margin-bottom: 6px;
+    }
+
+    .quick-action span {
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    footer {
+      margin-top: 30px;
+      background: #064e3b;
+      color: white;
+      text-align: center;
+      padding: 22px;
+    }
+
+    footer img {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    footer p {
+      margin: 5px 0;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1000px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .course-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 750px) {
+      .layout {
+        display: block;
+      }
+
+      aside {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      nav {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+      }
+
+      nav button {
+        margin: 0;
+      }
+
+      main {
+        padding: 18px;
+      }
+    }
+
+    @media (max-width: 550px) {
+      .stats,
+      .course-grid,
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .brand h1 {
+        font-size: 15px;
+      }
+
+      .academy-logo {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Teacher Administration Portal</p>
+    </div>
+
+  </div>
+
+  <div class="header-actions">
+
+    <a
+      href="index.html"
+      class="btn btn-light"
+    >
+      Main Website
+    </a>
+
+    <button
+      id="logoutButton"
+      class="btn btn-red"
+    >
+      Logout
+    </button>
+
+  </div>
+
+</header>
+
+<div class="layout">
+
+  <aside>
+
+    <div class="teacher-profile">
+
+      <div
+        id="avatar"
+        class="avatar"
+      >
+        T
+      </div>
+
+      <h3 id="teacherName">
+        Teacher
+      </h3>
+
+      <p id="teacherEmail">
+        Loading...
+      </p>
+
+    </div>
+
+    <nav>
+
+      <button
+        class="active"
+        data-page="dashboard"
+      >
+        Dashboard
+      </button>
+
+      <button data-page="courses">
+        My Courses
+      </button>
+
+      <button data-page="lectures">
+        Lectures & Materials
+      </button>
+
+      <button data-page="tests">
+        Tests & Questions
+      </button>
+
+      <button data-page="students">
+        Students
+      </button>
+
+      <button data-page="live">
+        Live Classes
+      </button>
+
+      <button data-page="profile">
+        My Profile
+      </button>
+
+    </nav>
+
+  </aside>
+
+  <main>
+
+    <div
+      id="message"
+      class="message"
+    ></div>
+
+    <!-- DASHBOARD -->
+    <section
+      id="dashboard"
+      class="page active"
+    >
+
+      <div class="page-title">
+
+        <h2>Teacher Dashboard</h2>
+
+        <p>
+          Manage your courses and teaching activities.
+        </p>
+
+      </div>
+
+      <div class="stats">
+
+        <div class="stat">
+          <span>My Courses</span>
+          <strong id="courseCount">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Lectures</span>
+          <strong id="lectureCount">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Tests</span>
+          <strong id="testCount">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Students</span>
+          <strong id="studentCount">0</strong>
+        </div>
+
+      </div>
+
+      <div class="card">
+
+        <h3>Quick Actions</h3>
+
+        <div class="quick-actions">
+
+          <button
+            class="quick-action"
+            data-page="courses"
+          >
+            <strong>Manage Courses</strong>
+            <span>
+              View and manage your assigned courses.
+            </span>
+          </button>
+
+          <button
+            class="quick-action"
+            data-page="lectures"
+          >
+            <strong>Lectures & Materials</strong>
+            <span>
+              Create lectures and manage learning materials.
+            </span>
+          </button>
+
+          <button
+            class="quick-action"
+            data-page="tests"
+          >
+            <strong>Tests & Questions</strong>
+            <span>
+              Create examinations and manage questions.
+            </span>
+          </button>
+
+          <button
+            class="quick-action"
+            data-page="students"
+          >
+            <strong>My Students</strong>
+            <span>
+              View students enrolled in your courses.
+            </span>
+          </button>
+
+          <button
+            class="quick-action"
+            data-page="live"
+          >
+            <strong>Live Classes</strong>
+            <span>
+              Schedule and manage online classes.
+            </span>
+          </button>
+
+          <button
+            class="quick-action"
+            data-page="profile"
+          >
+            <strong>Teacher Profile</strong>
+            <span>
+              View your teacher account information.
+            </span>
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="card">
+
+        <h3>My Courses</h3>
+
+        <div
+          id="dashboardCourses"
+          class="course-grid"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <!-- COURSES -->
+    <section
+      id="courses"
+      class="page"
+    >
+
+      <div class="page-title">
+
+        <h2>My Courses</h2>
+
+        <p>
+          Courses assigned to your teacher account.
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <div
+          id="courseList"
+          class="course-grid"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <!-- LECTURES -->
+    <section
+      id="lectures"
+      class="page"
+    >
+
+      <div class="page-title">
+
+        <h2>Lectures & Materials</h2>
+
+        <p>
+          Select one of your courses to manage its lectures.
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <div
+          id="lectureCourseList"
+          class="course-grid"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <!-- TESTS -->
+    <section
+      id="tests"
+      class="page"
+    >
+
+      <div class="page-title">
+
+        <h2>Tests & Questions</h2>
+
+        <p>
+          Manage examinations associated with your courses.
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <div
+          id="testList"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <!-- STUDENTS -->
+    <section
+      id="students"
+      class="page"
+    >
+
+      <div class="page-title">
+
+        <h2>My Students</h2>
+
+        <p>
+          Students enrolled in your courses.
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <div
+          id="studentList"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <!-- LIVE -->
+    <section
+      id="live"
+      class="page"
+    >
+
+      <div class="page-title">
+
+        <h2>Live Classes</h2>
+
+        <p>
+          Manage your scheduled online classes.
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <div
+          id="liveList"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <!-- PROFILE -->
+    <section
+      id="profile"
+      class="page"
+    >
+
+      <div class="page-title">
+
+        <h2>My Profile</h2>
+
+        <p>
+          Teacher account information.
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <div
+          id="profileContent"
+          class="empty"
+        >
+          Loading profile...
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+<footer>
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo"
+  >
+
+  <p>
+    <strong>MAKNAZUL IRFAN ACADEMY</strong>
+  </p>
+
+  <p>
+    Online Islamic & Arabic Institute
+  </p>
+
+  <p>
+    Knowledge • Faith • Excellence
+  </p>
+
+</footer>
+
+<script>
+
+const API = "/api";
+
+let currentUser = null;
+let courses = [];
+let tests = [];
+let liveClasses = [];
+
+const messageBox =
+  document.getElementById("message");
+
+function showMessage(text, type = "error") {
+
+  messageBox.textContent = text;
+
+  messageBox.className =
+    "message " + type;
+
+}
+
+function clearMessage() {
+
+  messageBox.textContent = "";
+
+  messageBox.className = "message";
+
+}
+
+async function apiFetch(url, options = {}) {
+
+  const response = await fetch(
+    API + url,
+    {
+      credentials: "include",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  let result = {};
+
+  try {
+    result = await response.json();
+  } catch {
+    result = {};
+  }
+
+  if (!response.ok) {
+
+    throw new Error(
+      result.message ||
+      result.error ||
+      "Request failed."
+    );
+
+  }
+
+  return result;
+
+}
+
+function extractData(result) {
+
+  return result?.data ?? result;
+
+}
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+function getCourseId(course) {
+
+  return (
+    course?.id ||
+    course?.courseId ||
+    ""
+  );
+
+}
+
+function getCourseTitle(course) {
+
+  return (
+    course?.title ||
+    course?.name ||
+    "Untitled Course"
+  );
+
+}
+
+function getInitials(user) {
+
+  const first =
+    user?.firstName ||
+    "";
+
+  const last =
+    user?.lastName ||
+    "";
+
+  return (
+    (first.charAt(0) +
+    last.charAt(0))
+      .toUpperCase() ||
+    "T"
+  );
+
+}
+
+/* -----------------------------
+   PAGE NAVIGATION
+----------------------------- */
+
+function openPage(pageName) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(page => {
+
+      page.classList.remove("active");
+
+    });
+
+  document
+    .querySelectorAll("nav button[data-page]")
+    .forEach(button => {
+
+      button.classList.remove("active");
+
+    });
+
+  const page =
+    document.getElementById(pageName);
+
+  if (page) {
+    page.classList.add("active");
+  }
+
+  const navButton =
+    document.querySelector(
+      `nav button[data-page="${pageName}"]`
+    );
+
+  if (navButton) {
+    navButton.classList.add("active");
+  }
+
+  if (pageName === "courses") {
+    loadCourses();
+  }
+
+  if (pageName === "lectures") {
+    loadLectureCourses();
+  }
+
+  if (pageName === "tests") {
+    loadTests();
+  }
+
+  if (pageName === "students") {
+    loadStudents();
+  }
+
+  if (pageName === "live") {
+    loadLiveClasses();
+  }
+
+}
+
+document
+  .querySelectorAll(
+    "nav button[data-page], .quick-action[data-page]"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+        openPage(
+          button.dataset.page
+        );
+      }
+    );
+
+  });
+
+/* -----------------------------
+   AUTHENTICATION
+----------------------------- */
+
+async function loadCurrentUser() {
+
+  try {
+
+    const response =
+      await apiFetch("/auth/me");
+
+    const data =
+      extractData(response);
+
+    const user =
+      data?.user ||
+      data;
+
+    if (!user) {
+      throw new Error("Not authenticated.");
+    }
+
+    const role =
+      String(
+        user.role || ""
+      ).toUpperCase();
+
+    if (role !== "TEACHER") {
+
+      if (role === "ADMIN") {
+        window.location.href =
+          "admin.html";
+        return;
+      }
+
+      window.location.href =
+        "login.html";
+
+      return;
+
+    }
+
+    currentUser = user;
+
+    const name =
+      `${user.firstName || ""} ${user.lastName || ""}`
+        .trim() ||
+      "Teacher";
+
+    document.getElementById(
+      "teacherName"
+    ).textContent = name;
+
+    document.getElementById(
+      "teacherEmail"
+    ).textContent =
+      user.email || "";
+
+    document.getElementById(
+      "avatar"
+    ).textContent =
+      getInitials(user);
+
+    renderProfile(user);
+
+  } catch (error) {
+
+    window.location.href =
+      "login.html";
+
+  }
+
+}
+
+/* -----------------------------
+   COURSES
+----------------------------- */
+
+async function loadCourses() {
+
+  try {
+
+    const response =
+      await apiFetch(
+        "/academic/courses"
+      );
+
+    const data =
+      extractData(response);
+
+    let result =
+      data?.courses ||
+      data?.items ||
+      data;
+
+    if (!Array.isArray(result)) {
+      result = [];
+    }
+
+    /*
+     * The backend should already restrict
+     * teacher results to their own courses.
+     */
+
+    courses = result;
+
+    document.getElementById(
+      "courseCount"
+    ).textContent =
+      courses.length;
+
+    renderCourses(
+      document.getElementById(
+        "courseList"
+      ),
+      courses
+    );
+
+    renderCourses(
+      document.getElementById(
+        "dashboardCourses"
+      ),
+      courses.slice(0, 3)
+    );
+
+    await loadLectureCount();
+
+  } catch (error) {
+
+    showMessage(
+      error.message ||
+      "Unable to load your courses."
+    );
+
+  }
+
+}
+
+function renderCourses(container, list) {
+
+  container.innerHTML = "";
+
+  if (!list.length) {
+
+    container.innerHTML = `
+      <div class="empty">
+        No courses are currently assigned to you.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  list.forEach(course => {
+
+    const id =
+      getCourseId(course);
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "course-card";
+
+    card.innerHTML = `
+
+      <h4>
+        ${escapeHtml(
+          getCourseTitle(course)
+        )}
+      </h4>
+
+      <p>
+        ${escapeHtml(
+          course?.description ||
+          "No course description."
+        )}
+      </p>
+
+      <p>
+        <strong>Level:</strong>
+        ${escapeHtml(
+          course?.level?.name ||
+          course?.levelName ||
+          "—"
+        )}
+      </p>
+
+      <p>
+        <strong>Subject:</strong>
+        ${escapeHtml(
+          course?.subject?.name ||
+          course?.subjectName ||
+          "—"
+        )}
+      </p>
+
+      <div class="actions">
+
+        <a
+          href="course.html?id=${encodeURIComponent(id)}"
+          class="btn btn-gold"
+        >
+          View
+        </a>
+
+        <button
+          class="btn btn-green"
+          onclick="manageCourse('${escapeHtml(id)}')"
+        >
+          Manage
+        </button>
+
+      </div>
+
+    `;
+
+    container.appendChild(card);
+
+  });
+
+}
+
+/* -----------------------------
+   LECTURES
+----------------------------- */
+
+async function loadLectureCount() {
+
+  let count = 0;
+
+  for (const course of courses) {
+
+    const id =
+      getCourseId(course);
+
+    if (!id) continue;
+
+    try {
+
+      const response =
+        await apiFetch(
+          `/lectures/course/${encodeURIComponent(id)}`
+        );
+
+      const data =
+        extractData(response);
+
+      const lectures =
+        data?.lectures ||
+        data?.items ||
+        data;
+
+      if (Array.isArray(lectures)) {
+        count += lectures.length;
+      }
+
+    } catch {
+      /*
+       * Continue counting other courses.
+       */
+    }
+
+  }
+
+  document.getElementById(
+    "lectureCount"
+  ).textContent = count;
+
+}
+
+function loadLectureCourses() {
+
+  const container =
+    document.getElementById(
+      "lectureCourseList"
+    );
+
+  renderCourses(
+    container,
+    courses
+  );
+
+}
+
+function manageCourse(courseId) {
+
+  openPage("lectures");
+
+  setTimeout(() => {
+
+    window.location.href =
+      "course.html?id=" +
+      encodeURIComponent(courseId);
+
+  }, 100);
+
+}
+
+/* -----------------------------
+   TESTS
+----------------------------- */
+
+async function loadTests() {
+
+  const container =
+    document.getElementById(
+      "testList"
+    );
+
+  container.innerHTML =
+    `<div class="empty">
+      Loading tests...
+    </div>`;
+
+  try {
+
+    const response =
+      await apiFetch(
+        "/exams/tests"
+      );
+
+    const data =
+      extractData(response);
+
+    let result =
+      data?.tests ||
+      data?.items ||
+      data;
+
+    if (!Array.isArray(result)) {
+      result = [];
+    }
+
+    tests = result;
+
+    document.getElementById(
+      "testCount"
+    ).textContent =
+      tests.length;
+
+    if (!tests.length) {
+
+      container.innerHTML =
+        `<div class="empty">
+          No tests are currently available.
+        </div>`;
+
+      return;
+
+    }
+
+    const table =
+      document.createElement("div");
+
+    table.className =
+      "table-wrapper";
+
+    table.innerHTML = `
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Course</th>
+            <th>Duration</th>
+            <th>Pass Mark</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="teacherTestsBody"></tbody>
+
+      </table>
+
+    `;
+
+    container.innerHTML = "";
+
+    container.appendChild(table);
+
+    const body =
+      document.getElementById(
+        "teacherTestsBody"
+      );
+
+    tests.forEach(test => {
+
+      const courseName =
+        test?.course?.title ||
+        test?.course?.name ||
+        "—";
+
+      const row =
+        document.createElement("tr");
+
+      row.innerHTML = `
+
+        <td>
+          ${escapeHtml(
+            test?.title ||
+            test?.name ||
+            "Untitled Test"
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(courseName)}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            String(
+              test?.durationMinutes ??
+              test?.duration ??
+              20
+            )
+          )}
+          min
+        </td>
+
+        <td>
+          ${escapeHtml(
+            String(
+              test?.passMark ??
+              50
+            )
+          )}%
+        </td>
+
+        <td>
+          <span class="badge green">
+            ${escapeHtml(
+              test?.status ||
+              "ACTIVE"
+            )}
+          </span>
+        </td>
+
+        <td>
+          <a
+            href="tests.html"
+            class="btn btn-green"
+            style="font-size:11px;padding:7px 9px;"
+          >
+            Open
+          </a>
+        </td>
+
+      `;
+
+      body.appendChild(row);
+
+    });
+
+  } catch (error) {
+
+    container.innerHTML =
+      `<div class="empty">
+        Unable to load tests.
+      </div>`;
+
+    console.error(error);
+
+  }
+
+}
+
+/* -----------------------------
+   STUDENTS
+----------------------------- */
+
+async function loadStudents() {
+
+  const container =
+    document.getElementById(
+      "studentList"
+    );
+
+  container.innerHTML =
+    `<div class="empty">
+      Loading students...
+    </div>`;
+
+  /*
+   * The current API does not yet expose
+   * a dedicated teacher-student endpoint.
+   *
+   * We therefore use course enrollment data
+   * when available.
+   */
+
+  const students = [];
+
+  for (const course of courses) {
+
+    const courseId =
+      getCourseId(course);
+
+    if (!courseId) continue;
+
+    try {
+
+      const response =
+        await apiFetch(
+          `/enrollment/course/${encodeURIComponent(courseId)}/students`
+        );
+
+      const data =
+        extractData(response);
+
+      const list =
+        data?.students ||
+        data?.items ||
+        data;
+
+      if (Array.isArray(list)) {
+
+        list.forEach(student => {
+
+          const studentId =
+            student?.id ||
+            student?.studentId ||
+            student?.userId;
+
+          const exists =
+            students.some(
+              item =>
+                String(item.id) ===
+                String(studentId)
+            );
+
+          if (!exists) {
+
+            students.push({
+              id: studentId,
+              name:
+                student?.user?.firstName &&
+                student?.user?.lastName
+                  ? student.user.firstName +
+                    " " +
+                    student.user.lastName
+                  : student?.name ||
+                    "Student",
+              email:
+                student?.user?.email ||
+                student?.email ||
+                "—",
+              course:
+                getCourseTitle(course)
+            });
+
+          }
+
+        });
+
+      }
+
+    } catch {
+      /*
+       * Endpoint may not exist yet.
+       */
+    }
+
+  }
+
+  document.getElementById(
+    "studentCount"
+  ).textContent =
+    students.length;
+
+  if (!students.length) {
+
+    container.innerHTML =
+      `<div class="empty">
+        Student enrollment information will appear here
+        when the teacher enrollment endpoint is enabled.
+      </div>`;
+
+    return;
+
+  }
+
+  const table =
+    document.createElement("div");
+
+  table.className =
+    "table-wrapper";
+
+  table.innerHTML = `
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Email</th>
+          <th>Course</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+
+    </table>
+
+  `;
+
+  container.innerHTML = "";
+
+  container.appendChild(table);
+
+  const body =
+    table.querySelector("tbody");
+
+  students.forEach(student => {
+
+    const row =
+      document.createElement("tr");
+
+    row.innerHTML = `
+
+      <td>
+        ${escapeHtml(student.name)}
+      </td>
+
+      <td>
+        ${escapeHtml(student.email)}
+      </td>
+
+      <td>
+        ${escapeHtml(student.course)}
+      </td>
+
+    `;
+
+    body.appendChild(row);
+
+  });
+
+}
+
+/* -----------------------------
+   LIVE CLASSES
+----------------------------- */
+
+async function loadLiveClasses() {
+
+  const container =
+    document.getElementById(
+      "liveList"
+    );
+
+  container.innerHTML =
+    `<div class="empty">
+      Loading live classes...
+    </div>`;
+
+  try {
+
+    const response =
+      await apiFetch(
+        "/live-classes"
+      );
+
+    const data =
+      extractData(response);
+
+    let list =
+      data?.liveClasses ||
+      data?.classes ||
+      data?.items ||
+      data;
+
+    if (!Array.isArray(list)) {
+      list = [];
+    }
+
+    liveClasses = list;
+
+    if (!list.length) {
+
+      container.innerHTML =
+        `<div class="empty">
+          No live classes have been scheduled.
+        </div>`;
+
+      return;
+
+    }
+
+    const table =
+      document.createElement("div");
+
+    table.className =
+      "table-wrapper";
+
+    table.innerHTML = `
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Course</th>
+            <th>Provider</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody></tbody>
+
+      </table>
+
+    `;
+
+    container.innerHTML = "";
+
+    container.appendChild(table);
+
+    const body =
+      table.querySelector("tbody");
+
+    list.forEach(item => {
+
+      const row =
+        document.createElement("tr");
+
+      row.innerHTML = `
+
+        <td>
+          ${escapeHtml(
+            item?.title ||
+            item?.name ||
+            "Live Class"
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            item?.course?.title ||
+            item?.course?.name ||
+            "—"
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            item?.provider ||
+            "—"
+          )}
+        </td>
+
+        <td>
+          ${formatDate(item?.startAt)}
+        </td>
+
+        <td>
+          ${formatDate(item?.endAt)}
+        </td>
+
+        <td>
+          <span class="badge green">
+            Scheduled
+          </span>
+        </td>
+
+      `;
+
+      body.appendChild(row);
+
+    });
+
+  } catch (error) {
+
+    container.innerHTML =
+      `<div class="empty">
+        Unable to load live classes.
+      </div>`;
+
+    console.error(error);
+
+  }
+
+}
+
+/* -----------------------------
+   PROFILE
+----------------------------- */
+
+function renderProfile(user) {
+
+  const container =
+    document.getElementById(
+      "profileContent"
+    );
+
+  container.className = "";
+
+  container.innerHTML = `
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <tbody>
+
+          <tr>
+            <th>Name</th>
+            <td>
+              ${escapeHtml(
+                `${user?.firstName || ""} ${user?.lastName || ""}`
+                  .trim()
+              )}
+            </td>
+          </tr>
+
+          <tr>
+            <th>Email</th>
+            <td>
+              ${escapeHtml(
+                user?.email || "—"
+              )}
+            </td>
+          </tr>
+
+          <tr>
+            <th>Phone</th>
+            <td>
+              ${escapeHtml(
+                user?.phone || "—"
+              )}
+            </td>
+          </tr>
+
+          <tr>
+            <th>Role</th>
+            <td>
+              <span class="badge green">
+                TEACHER
+              </span>
+            </td>
+          </tr>
+
+          <tr>
+            <th>User ID</th>
+            <td>
+              ${escapeHtml(
+                user?.id || "—"
+              )}
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+}
+
+/* -----------------------------
+   DATE
+----------------------------- */
+
+function formatDate(value) {
+
+  if (!value) {
+    return "—";
+  }
+
+  const date =
+    new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return escapeHtml(value);
+  }
+
+  return escapeHtml(
+    date.toLocaleString()
+  );
+
+}
+
+/* -----------------------------
+   LOGOUT
+----------------------------- */
+
+document
+  .getElementById("logoutButton")
+  .addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        await apiFetch(
+          "/auth/logout",
+          {
+            method: "POST"
+          }
+        );
+
+      } catch {
+        /*
+         * Continue to login even if the
+         * logout request fails.
+         */
+      }
+
+      window.location.href =
+        "login.html";
+
+    }
+  );
+
+/* -----------------------------
+   INITIALIZATION
+----------------------------- */
+
+async function init() {
+
+  await loadCurrentUser();
+
+  if (!currentUser) {
+    return;
+  }
+
+  await loadCourses();
+
+}
+
+init();
+
+</script>
+
+</body>
+</html>

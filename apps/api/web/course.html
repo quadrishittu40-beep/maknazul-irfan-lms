@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Details | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7f5;
+      color: #1f2937;
+    }
+
+    header {
+      background: #064e3b;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 62px;
+      height: 62px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      border: none;
+      border-radius: 7px;
+      padding: 10px 15px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-green {
+      background: #064e3b;
+      color: white;
+    }
+
+    .btn-gold {
+      background: #d4af37;
+      color: #172b24;
+    }
+
+    .btn-light {
+      background: white;
+      color: #064e3b;
+    }
+
+    .btn-danger {
+      background: #b91c1c;
+      color: white;
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    main {
+      width: 94%;
+      max-width: 1100px;
+      margin: 28px auto 50px;
+    }
+
+    .message {
+      display: none;
+      padding: 13px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .message.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .message.success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .loading {
+      background: white;
+      border-radius: 12px;
+      padding: 45px 20px;
+      text-align: center;
+      color: #64748b;
+    }
+
+    .course-header {
+      display: none;
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,.07);
+      margin-bottom: 25px;
+    }
+
+    .course-banner {
+      background: #064e3b;
+      color: white;
+      padding: 32px;
+    }
+
+    .course-banner h2 {
+      margin: 0 0 12px;
+      font-size: 30px;
+      line-height: 1.3;
+    }
+
+    .course-banner p {
+      margin: 0;
+      line-height: 1.7;
+      opacity: .95;
+    }
+
+    .course-content {
+      padding: 25px;
+    }
+
+    .course-info {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .info-box {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 15px;
+    }
+
+    .info-box span {
+      display: block;
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+
+    .info-box strong {
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    .description {
+      line-height: 1.8;
+      color: #475569;
+      margin-bottom: 22px;
+      white-space: pre-line;
+    }
+
+    .access-panel {
+      padding: 18px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .access-panel h4 {
+      margin: 0 0 6px;
+      color: #064e3b;
+    }
+
+    .access-panel p {
+      margin: 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .price {
+      color: #064e3b;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .section {
+      background: white;
+      border-radius: 14px;
+      padding: 23px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.06);
+      margin-bottom: 25px;
+    }
+
+    .section h3 {
+      color: #064e3b;
+      margin-top: 0;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 12px;
+    }
+
+    .lecture-list,
+    .test-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .lecture-item,
+    .test-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 9px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .lecture-item h4,
+    .test-item h4 {
+      margin: 0 0 6px;
+      color: #1e293b;
+    }
+
+    .lecture-item p,
+    .test-item p {
+      margin: 0;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .lecture-number {
+      color: #064e3b;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+
+    .progress-area {
+      margin-top: 10px;
+      max-width: 350px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #d4af37;
+      transition: width .3s ease;
+    }
+
+    .progress-label {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 25px;
+      color: #64748b;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+
+    footer {
+      background: #064e3b;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+    }
+
+    footer img {
+      width: 55px;
+      height: 55px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+      margin-bottom: 8px;
+    }
+
+    footer p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .course-info {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .academy-logo {
+        width: 52px;
+        height: 52px;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .course-banner {
+        padding: 24px 18px;
+      }
+
+      .course-banner h2 {
+        font-size: 23px;
+      }
+
+      .course-content,
+      .section {
+        padding: 18px;
+      }
+
+      .course-info {
+        grid-template-columns: 1fr;
+      }
+
+      .lecture-item,
+      .test-item {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Online Islamic & Arabic Institute</p>
+    </div>
+
+  </div>
+
+  <div class="header-actions">
+
+    <a href="courses.html" class="btn btn-light">
+      All Courses
+    </a>
+
+    <a href="student.html" class="btn btn-gold">
+      Dashboard
+    </a>
+
+  </div>
+
+</header>
+
+<main>
+
+  <div id="message" class="message"></div>
+
+  <div id="loading" class="loading">
+    Loading course details...
+  </div>
+
+  <!-- COURSE DETAILS -->
+  <section id="courseHeader" class="course-header">
+
+    <div class="course-banner">
+
+      <h2 id="courseTitle">
+        Course Title
+      </h2>
+
+      <p id="courseShortDescription">
+        Course description
+      </p>
+
+    </div>
+
+    <div class="course-content">
+
+      <div class="course-info">
+
+        <div class="info-box">
+          <span>Subject</span>
+          <strong id="courseSubject">—</strong>
+        </div>
+
+        <div class="info-box">
+          <span>Level</span>
+          <strong id="courseLevel">—</strong>
+        </div>
+
+        <div class="info-box">
+          <span>Teacher</span>
+          <strong id="courseTeacher">—</strong>
+        </div>
+
+        <div class="info-box">
+          <span>Status</span>
+          <strong id="courseStatus">—</strong>
+        </div>
+
+      </div>
+
+      <div
+        id="courseDescription"
+        class="description"
+      ></div>
+
+      <div class="access-panel">
+
+        <div>
+          <h4 id="accessTitle">
+            Course Access
+          </h4>
+
+          <p id="accessText">
+            Checking your access...
+          </p>
+        </div>
+
+        <div>
+
+          <div
+            id="coursePrice"
+            class="price"
+          >
+            Free
+          </div>
+
+          <button
+            id="enrollButton"
+            class="btn btn-gold"
+            style="display:none;"
+          >
+            Enroll in Course
+          </button>
+
+          <button
+            id="loginButton"
+            class="btn btn-green"
+            style="display:none;"
+          >
+            Login to Enroll
+          </button>
+
+          <a
+            id="continueButton"
+            href="#lectures"
+            class="btn btn-green"
+            style="display:none;"
+          >
+            Continue Learning
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- LECTURES -->
+  <section
+    id="lectures"
+    class="section"
+    style="display:none;"
+  >
+
+    <h3>Course Lectures</h3>
+
+    <div
+      id="lectureLoading"
+      class="empty"
+    >
+      Loading lectures...
+    </div>
+
+    <div
+      id="lectureList"
+      class="lecture-list"
+    ></div>
+
+    <div
+      id="lectureEmpty"
+      class="empty"
+      style="display:none;"
+    >
+      No lectures have been added to this course yet.
+    </div>
+
+  </section>
+
+  <!-- TESTS -->
+  <section
+    id="tests"
+    class="section"
+    style="display:none;"
+  >
+
+    <h3>Course Tests & Examinations</h3>
+
+    <div
+      id="testLoading"
+      class="empty"
+    >
+      Loading tests...
+    </div>
+
+    <div
+      id="testList"
+      class="test-list"
+    ></div>
+
+    <div
+      id="testEmpty"
+      class="empty"
+      style="display:none;"
+    >
+      No tests are available for this course yet.
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo"
+  >
+
+  <p>
+    <strong>MAKNAZUL IRFAN ACADEMY</strong>
+  </p>
+
+  <p>
+    Online Islamic & Arabic Institute
+  </p>
+
+  <p>
+    Knowledge • Faith • Excellence
+  </p>
+
+  <p>
+    © 2026 MAKNAZUL IRFAN ACADEMY. All rights reserved.
+  </p>
+
+</footer>
+
+<script>
+
+  const API = "/api";
+
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const courseId =
+    params.get("id");
+
+  let currentCourse = null;
+  let loggedInUser = null;
+  let hasAccess = false;
+
+  const messageBox =
+    document.getElementById("message");
+
+  function showMessage(text, type = "error") {
+
+    messageBox.textContent = text;
+
+    messageBox.className =
+      "message " + type;
+
+  }
+
+  function clearMessage() {
+
+    messageBox.textContent = "";
+
+    messageBox.className = "message";
+
+  }
+
+  async function apiFetch(url, options = {}) {
+
+    const response =
+      await fetch(
+        API + url,
+        {
+          credentials: "include",
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          }
+        }
+      );
+
+    let result = {};
+
+    try {
+      result = await response.json();
+    } catch {
+      result = {};
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        result.message ||
+        result.error ||
+        "Request failed."
+      );
+
+    }
+
+    return result;
+
+  }
+
+  function extractData(result) {
+
+    return result?.data ?? result;
+
+  }
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+  function getCourse(data) {
+
+    return (
+      data?.course ||
+      data
+    );
+
+  }
+
+  function getCourseTitle(course) {
+
+    return (
+      course?.title ||
+      course?.name ||
+      "Untitled Course"
+    );
+
+  }
+
+  function getTeacher(course) {
+
+    return (
+      course?.teacher?.user?.firstName &&
+      course?.teacher?.user?.lastName
+        ? course.teacher.user.firstName +
+          " " +
+          course.teacher.user.lastName
+        : course?.teacher?.name ||
+          course?.teacherName ||
+          "MAKNAZUL IRFAN ACADEMY"
+    );
+
+  }
+
+  function getPrice(course) {
+
+    return Number(
+      course?.price ??
+      course?.amount ??
+      0
+    );
+
+  }
+
+  function formatPrice(price) {
+
+    if (!price || price <= 0) {
+      return "Free";
+    }
+
+    return "₦" + price.toLocaleString();
+
+  }
+
+  function showCourse(course) {
+
+    currentCourse = course;
+
+    document.getElementById("loading").style.display =
+      "none";
+
+    document.getElementById("courseHeader").style.display =
+      "block";
+
+    document.getElementById("courseTitle").textContent =
+      getCourseTitle(course);
+
+    document.getElementById("courseShortDescription").textContent =
+      course?.shortDescription ||
+      course?.description ||
+      "Arabic and Islamic studies course.";
+
+    document.getElementById("courseDescription").textContent =
+      course?.description ||
+      "No detailed course description has been provided.";
+
+    document.getElementById("courseSubject").textContent =
+      course?.subject?.name ||
+      course?.subjectName ||
+      "Arabic & Islamic Studies";
+
+    document.getElementById("courseLevel").textContent =
+      course?.level?.name ||
+      course?.levelName ||
+      "All Levels";
+
+    document.getElementById("courseTeacher").textContent =
+      getTeacher(course);
+
+    document.getElementById("courseStatus").textContent =
+      course?.status ||
+      "PUBLISHED";
+
+    document.getElementById("coursePrice").textContent =
+      formatPrice(getPrice(course));
+
+  }
+
+  function showAccessState(access) {
+
+    hasAccess =
+      Boolean(
+        access?.hasAccess ??
+        access?.access ??
+        access?.enrolled ??
+        access?.isEnrolled ??
+        false
+      );
+
+    const title =
+      document.getElementById("accessTitle");
+
+    const text =
+      document.getElementById("accessText");
+
+    const enrollButton =
+      document.getElementById("enrollButton");
+
+    const loginButton =
+      document.getElementById("loginButton");
+
+    const continueButton =
+      document.getElementById("continueButton");
+
+    enrollButton.style.display = "none";
+    loginButton.style.display = "none";
+    continueButton.style.display = "none";
+
+    if (!loggedInUser) {
+
+      title.textContent =
+        "Login Required";
+
+      text.textContent =
+        "Please log in to enroll in this course.";
+
+      loginButton.style.display =
+        "inline-block";
+
+      return;
+
+    }
+
+    if (hasAccess) {
+
+      title.textContent =
+        "You have access";
+
+      text.textContent =
+        "You are enrolled in this course.";
+
+      continueButton.style.display =
+        "inline-block";
+
+      return;
+
+    }
+
+    title.textContent =
+      "Enrollment Required";
+
+    text.textContent =
+      "Enroll in this course to access its lectures and tests.";
+
+    enrollButton.style.display =
+      "inline-block";
+
+  }
+
+  async function loadUser() {
+
+    try {
+
+      const response =
+        await apiFetch("/auth/me");
+
+      const data =
+        extractData(response);
+
+      loggedInUser =
+        data?.user ||
+        data ||
+        null;
+
+    } catch {
+
+      loggedInUser = null;
+
+    }
+
+  }
+
+  async function loadCourse() {
+
+    if (!courseId) {
+
+      throw new Error(
+        "No course ID was provided."
+      );
+
+    }
+
+    const response =
+      await apiFetch(
+        `/academic/courses/${encodeURIComponent(courseId)}`
+      );
+
+    const data =
+      extractData(response);
+
+    const course =
+      getCourse(data);
+
+    showCourse(course);
+
+  }
+
+  async function checkAccess() {
+
+    if (!loggedInUser) {
+
+      showAccessState({ hasAccess: false });
+
+      return;
+
+    }
+
+    try {
+
+      const response =
+        await apiFetch(
+          `/enrollment/${encodeURIComponent(courseId)}/access`
+        );
+
+      const data =
+        extractData(response);
+
+      showAccessState(data);
+
+    } catch (error) {
+
+      console.warn(
+        "Access check failed:",
+        error
+      );
+
+      showAccessState({
+        hasAccess: false
+      });
+
+    }
+
+  }
+
+  async function enroll() {
+
+    const button =
+      document.getElementById("enrollButton");
+
+    button.disabled = true;
+
+    button.textContent =
+      "Enrolling...";
+
+    try {
+
+      const response =
+        await apiFetch(
+          `/enrollment/${encodeURIComponent(courseId)}`,
+          {
+            method: "POST"
+          }
+        );
+
+      const data =
+        extractData(response);
+
+      hasAccess =
+        Boolean(
+          data?.hasAccess ??
+          data?.enrolled ??
+          true
+        );
+
+      showMessage(
+        "Enrollment completed successfully.",
+        "success"
+      );
+
+      showAccessState({
+        hasAccess: true
+      });
+
+      await loadLearningContent();
+
+    } catch (error) {
+
+      showMessage(
+        error.message ||
+        "Unable to enroll in this course."
+      );
+
+    } finally {
+
+      button.disabled = false;
+
+      button.textContent =
+        "Enroll in Course";
+
+    }
+
+  }
+
+  async function loadLearningContent() {
+
+    if (!hasAccess) {
+      return;
+    }
+
+    document.getElementById("lectures").style.display =
+      "block";
+
+    document.getElementById("tests").style.display =
+      "block";
+
+    await Promise.all([
+      loadLectures(),
+      loadTests()
+    ]);
+
+  }
+
+  async function loadLectures() {
+
+    const loading =
+      document.getElementById("lectureLoading");
+
+    const empty =
+      document.getElementById("lectureEmpty");
+
+    const list =
+      document.getElementById("lectureList");
+
+    try {
+
+      const response =
+        await apiFetch(
+          `/lectures/course/${encodeURIComponent(courseId)}`
+        );
+
+      const data =
+        extractData(response);
+
+      let lectures =
+        data?.lectures ||
+        data?.items ||
+        data;
+
+      if (!Array.isArray(lectures)) {
+        lectures = [];
+      }
+
+      loading.style.display =
+        "none";
+
+      list.innerHTML = "";
+
+      if (!lectures.length) {
+
+        empty.style.display =
+          "block";
+
+        return;
+
+      }
+
+      empty.style.display =
+        "none";
+
+      lectures.forEach((lecture, index) => {
+
+        const id =
+          lecture?.id ||
+          lecture?.lectureId;
+
+        const item =
+          document.createElement("div");
+
+        item.className =
+          "lecture-item";
+
+        item.innerHTML = `
+
+          <div style="flex:1;">
+
+            <h4>
+              <span class="lecture-number">
+                ${index + 1}.
+              </span>
+
+              ${escapeHtml(
+                lecture?.title ||
+                lecture?.name ||
+                "Untitled Lecture"
+              )}
+            </h4>
+
+            <p>
+              ${escapeHtml(
+                lecture?.description ||
+                "Lecture content"
+              )}
+            </p>
+
+            <div class="progress-area">
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  style="width:0%;"
+                ></div>
+              </div>
+
+              <span class="progress-label">
+                Progress will appear when opened.
+              </span>
+
+            </div>
+
+          </div>
+
+          <div>
+
+            <a
+              class="btn btn-gold"
+              href="lecture.html?id=${encodeURIComponent(id)}"
+            >
+              Open Lecture
+            </a>
+
+          </div>
+
+        `;
+
+        list.appendChild(item);
+
+      });
+
+    } catch (error) {
+
+      loading.style.display =
+        "none";
+
+      empty.style.display =
+        "block";
+
+      empty.textContent =
+        "Unable to load lectures.";
+
+      console.error(error);
+
+    }
+
+  }
+
+  async function loadTests() {
+
+    const loading =
+      document.getElementById("testLoading");
+
+    const empty =
+      document.getElementById("testEmpty");
+
+    const list =
+      document.getElementById("testList");
+
+    try {
+
+      const response =
+        await apiFetch("/exams/tests");
+
+      const data =
+        extractData(response);
+
+      let tests =
+        data?.tests ||
+        data?.items ||
+        data;
+
+      if (!Array.isArray(tests)) {
+        tests = [];
+      }
+
+      tests =
+        tests.filter(test => {
+
+          const testCourseId =
+            test?.courseId ||
+            test?.course?.id;
+
+          return (
+            !testCourseId ||
+            String(testCourseId) ===
+            String(courseId)
+          );
+
+        });
+
+      loading.style.display =
+        "none";
+
+      list.innerHTML = "";
+
+      if (!tests.length) {
+
+        empty.style.display =
+          "block";
+
+        return;
+
+      }
+
+      empty.style.display =
+        "none";
+
+      tests.forEach(test => {
+
+        const id =
+          test?.id ||
+          test?.testId;
+
+        const item =
+          document.createElement("div");
+
+        item.className =
+          "test-item";
+
+        item.innerHTML = `
+
+          <div style="flex:1;">
+
+            <h4>
+              ${escapeHtml(
+                test?.title ||
+                test?.name ||
+                "Untitled Test"
+              )}
+            </h4>
+
+            <p>
+              Duration:
+              ${escapeHtml(
+                String(
+                  test?.durationMinutes ??
+                  test?.duration ??
+                  20
+                )
+              )}
+              minutes
+              |
+              Pass mark:
+              ${escapeHtml(
+                String(
+                  test?.passMark ??
+                  50
+                )
+              )}%
+            </p>
+
+          </div>
+
+          <div>
+
+            <a
+              class="btn btn-gold"
+              href="tests.html?test=${encodeURIComponent(id)}"
+            >
+              Take Test
+            </a>
+
+          </div>
+
+        `;
+
+        list.appendChild(item);
+
+      });
+
+    } catch (error) {
+
+      loading.style.display =
+        "none";
+
+      empty.style.display =
+        "block";
+
+      empty.textContent =
+        "Unable to load tests.";
+
+      console.error(error);
+
+    }
+
+  }
+
+  document
+    .getElementById("enrollButton")
+    .addEventListener("click", enroll);
+
+  document
+    .getElementById("loginButton")
+    .addEventListener("click", () => {
+      window.location.href =
+        "login.html?redirect=" +
+        encodeURIComponent(
+          "course.html?id=" + courseId
+        );
+    });
+
+  async function init() {
+
+    try {
+
+      clearMessage();
+
+      await loadUser();
+
+      await loadCourse();
+
+      await checkAccess();
+
+      if (hasAccess) {
+        await loadLearningContent();
+      }
+
+    } catch (error) {
+
+      document.getElementById("loading").style.display =
+        "none";
+
+      showMessage(
+        error.message ||
+        "Unable to load this course."
+      );
+
+    }
+
+  }
+
+  init();
+
+</script>
+
+</body>
+</html>

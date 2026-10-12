@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payments | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f7f5;
+      color: #173b2d;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #075b3b;
+      color: white;
+      padding: 15px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      font-size: 19px;
+      margin-bottom: 4px;
+    }
+
+    .brand p {
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .btn {
+      border: none;
+      border-radius: 7px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .dashboard-btn {
+      background: #d9a441;
+      color: #173b2d;
+    }
+
+    .logout-btn {
+      background: #fff;
+      color: #075b3b;
+    }
+
+    main {
+      width: 94%;
+      max-width: 1150px;
+      margin: 30px auto;
+    }
+
+    .page-title {
+      margin-bottom: 20px;
+    }
+
+    .page-title h2 {
+      color: #075b3b;
+      margin-bottom: 6px;
+    }
+
+    .page-title p {
+      color: #66756e;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .summary-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.07);
+      border-left: 4px solid #d9a441;
+    }
+
+    .summary-card span {
+      display: block;
+      color: #718078;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+      font-size: 24px;
+      color: #075b3b;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.07);
+      margin-bottom: 25px;
+    }
+
+    .panel h3 {
+      color: #075b3b;
+      margin-bottom: 15px;
+    }
+
+    .message {
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      background: #fdeaea;
+      color: #a12626;
+    }
+
+    .message.success {
+      background: #e8f7ee;
+      color: #17663f;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+
+    th,
+    td {
+      padding: 13px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e8ece9;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f0f5f2;
+      color: #075b3b;
+    }
+
+    tr:hover td {
+      background: #fafcfb;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status.PAID {
+      background: #dff5e7;
+      color: #17663f;
+    }
+
+    .status.PENDING {
+      background: #fff3d6;
+      color: #8a6414;
+    }
+
+    .status.FAILED,
+    .status.CANCELLED {
+      background: #fde5e5;
+      color: #a12626;
+    }
+
+    .status.REFUNDED {
+      background: #e8e9fb;
+      color: #464d91;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 35px 15px;
+      color: #718078;
+    }
+
+    .payment-info {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .info-box {
+      background: #f7faf8;
+      border-radius: 9px;
+      padding: 16px;
+    }
+
+    .info-box strong {
+      display: block;
+      color: #075b3b;
+      margin-bottom: 6px;
+    }
+
+    .info-box span {
+      color: #66756e;
+      font-size: 14px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 1000;
+      padding: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: white;
+      border-radius: 14px;
+      padding: 25px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .close-btn {
+      background: #eee;
+      color: #333;
+    }
+
+    .payment-detail {
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 11px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .detail-row span:first-child {
+      color: #718078;
+    }
+
+    .detail-row span:last-child {
+      font-weight: bold;
+      text-align: right;
+    }
+
+    footer {
+      background: #075b3b;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+      margin-top: 40px;
+    }
+
+    footer img {
+      width: 55px;
+      height: 55px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+      margin-bottom: 10px;
+    }
+
+    footer p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    @media (max-width: 750px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .payment-info {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        align-items: flex-start;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .academy-logo {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Online Islamic & Arabic Institute</p>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <a href="student.html" class="btn dashboard-btn">Dashboard</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-title">
+    <h2>Payment Centre</h2>
+    <p>View your course payments and payment history.</p>
+  </section>
+
+  <div id="message" class="message"></div>
+
+  <section class="summary">
+    <div class="summary-card">
+      <span>Total Payments</span>
+      <strong id="totalPayments">0</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Successful Payments</span>
+      <strong id="successfulPayments">0</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Total Paid</span>
+      <strong id="totalPaid">₦0</strong>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>Payment History</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Course</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="paymentsBody">
+          <tr>
+            <td colspan="6" class="empty">
+              Loading payment history...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>Payment Information</h3>
+
+    <div class="payment-info">
+
+      <div class="info-box">
+        <strong>Secure Payments</strong>
+        <span>
+          Course payments are processed through the academy's secure
+          payment system.
+        </span>
+      </div>
+
+      <div class="info-box">
+        <strong>Payment Verification</strong>
+        <span>
+          Successful payments are verified before course access is granted.
+        </span>
+      </div>
+
+      <div class="info-box">
+        <strong>Keep Your Reference</strong>
+        <span>
+          Keep your payment reference for future enquiries or verification.
+        </span>
+      </div>
+
+      <div class="info-box">
+        <strong>Need Help?</strong>
+        <span>
+          Contact MAKNAZUL IRFAN ACADEMY if a successful payment does not
+          reflect in your account.
+        </span>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<div id="paymentModal" class="modal">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <h3>Payment Details</h3>
+      <button class="close-btn" onclick="closeModal()">Close</button>
+    </div>
+
+    <div id="paymentDetails" class="payment-detail"></div>
+
+  </div>
+</div>
+
+<footer>
+  <img
+    src="assets/logo.png"
+    alt="MAKNAZUL IRFAN ACADEMY Logo"
+  >
+
+  <p><strong>MAKNAZUL IRFAN ACADEMY</strong></p>
+  <p>Online Islamic & Arabic Institute</p>
+  <p>Knowledge • Faith • Excellence</p>
+  <p>© 2026 MAKNAZUL IRFAN ACADEMY. All rights reserved.</p>
+</footer>
+
+<script>
+  const API = "/api";
+
+  let payments = [];
+
+  function showMessage(message, type = "error") {
+    const box = document.getElementById("message");
+
+    box.textContent = message;
+    box.className = "message show " + type;
+
+    setTimeout(() => {
+      box.className = "message";
+    }, 5000);
+  }
+
+  async function api(path, options = {}) {
+    const response = await fetch(API + path, {
+      credentials: "include",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    });
+
+    let data = {};
+
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        "Request failed."
+      );
+    }
+
+    return data;
+  }
+
+  function extractData(response) {
+    return response?.data ?? response;
+  }
+
+  function formatMoney(amount, currency = "NGN") {
+    const value = Number(amount || 0);
+
+    try {
+      return new Intl.NumberFormat("en-NG", {
+        style: "currency",
+        currency: currency === "NGN" ? "NGN" : currency,
+        maximumFractionDigits: 2
+      }).format(value);
+    } catch {
+      return "₦" + value.toLocaleString();
+    }
+  }
+
+  function formatDate(date) {
+    if (!date) return "—";
+
+    const parsed = new Date(date);
+
+    if (Number.isNaN(parsed.getTime())) {
+      return "—";
+    }
+
+    return parsed.toLocaleDateString("en-NG", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  }
+
+  function getPaymentCourse(payment) {
+    return (
+      payment?.course?.title ||
+      payment?.course?.name ||
+      payment?.courseTitle ||
+      "Course payment"
+    );
+  }
+
+  function getPaymentAmount(payment) {
+    return (
+      payment?.amount ??
+      payment?.total ??
+      payment?.paidAmount ??
+      0
+    );
+  }
+
+  function getPaymentCurrency(payment) {
+    return payment?.currency || "NGN";
+  }
+
+  function getPaymentStatus(payment) {
+    return String(payment?.status || "PENDING").toUpperCase();
+  }
+
+  function getPaymentReference(payment) {
+    return (
+      payment?.reference ||
+      payment?.paystackReference ||
+      payment?.transactionReference ||
+      payment?.id ||
+      "—"
+    );
+  }
+
+  function renderSummary() {
+    const total = payments.length;
+
+    const successful = payments.filter(
+      payment => getPaymentStatus(payment) === "PAID"
+    ).length;
+
+    const paidAmount = payments
+      .filter(payment => getPaymentStatus(payment) === "PAID")
+      .reduce(
+        (sum, payment) =>
+          sum + Number(getPaymentAmount(payment) || 0),
+        0
+      );
+
+    document.getElementById("totalPayments").textContent = total;
+    document.getElementById("successfulPayments").textContent = successful;
+
+    document.getElementById("totalPaid").textContent =
+      formatMoney(paidAmount, "NGN");
+  }
+
+  function renderPayments() {
+    const body = document.getElementById("paymentsBody");
+
+    if (!payments.length) {
+      body.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            No payment records found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    body.innerHTML = payments.map((payment, index) => {
+      const status = getPaymentStatus(payment);
+      const reference = getPaymentReference(payment);
+      const course = getPaymentCourse(payment);
+      const amount = getPaymentAmount(payment);
+      const currency = getPaymentCurrency(payment);
+
+      const date =
+        payment?.paidAt ||
+        payment?.createdAt ||
+        payment?.updatedAt;
+
+      return `
+        <tr>
+          <td>${escapeHtml(reference)}</td>
+
+          <td>
+            ${escapeHtml(course)}
+          </td>
+
+          <td>
+            ${escapeHtml(formatMoney(amount, currency))}
+          </td>
+
+          <td>
+            <span class="status ${escapeHtml(status)}">
+              ${escapeHtml(status)}
+            </span>
+          </td>
+
+          <td>
+            ${escapeHtml(formatDate(date))}
+          </td>
+
+          <td>
+            <button
+              class="btn dashboard-btn"
+              onclick="viewPayment(${index})"
+            >
+              View
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function viewPayment(index) {
+    const payment = payments[index];
+
+    if (!payment) {
+      return;
+    }
+
+    const status = getPaymentStatus(payment);
+    const reference = getPaymentReference(payment);
+    const course = getPaymentCourse(payment);
+    const amount = getPaymentAmount(payment);
+    const currency = getPaymentCurrency(payment);
+
+    const createdAt =
+      payment?.createdAt ||
+      payment?.updatedAt;
+
+    const paidAt = payment?.paidAt;
+
+    const details = document.getElementById("paymentDetails");
+
+    details.innerHTML = `
+      <div class="detail-row">
+        <span>Reference</span>
+        <span>${escapeHtml(reference)}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Course</span>
+        <span>${escapeHtml(course)}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Amount</span>
+        <span>${escapeHtml(
+          formatMoney(amount, currency)
+        )}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Status</span>
+        <span>
+          <span class="status ${escapeHtml(status)}">
+            ${escapeHtml(status)}
+          </span>
+        </span>
+      </div>
+
+      <div class="detail-row">
+        <span>Payment Date</span>
+        <span>${escapeHtml(
+          formatDate(createdAt)
+        )}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Paid Date</span>
+        <span>${escapeHtml(
+          formatDate(paidAt)
+        )}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Provider</span>
+        <span>
+          ${escapeHtml(
+            payment?.provider ||
+            payment?.paymentProvider ||
+            "Paystack"
+          )}
+        </span>
+      </div>
+    `;
+
+    document
+      .getElementById("paymentModal")
+      .classList.add("show");
+  }
+
+  function closeModal() {
+    document
+      .getElementById("paymentModal")
+      .classList.remove("show");
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  async function loadProfile() {
+    try {
+      const response = await api("/auth/me");
+      const data = extractData(response);
+      const user = data?.user || data;
+
+      if (!user) {
+        location.href = "login.html";
+        return false;
+      }
+
+      if (user.role !== "STUDENT") {
+        if (user.role === "ADMIN") {
+          location.href = "admin.html";
+        } else if (user.role === "TEACHER") {
+          location.href = "teacher.html";
+        } else {
+          location.href = "login.html";
+        }
+
+        return false;
+      }
+
+      return true;
+
+    } catch (error) {
+      location.href = "login.html";
+      return false;
+    }
+  }
+
+  async function loadPayments() {
+    try {
+      const response = await api("/payments/my");
+
+      const data = extractData(response);
+
+      if (Array.isArray(data)) {
+        payments = data;
+      } else {
+        payments =
+          data?.payments ||
+          data?.items ||
+          data?.results ||
+          [];
+      }
+
+      renderSummary();
+      renderPayments();
+
+    } catch (error) {
+      payments = [];
+
+      renderSummary();
+
+      document.getElementById("paymentsBody").innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            Unable to load payment history.
+          </td>
+        </tr>
+      `;
+
+      showMessage(error.message);
+    }
+  }
+
+  async function logout() {
+    try {
+      await api("/auth/logout", {
+        method: "POST"
+      });
+    } catch {
+      // Continue to login even if logout request fails.
+    }
+
+    location.href = "login.html";
+  }
+
+  document
+    .getElementById("paymentModal")
+    .addEventListener("click", function(event) {
+      if (event.target === this) {
+        closeModal();
+      }
+    });
+
+  async function init() {
+    const authenticated = await loadProfile();
+
+    if (!authenticated) {
+      return;
+    }
+
+    await loadPayments();
+  }
+
+  init();
+</script>
+
+</body>
+</html>

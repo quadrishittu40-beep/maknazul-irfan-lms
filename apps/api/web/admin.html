@@ -1,0 +1,4437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Admin Dashboard | MAKNAZUL IRFAN ACADEMY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f7f4;
+      color: #17231b;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .topbar {
+      min-height: 76px;
+      background: #075b3a;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .academy-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      background: white;
+      border-radius: 50%;
+      padding: 3px;
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      margin-bottom: 3px;
+    }
+
+    .brand p {
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-name {
+      font-size: 14px;
+    }
+
+    .logout-btn {
+      border: 1px solid rgba(255,255,255,.5);
+      background: transparent;
+      color: white;
+      padding: 9px 15px;
+      border-radius: 7px;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255,255,255,.12);
+    }
+
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 76px);
+    }
+
+    .sidebar {
+      width: 235px;
+      background: #063f2b;
+      color: white;
+      padding: 18px 12px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: .65;
+      padding: 10px 13px;
+      margin-bottom: 5px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: white;
+      text-align: left;
+      padding: 12px 13px;
+      border-radius: 7px;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.active {
+      background: #0b7048;
+    }
+
+    .main {
+      flex: 1;
+      padding: 28px;
+      min-width: 0;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-header {
+      margin-bottom: 22px;
+    }
+
+    .page-header h2 {
+      color: #075b3a;
+      margin-bottom: 5px;
+    }
+
+    .page-header p {
+      color: #66736b;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      border-left: 5px solid #075b3a;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
+    }
+
+    .stat h3 {
+      font-size: 28px;
+      color: #075b3a;
+      margin-bottom: 6px;
+    }
+
+    .stat p {
+      color: #68756d;
+      font-size: 13px;
+    }
+
+    .certificate-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .certificate-stat {
+      background: white;
+      border-radius: 10px;
+      padding: 18px;
+      border-left: 5px solid #c49a3a;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
+    }
+
+    .certificate-stat h3 {
+      font-size: 27px;
+      color: #075b3a;
+      margin-bottom: 5px;
+    }
+
+    .certificate-stat p {
+      color: #68756d;
+      font-size: 13px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      color: #075b3a;
+      margin-bottom: 15px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .quick-btn {
+      border: 1px solid #d7e5dc;
+      background: #f8fbf9;
+      padding: 18px;
+      border-radius: 9px;
+      color: #075b3a;
+      text-align: left;
+    }
+
+    .quick-btn:hover {
+      background: #eef7f1;
+    }
+
+    .quick-btn strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .quick-btn span {
+      font-size: 12px;
+      color: #68756d;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .toolbar input,
+    .toolbar select,
+    .form-grid input,
+    .form-grid select,
+    .form-grid textarea {
+      border: 1px solid #cddbd2;
+      border-radius: 7px;
+      padding: 10px 12px;
+      background: white;
+      outline: none;
+    }
+
+    .toolbar input:focus,
+    .toolbar select:focus,
+    .form-grid input:focus,
+    .form-grid select:focus,
+    .form-grid textarea:focus {
+      border-color: #075b3a;
+    }
+
+    .toolbar input {
+      min-width: 230px;
+      flex: 1;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+
+    th,
+    td {
+      padding: 11px 10px;
+      border-bottom: 1px solid #e4ebe7;
+      text-align: left;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f0f6f2;
+      color: #075b3a;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .badge.green {
+      background: #dff4e8;
+      color: #14683f;
+    }
+
+    .badge.yellow {
+      background: #fff2c9;
+      color: #806100;
+    }
+
+    .badge.red {
+      background: #fde2e2;
+      color: #9c2424;
+    }
+
+    .badge.blue {
+      background: #e0edff;
+      color: #245a9b;
+    }
+
+    .action-btn {
+      border: 0;
+      border-radius: 6px;
+      padding: 7px 9px;
+      font-size: 11px;
+      margin: 2px;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .approve {
+      background: #dff4e8;
+      color: #14683f;
+    }
+
+    .reject,
+    .danger {
+      background: #fde2e2;
+      color: #9c2424;
+    }
+
+    .neutral {
+      background: #e8eee9;
+      color: #34473b;
+    }
+
+    .primary {
+      background: #075b3a;
+      color: white;
+    }
+
+    .secondary {
+      background: #d9eee3;
+      color: #075b3a;
+    }
+
+    .gold {
+      background: #c49a3a;
+      color: white;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: bold;
+      color: #405048;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-actions {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .form-actions button {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 15px;
+    }
+
+    .message {
+      padding: 11px 13px;
+      border-radius: 7px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.success {
+      background: #dff4e8;
+      color: #14683f;
+    }
+
+    .message.error {
+      background: #fde2e2;
+      color: #9c2424;
+    }
+
+    .empty {
+      text-align: center;
+      color: #758178;
+      padding: 30px 15px;
+      font-size: 14px;
+    }
+
+    .loading {
+      text-align: center;
+      color: #68756d;
+      padding: 25px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 25px;
+      color: #718078;
+      font-size: 12px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 12px;
+      padding: 22px;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .modal-head h3 {
+      color: #075b3a;
+    }
+
+    .close {
+      border: 0;
+      background: #edf2ee;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 18px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .detail {
+      background: #f5f8f6;
+      padding: 12px;
+      border-radius: 7px;
+    }
+
+    .detail small {
+      display: block;
+      color: #758178;
+      margin-bottom: 4px;
+    }
+
+    .detail strong {
+      word-break: break-word;
+    }
+
+    .certificate-note {
+      background: #f5f8f6;
+      border-left: 4px solid #c49a3a;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #59665e;
+      margin-bottom: 15px;
+    }
+
+    .optional {
+      color: #89958e;
+      font-weight: normal;
+    }
+
+    .certificate-number {
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: bold;
+      color: #075b3a;
+    }
+
+    @media (max-width: 1000px) {
+      .stats,
+      .quick-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .certificate-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .layout {
+        display: block;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: flex;
+        overflow-x: auto;
+        gap: 5px;
+        padding: 8px;
+      }
+
+      .sidebar-title {
+        display: none;
+      }
+
+      .nav-btn {
+        width: auto;
+        white-space: nowrap;
+        margin: 0;
+      }
+
+      .main {
+        padding: 18px 12px;
+      }
+
+      .topbar {
+        padding: 9px 12px;
+      }
+
+      .admin-name {
+        display: none;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .brand p {
+        display: none;
+      }
+
+      .academy-logo {
+        width: 48px;
+        height: 48px;
+      }
+
+      .form-grid,
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.full {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .stats,
+      .quick-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        flex-direction: column;
+      }
+
+      .toolbar input {
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+
+  <div class="brand">
+
+    <img
+      src="assets/logo.png"
+      alt="MAKNAZUL IRFAN ACADEMY Logo"
+      class="academy-logo"
+    >
+
+    <div>
+      <h1>MAKNAZUL IRFAN ACADEMY</h1>
+      <p>Administration Control Center</p>
+    </div>
+
+  </div>
+
+  <div class="top-actions">
+
+    <span class="admin-name" id="adminName">
+      Administrator
+    </span>
+
+    <button class="logout-btn" id="logoutBtn">
+      Logout
+    </button>
+
+  </div>
+
+</header>
+
+
+<div class="layout">
+
+  <aside class="sidebar">
+
+    <div class="sidebar-title">
+      Administration
+    </div>
+
+    <button class="nav-btn active" data-page="dashboard">
+      Dashboard
+    </button>
+
+    <button class="nav-btn" data-page="students">
+      Students
+    </button>
+
+    <button class="nav-btn" data-page="courses">
+      Courses
+    </button>
+
+    <button class="nav-btn" data-page="academic">
+      Academic Setup
+    </button>
+
+    <button class="nav-btn" data-page="exams">
+      Examinations
+    </button>
+
+    <button class="nav-btn" data-page="payments">
+      Payments
+    </button>
+
+    <button class="nav-btn" data-page="certificates">
+      Certificates
+    </button>
+
+    <button class="nav-btn" data-page="live">
+      Live Classes
+    </button>
+
+    <button class="nav-btn" data-page="profile">
+      My Profile
+    </button>
+
+  </aside>
+
+
+  <main class="main">
+
+
+    <!-- =====================================================
+         DASHBOARD
+    ====================================================== -->
+
+    <section class="page active" id="page-dashboard">
+
+      <div class="page-header">
+
+        <h2>
+          Administration Dashboard
+        </h2>
+
+        <p>
+          Manage students, academic programmes, courses,
+          examinations, payments and certificates.
+        </p>
+
+      </div>
+
+      <div id="dashboardMessage" class="message"></div>
+
+
+      <div class="stats">
+
+        <div class="stat">
+          <h3 id="totalStudents">0</h3>
+          <p>Total Students</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="pendingStudents">0</h3>
+          <p>Pending Students</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="totalCourses">0</h3>
+          <p>Courses</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="totalPayments">0</h3>
+          <p>Payments</p>
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>
+          Quick Administration
+        </h3>
+
+        <div class="quick-grid">
+
+          <button class="quick-btn" data-go="students">
+
+            <strong>
+              Student Management
+            </strong>
+
+            <span>
+              Approve, reject and manage student accounts.
+            </span>
+
+          </button>
+
+
+          <button class="quick-btn" data-go="courses">
+
+            <strong>
+              Course Management
+            </strong>
+
+            <span>
+              View and manage academy courses.
+            </span>
+
+          </button>
+
+
+          <button class="quick-btn" data-go="exams">
+
+            <strong>
+              Examinations
+            </strong>
+
+            <span>
+              Monitor tests and examination activities.
+            </span>
+
+          </button>
+
+
+          <button class="quick-btn" data-go="payments">
+
+            <strong>
+              Payment Management
+            </strong>
+
+            <span>
+              Monitor student course payments.
+            </span>
+
+          </button>
+
+
+          <button class="quick-btn" data-go="certificates">
+
+            <strong>
+              Certificate Management
+            </strong>
+
+            <span>
+              Issue and manage student certificates.
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>
+          Pending Student Applications
+        </h3>
+
+        <div id="pendingPreview" class="loading">
+          Loading...
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STUDENTS
+    ====================================================== -->
+
+    <section class="page" id="page-students">
+
+      <div class="page-header">
+
+        <h2>
+          Student Management
+        </h2>
+
+        <p>
+          Review applications and manage student account status.
+        </p>
+
+      </div>
+
+      <div id="studentMessage" class="message"></div>
+
+      <div class="card">
+
+        <div class="toolbar">
+
+          <input
+            type="search"
+            id="studentSearch"
+            placeholder="Search student name or email..."
+          >
+
+          <select id="studentStatus">
+
+            <option value="">
+              All statuses
+            </option>
+
+            <option value="PENDING">
+              Pending
+            </option>
+
+            <option value="APPROVED">
+              Approved
+            </option>
+
+            <option value="ENROLLED">
+              Enrolled
+            </option>
+
+            <option value="SUSPENDED">
+              Suspended
+            </option>
+
+            <option value="GRADUATED">
+              Graduated
+            </option>
+
+            <option value="REJECTED">
+              Rejected
+            </option>
+
+          </select>
+
+          <button
+            class="action-btn primary"
+            id="refreshStudents"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Level</th>
+                <th>Status</th>
+                <th>Account</th>
+                <th>Actions</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="studentsTable">
+
+              <tr>
+                <td colspan="6" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         COURSES
+    ====================================================== -->
+
+    <section class="page" id="page-courses">
+
+      <div class="page-header">
+
+        <h2>
+          Course Management
+        </h2>
+
+        <p>
+          Review the academy's courses and publication status.
+        </p>
+
+      </div>
+
+      <div id="courseMessage" class="message"></div>
+
+      <div class="card">
+
+        <div class="toolbar">
+
+          <input
+            type="search"
+            id="courseSearch"
+            placeholder="Search courses..."
+          >
+
+          <button
+            class="action-btn primary"
+            id="refreshCourses"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Course</th>
+                <th>Subject</th>
+                <th>Level</th>
+                <th>Teacher</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="coursesTable">
+
+              <tr>
+                <td colspan="7" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ACADEMIC SETUP
+    ====================================================== -->
+
+    <section class="page" id="page-academic">
+
+      <div class="page-header">
+
+        <h2>
+          Academic Setup
+        </h2>
+
+        <p>
+          View the academic structure used by
+          MAKNAZUL IRFAN ACADEMY.
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>
+          Levels
+        </h3>
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="levelsTable">
+
+              <tr>
+                <td colspan="2" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>
+          Classes
+        </h3>
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Name</th>
+                <th>Level</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="classesTable">
+
+              <tr>
+                <td colspan="2" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>
+          Subjects
+        </h3>
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Description</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="subjectsTable">
+
+              <tr>
+                <td colspan="3" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         EXAMINATIONS
+    ====================================================== -->
+
+    <section class="page" id="page-exams">
+
+      <div class="page-header">
+
+        <h2>
+          Examinations
+        </h2>
+
+        <p>
+          Monitor tests configured for the academy.
+        </p>
+
+      </div>
+
+      <div id="examMessage" class="message"></div>
+
+      <div class="card">
+
+        <div class="toolbar">
+
+          <input
+            type="search"
+            id="examSearch"
+            placeholder="Search examinations..."
+          >
+
+          <button
+            class="action-btn primary"
+            id="refreshExams"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Examination</th>
+                <th>Course</th>
+                <th>Duration</th>
+                <th>Questions</th>
+                <th>Status</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="examsTable">
+
+              <tr>
+                <td colspan="5" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PAYMENTS
+    ====================================================== -->
+
+    <section class="page" id="page-payments">
+
+      <div class="page-header">
+
+        <h2>
+          Payment Management
+        </h2>
+
+        <p>
+          Monitor student course payments and transaction status.
+        </p>
+
+      </div>
+
+      <div id="paymentMessage" class="message"></div>
+
+      <div class="card">
+
+        <div class="toolbar">
+
+          <input
+            type="search"
+            id="paymentSearch"
+            placeholder="Search student, reference or course..."
+          >
+
+          <select id="paymentStatus">
+
+            <option value="">
+              All statuses
+            </option>
+
+            <option value="PENDING">
+              Pending
+            </option>
+
+            <option value="SUCCESS">
+              Successful
+            </option>
+
+            <option value="FAILED">
+              Failed
+            </option>
+
+            <option value="REFUNDED">
+              Refunded
+            </option>
+
+          </select>
+
+          <button
+            class="action-btn primary"
+            id="refreshPayments"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Amount</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="paymentsTable">
+
+              <tr>
+                <td colspan="6" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CERTIFICATES
+    ====================================================== -->
+
+    <section class="page" id="page-certificates">
+
+      <div class="page-header">
+
+        <h2>
+          Certificate Management
+        </h2>
+
+        <p>
+          Issue certificates to students and manage certificates
+          already issued by the academy.
+        </p>
+
+      </div>
+
+
+      <div id="certificateMessage" class="message"></div>
+
+
+      <div class="certificate-note">
+
+        Certificates are issued through the academy backend.
+        Each certificate receives a unique certificate number.
+        A course may be selected, or a general certificate may
+        be issued without attaching a course.
+
+      </div>
+
+
+      <div class="certificate-stats">
+
+        <div class="certificate-stat">
+
+          <h3 id="totalCertificates">
+            0
+          </h3>
+
+          <p>
+            Total Certificates
+          </p>
+
+        </div>
+
+
+        <div class="certificate-stat">
+
+          <h3 id="courseCertificates">
+            0
+          </h3>
+
+          <p>
+            Course Certificates
+          </p>
+
+        </div>
+
+
+        <div class="certificate-stat">
+
+          <h3 id="generalCertificates">
+            0
+          </h3>
+
+          <p>
+            General Certificates
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>
+          Issue Certificate
+        </h3>
+
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label for="certificateStudent">
+              Student
+            </label>
+
+            <select id="certificateStudent">
+
+              <option value="">
+                Select student
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="certificateCourse">
+              Course
+              <span class="optional">
+                (optional)
+              </span>
+            </label>
+
+            <select id="certificateCourse">
+
+              <option value="">
+                General certificate
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group full">
+
+            <label for="certificateUrl">
+
+              Certificate File URL
+
+              <span class="optional">
+                (optional)
+              </span>
+
+            </label>
+
+            <input
+              type="url"
+              id="certificateUrl"
+              placeholder="https://..."
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button
+            class="primary"
+            id="issueCertificateBtn"
+          >
+            Issue Certificate
+          </button>
+
+
+          <button
+            class="secondary"
+            id="refreshCertificates"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="toolbar">
+
+          <input
+            type="search"
+            id="certificateSearch"
+            placeholder="Search certificate, student or course..."
+          >
+
+        </div>
+
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Certificate No.</th>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Issued</th>
+                <th>File</th>
+              </tr>
+
+            </thead>
+
+
+            <tbody id="certificatesTable">
+
+              <tr>
+                <td colspan="5" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         LIVE CLASSES
+    ====================================================== -->
+
+    <section class="page" id="page-live">
+
+      <div class="page-header">
+
+        <h2>
+          Live Classes
+        </h2>
+
+        <p>
+          Monitor scheduled online classes.
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="toolbar">
+
+          <input
+            type="search"
+            id="liveSearch"
+            placeholder="Search live classes..."
+          >
+
+          <button
+            class="action-btn primary"
+            id="refreshLive"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Title</th>
+                <th>Course</th>
+                <th>Teacher</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Status</th>
+              </tr>
+
+            </thead>
+
+
+            <tbody id="liveTable">
+
+              <tr>
+                <td colspan="6" class="loading">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PROFILE
+    ====================================================== -->
+
+    <section class="page" id="page-profile">
+
+      <div class="page-header">
+
+        <h2>
+          My Profile
+        </h2>
+
+        <p>
+          Administrator account information.
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="detail-grid">
+
+          <div class="detail">
+
+            <small>
+              Name
+            </small>
+
+            <strong id="profileName">
+              —
+            </strong>
+
+          </div>
+
+
+          <div class="detail">
+
+            <small>
+              Email
+            </small>
+
+            <strong id="profileEmail">
+              —
+            </strong>
+
+          </div>
+
+
+          <div class="detail">
+
+            <small>
+              Role
+            </small>
+
+            <strong id="profileRole">
+              —
+            </strong>
+
+          </div>
+
+
+          <div class="detail">
+
+            <small>
+              Account Status
+            </small>
+
+            <strong id="profileStatus">
+              —
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <div class="footer">
+
+      MAKNAZUL IRFAN Online Islamic & Arabic Institute
+
+      <br>
+
+      Knowledge • Faith • Excellence
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<!-- =====================================================
+     STUDENT DETAILS MODAL
+====================================================== -->
+
+<div class="modal" id="studentModal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <h3>
+        Student Details
+      </h3>
+
+      <button
+        class="close"
+        id="closeStudentModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div
+      id="studentDetails"
+      class="detail-grid"
+    >
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  const API = "/api";
+
+  let currentUser = null;
+
+  let students = [];
+  let courses = [];
+  let tests = [];
+  let payments = [];
+  let liveClasses = [];
+  let certificates = [];
+
+
+  /* =========================================================
+     API HELPER
+  ========================================================== */
+
+  async function api(path, options = {}) {
+
+    const config = {
+      credentials: "include",
+      ...options,
+      headers: {
+        ...(options.body
+          ? { "Content-Type": "application/json" }
+          : {}),
+        ...(options.headers || {})
+      }
+    };
+
+    const response = await fetch(
+      API + path,
+      config
+    );
+
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        `Request failed (${response.status})`
+      );
+    }
+
+    return data;
+  }
+
+
+  /* =========================================================
+     DATA HELPERS
+  ========================================================== */
+
+  function unwrap(data, key) {
+
+    if (!data) return null;
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        data,
+        key
+      )
+    ) {
+      return data[key];
+    }
+
+    return data;
+  }
+
+
+  function arrayFrom(data, key) {
+
+    const value = unwrap(data, key);
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    return [];
+  }
+
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+
+  function showMessage(
+    id,
+    message,
+    type = "success"
+  ) {
+
+    const element =
+      document.getElementById(id);
+
+    if (!element) return;
+
+    element.textContent = message;
+
+    element.className =
+      `message show ${type}`;
+
+    setTimeout(() => {
+
+      element.classList.remove("show");
+
+    }, 5000);
+  }
+
+
+  function formatDate(value) {
+
+    if (!value) return "—";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    return date.toLocaleDateString(
+      undefined,
+      {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      }
+    );
+  }
+
+
+  function formatDateTime(value) {
+
+    if (!value) return "—";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    return date.toLocaleString(
+      undefined,
+      {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      }
+    );
+  }
+
+
+  function formatMoney(
+    amount,
+    currency = "NGN"
+  ) {
+
+    const number = Number(amount || 0);
+
+    try {
+
+      return new Intl.NumberFormat(
+        "en-NG",
+        {
+          style: "currency",
+          currency
+        }
+      ).format(number);
+
+    } catch {
+
+      return `${currency} ${number.toLocaleString()}`;
+    }
+  }
+
+
+  function statusBadge(status) {
+
+    const value =
+      String(status || "UNKNOWN")
+        .toUpperCase();
+
+    let type = "blue";
+
+    if (
+      [
+        "APPROVED",
+        "ACTIVE",
+        "SUCCESS",
+        "SUCCEEDED",
+        "ENROLLED",
+        "PUBLISHED",
+        "GRADUATED"
+      ].includes(value)
+    ) {
+      type = "green";
+    }
+
+    else if (
+      [
+        "PENDING",
+        "DRAFT",
+        "SCHEDULED"
+      ].includes(value)
+    ) {
+      type = "yellow";
+    }
+
+    else if (
+      [
+        "REJECTED",
+        "FAILED",
+        "SUSPENDED",
+        "CANCELLED",
+        "REFUNDED"
+      ].includes(value)
+    ) {
+      type = "red";
+    }
+
+    return `
+      <span class="badge ${type}">
+        ${escapeHtml(value)}
+      </span>
+    `;
+  }
+
+
+  function getName(person) {
+
+    if (!person) {
+      return "Unknown";
+    }
+
+    if (person.name) {
+      return person.name;
+    }
+
+    if (person.fullName) {
+      return person.fullName;
+    }
+
+    const first =
+      person.firstName ||
+      person.firstname ||
+      "";
+
+    const last =
+      person.lastName ||
+      person.lastname ||
+      "";
+
+    const combined =
+      `${first} ${last}`.trim();
+
+    if (combined) {
+      return combined;
+    }
+
+    if (person.user) {
+      return getName(person.user);
+    }
+
+    if (person.studentProfile) {
+      return getName(person.studentProfile);
+    }
+
+    if (person.profile) {
+      return getName(person.profile);
+    }
+
+    return person.email || "Unknown";
+  }
+
+
+  function getCourseTitle(course) {
+
+    if (!course) {
+      return "—";
+    }
+
+    return (
+      course.title ||
+      course.name ||
+      "Untitled Course"
+    );
+  }
+
+
+  function getStudentProfile(student) {
+
+    return (
+      student?.studentProfile ||
+      student?.profile ||
+      student ||
+      {}
+    );
+  }
+
+
+  /* =========================================================
+     NAVIGATION
+  ========================================================== */
+
+  function showPage(pageName) {
+
+    document
+      .querySelectorAll(".page")
+      .forEach(page => {
+        page.classList.remove("active");
+      });
+
+
+    document
+      .querySelectorAll(".nav-btn")
+      .forEach(button => {
+
+        button.classList.toggle(
+          "active",
+          button.dataset.page === pageName
+        );
+
+      });
+
+
+    const page =
+      document.getElementById(
+        `page-${pageName}`
+      );
+
+    if (!page) return;
+
+    page.classList.add("active");
+
+
+    if (pageName === "dashboard") {
+      refreshDashboard();
+    }
+
+    if (pageName === "students") {
+      loadStudents();
+    }
+
+    if (pageName === "courses") {
+      loadCourses();
+    }
+
+    if (pageName === "academic") {
+      loadAcademic();
+    }
+
+    if (pageName === "exams") {
+      loadExams();
+    }
+
+    if (pageName === "payments") {
+      loadPayments();
+    }
+
+    if (pageName === "certificates") {
+      loadCertificates();
+    }
+
+    if (pageName === "live") {
+      loadLiveClasses();
+    }
+
+    if (pageName === "profile") {
+      renderProfile();
+    }
+  }
+
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+          showPage(button.dataset.page);
+        }
+      );
+
+    });
+
+
+  document
+    .querySelectorAll("[data-go]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+          showPage(button.dataset.go);
+        }
+      );
+
+    });
+
+
+  /* =========================================================
+     AUTH
+  ========================================================== */
+
+  async function loadCurrentUser() {
+
+    try {
+
+      const data =
+        await api("/auth/me");
+
+      currentUser =
+        data?.user ||
+        data?.data?.user ||
+        data;
+
+      renderProfile();
+
+      const name =
+        getName(currentUser);
+
+      document.getElementById(
+        "adminName"
+      ).textContent =
+        name || "Administrator";
+
+    } catch (error) {
+
+      console.error(
+        "Unable to load current user:",
+        error
+      );
+
+    }
+  }
+
+
+  async function logout() {
+
+    try {
+
+      await api(
+        "/auth/logout",
+        {
+          method: "POST"
+        }
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Logout request:",
+        error
+      );
+
+    }
+
+    window.location.href =
+      "login.html";
+  }
+
+
+  document
+    .getElementById("logoutBtn")
+    .addEventListener(
+      "click",
+      logout
+    );
+
+
+  /* =========================================================
+     STUDENTS
+  ========================================================== */
+
+  async function loadStudents() {
+
+    const table =
+      document.getElementById(
+        "studentsTable"
+      );
+
+    if (table) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="6" class="loading">
+            Loading students...
+          </td>
+        </tr>
+      `;
+    }
+
+    try {
+
+      const data =
+        await api("/admin/students");
+
+      students =
+        arrayFrom(data, "students");
+
+      if (!students.length) {
+
+        students =
+          arrayFrom(data, "data");
+      }
+
+      renderStudents();
+
+      updateDashboardStats();
+
+      populateCertificateStudents();
+
+    } catch (error) {
+
+      console.error(error);
+
+      if (table) {
+
+        table.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty">
+              ${escapeHtml(error.message)}
+            </td>
+          </tr>
+        `;
+      }
+    }
+  }
+
+
+  function renderStudents() {
+
+    const table =
+      document.getElementById(
+        "studentsTable"
+      );
+
+    if (!table) return;
+
+    const search =
+      document
+        .getElementById("studentSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const status =
+      document.getElementById(
+        "studentStatus"
+      ).value;
+
+
+    const filtered =
+      students.filter(student => {
+
+        const profile =
+          getStudentProfile(student);
+
+        const user =
+          student.user ||
+          profile.user ||
+          {};
+
+        const name =
+          getName(student)
+            .toLowerCase();
+
+        const email =
+          String(
+            user.email ||
+            student.email ||
+            ""
+          ).toLowerCase();
+
+        const currentStatus =
+          String(
+            profile.status ||
+            student.status ||
+            ""
+          ).toUpperCase();
+
+        const matchesSearch =
+          !search ||
+          name.includes(search) ||
+          email.includes(search);
+
+        const matchesStatus =
+          !status ||
+          currentStatus === status;
+
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
+      });
+
+
+    if (!filtered.length) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            No students found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+
+    table.innerHTML =
+      filtered.map(student => {
+
+        const profile =
+          getStudentProfile(student);
+
+        const user =
+          student.user ||
+          profile.user ||
+          {};
+
+        const name =
+          getName(student);
+
+        const email =
+          user.email ||
+          student.email ||
+          "—";
+
+        const level =
+          profile.level?.name ||
+          profile.class?.level?.name ||
+          profile.levelName ||
+          "—";
+
+        const status =
+          profile.status ||
+          student.status ||
+          "UNKNOWN";
+
+        const accountStatus =
+          user.status ||
+          student.accountStatus ||
+          "—";
+
+        const id =
+          profile.id ||
+          student.studentId ||
+          student.id;
+
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHtml(name)}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHtml(email)}
+            </td>
+
+            <td>
+              ${escapeHtml(level)}
+            </td>
+
+            <td>
+              ${statusBadge(status)}
+            </td>
+
+            <td>
+              ${statusBadge(accountStatus)}
+            </td>
+
+            <td>
+
+              <button
+                class="action-btn neutral"
+                onclick="viewStudent('${escapeHtml(id)}')"
+              >
+                View
+              </button>
+
+              ${
+                String(status).toUpperCase() ===
+                "PENDING"
+                ? `
+                  <button
+                    class="action-btn approve"
+                    onclick="changeStudentStatus('${escapeHtml(id)}','APPROVED')"
+                  >
+                    Approve
+                  </button>
+
+                  <button
+                    class="action-btn reject"
+                    onclick="changeStudentStatus('${escapeHtml(id)}','REJECTED')"
+                  >
+                    Reject
+                  </button>
+                `
+                : ""
+              }
+
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+  }
+
+
+  async function changeStudentStatus(
+    studentId,
+    status
+  ) {
+
+    if (
+      !confirm(
+        `Change this student's status to ${status}?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+
+      await api(
+        `/admin/students/${encodeURIComponent(studentId)}/status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            status
+          })
+        }
+      );
+
+      showMessage(
+        "studentMessage",
+        `Student status changed to ${status}.`
+      );
+
+      await loadStudents();
+
+    } catch (error) {
+
+      showMessage(
+        "studentMessage",
+        error.message,
+        "error"
+      );
+    }
+  }
+
+
+  async function viewStudent(studentId) {
+
+    const modal =
+      document.getElementById(
+        "studentModal"
+      );
+
+    const details =
+      document.getElementById(
+        "studentDetails"
+      );
+
+    modal.classList.add("show");
+
+    details.innerHTML = `
+      <div class="loading">
+        Loading student...
+      </div>
+    `;
+
+
+    try {
+
+      let student =
+        students.find(item => {
+
+          const profile =
+            getStudentProfile(item);
+
+          return (
+            profile.id === studentId ||
+            item.id === studentId ||
+            item.studentId === studentId
+          );
+
+        });
+
+
+      if (!student) {
+
+        const data =
+          await api(
+            `/admin/students/${encodeURIComponent(studentId)}`
+          );
+
+        student =
+          data?.student ||
+          data?.data ||
+          data;
+      }
+
+
+      const profile =
+        getStudentProfile(student);
+
+      const user =
+        student.user ||
+        profile.user ||
+        {};
+
+      details.innerHTML = `
+
+        <div class="detail">
+          <small>Name</small>
+          <strong>
+            ${escapeHtml(getName(student))}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <small>Email</small>
+          <strong>
+            ${escapeHtml(user.email || student.email || "—")}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <small>Status</small>
+          <strong>
+            ${escapeHtml(profile.status || student.status || "—")}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <small>Phone</small>
+          <strong>
+            ${escapeHtml(profile.phone || user.phone || "—")}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <small>Level</small>
+          <strong>
+            ${escapeHtml(
+              profile.level?.name ||
+              profile.levelName ||
+              "—"
+            )}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <small>Class</small>
+          <strong>
+            ${escapeHtml(
+              profile.class?.name ||
+              profile.className ||
+              "—"
+            )}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <small>Registration Date</small>
+          <strong>
+            ${escapeHtml(
+              formatDate(
+                profile.createdAt ||
+                student.createdAt ||
+                user.createdAt
+              )
+            )}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <small>Student ID</small>
+          <strong>
+            ${escapeHtml(
+              profile.id ||
+              student.studentId ||
+              student.id ||
+              "—"
+            )}
+          </strong>
+        </div>
+
+      `;
+
+    } catch (error) {
+
+      details.innerHTML = `
+        <div class="empty">
+          ${escapeHtml(error.message)}
+        </div>
+      `;
+    }
+  }
+
+
+  document
+    .getElementById("closeStudentModal")
+    .addEventListener(
+      "click",
+      () => {
+        document
+          .getElementById("studentModal")
+          .classList.remove("show");
+      }
+    );
+
+
+  document
+    .getElementById("studentModal")
+    .addEventListener(
+      "click",
+      event => {
+
+        if (
+          event.target.id ===
+          "studentModal"
+        ) {
+
+          event.currentTarget
+            .classList.remove("show");
+        }
+
+      }
+    );
+
+
+  /* =========================================================
+     COURSES
+  ========================================================== */
+
+  async function loadCourses() {
+
+    const table =
+      document.getElementById(
+        "coursesTable"
+      );
+
+    table.innerHTML = `
+      <tr>
+        <td colspan="7" class="loading">
+          Loading courses...
+        </td>
+      </tr>
+    `;
+
+
+    try {
+
+      const data =
+        await api("/admin/courses");
+
+      courses =
+        arrayFrom(data, "courses");
+
+      if (!courses.length) {
+        courses =
+          arrayFrom(data, "data");
+      }
+
+      renderCourses();
+
+      updateDashboardStats();
+
+      populateCertificateCourses();
+
+    } catch (error) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty">
+            ${escapeHtml(error.message)}
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+
+  function renderCourses() {
+
+    const table =
+      document.getElementById(
+        "coursesTable"
+      );
+
+    const search =
+      document
+        .getElementById("courseSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const filtered =
+      courses.filter(course => {
+
+        const title =
+          getCourseTitle(course)
+            .toLowerCase();
+
+        const subject =
+          String(
+            course.subject?.name ||
+            ""
+          ).toLowerCase();
+
+        const level =
+          String(
+            course.level?.name ||
+            ""
+          ).toLowerCase();
+
+        return (
+          !search ||
+          title.includes(search) ||
+          subject.includes(search) ||
+          level.includes(search)
+        );
+
+      });
+
+
+    if (!filtered.length) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty">
+            No courses found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+
+    table.innerHTML =
+      filtered.map(course => {
+
+        const title =
+          getCourseTitle(course);
+
+        const teacher =
+          course.teacher?.user
+            ? getName(course.teacher.user)
+            : getName(course.teacher);
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHtml(title)}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHtml(
+                course.subject?.name || "—"
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                course.level?.name || "—"
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                teacher || "—"
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                formatMoney(
+                  course.price,
+                  course.currency || "NGN"
+                )
+              )}
+            </td>
+
+            <td>
+              ${statusBadge(
+                course.status || "ACTIVE"
+              )}
+            </td>
+
+            <td>
+              <button
+                class="action-btn neutral"
+                onclick="viewCourse('${escapeHtml(course.id)}')"
+              >
+                View
+              </button>
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+  }
+
+
+  function viewCourse(courseId) {
+
+    const course =
+      courses.find(
+        item => item.id === courseId
+      );
+
+    if (!course) return;
+
+    alert(
+      [
+        `Course: ${getCourseTitle(course)}`,
+        `Subject: ${course.subject?.name || "—"}`,
+        `Level: ${course.level?.name || "—"}`,
+        `Status: ${course.status || "—"}`,
+        `Price: ${formatMoney(course.price, course.currency || "NGN")}`
+      ].join("\n")
+    );
+  }
+
+
+  /* =========================================================
+     ACADEMIC
+  ========================================================== */
+
+  async function loadAcademic() {
+
+    try {
+
+      const data =
+        await api("/admin/academic");
+
+      const levels =
+        arrayFrom(data, "levels");
+
+      const classes =
+        arrayFrom(data, "classes");
+
+      const subjects =
+        arrayFrom(data, "subjects");
+
+
+      renderSimpleTable(
+        "levelsTable",
+        levels,
+        2,
+        item => `
+          <td>${escapeHtml(item.name || "—")}</td>
+          <td>${escapeHtml(item.description || "—")}</td>
+        `
+      );
+
+
+      renderSimpleTable(
+        "classesTable",
+        classes,
+        2,
+        item => `
+          <td>${escapeHtml(item.name || "—")}</td>
+          <td>${escapeHtml(item.level?.name || "—")}</td>
+        `
+      );
+
+
+      renderSimpleTable(
+        "subjectsTable",
+        subjects,
+        3,
+        item => `
+          <td>${escapeHtml(item.name || "—")}</td>
+          <td>${escapeHtml(item.code || "—")}</td>
+          <td>${escapeHtml(item.description || "—")}</td>
+        `
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Academic loading error:",
+        error
+      );
+    }
+  }
+
+
+  function renderSimpleTable(
+    id,
+    items,
+    columns,
+    renderer
+  ) {
+
+    const table =
+      document.getElementById(id);
+
+    if (!table) return;
+
+    if (!items.length) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="${columns}" class="empty">
+            No records found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    table.innerHTML =
+      items.map(renderer).join("");
+  }
+
+
+  /* =========================================================
+     EXAMS
+  ========================================================== */
+
+  async function loadExams() {
+
+    const table =
+      document.getElementById(
+        "examsTable"
+      );
+
+    table.innerHTML = `
+      <tr>
+        <td colspan="5" class="loading">
+          Loading examinations...
+        </td>
+      </tr>
+    `;
+
+
+    try {
+
+      const data =
+        await api("/admin/exams");
+
+      tests =
+        arrayFrom(data, "tests");
+
+      if (!tests.length) {
+        tests =
+          arrayFrom(data, "exams");
+      }
+
+      if (!tests.length) {
+        tests =
+          arrayFrom(data, "data");
+      }
+
+      renderExams();
+
+    } catch (error) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="5" class="empty">
+            ${escapeHtml(error.message)}
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+
+  function renderExams() {
+
+    const table =
+      document.getElementById(
+        "examsTable"
+      );
+
+    const search =
+      document
+        .getElementById("examSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const filtered =
+      tests.filter(test => {
+
+        const title =
+          String(
+            test.title ||
+            test.name ||
+            ""
+          ).toLowerCase();
+
+        const course =
+          getCourseTitle(
+            test.course
+          ).toLowerCase();
+
+        return (
+          !search ||
+          title.includes(search) ||
+          course.includes(search)
+        );
+      });
+
+
+    if (!filtered.length) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="5" class="empty">
+            No examinations found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+
+    table.innerHTML =
+      filtered.map(test => {
+
+        const questionCount =
+          test.questionCount ??
+          test.questions?.length ??
+          test._count?.questions ??
+          0;
+
+        const duration =
+          test.durationMinutes ??
+          test.duration ??
+          "—";
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHtml(
+                  test.title ||
+                  test.name ||
+                  "Untitled Examination"
+                )}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHtml(
+                getCourseTitle(test.course)
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(duration)}
+              ${duration !== "—" ? " min" : ""}
+            </td>
+
+            <td>
+              ${escapeHtml(questionCount)}
+            </td>
+
+            <td>
+              ${statusBadge(
+                test.status || "ACTIVE"
+              )}
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+  }
+
+
+  /* =========================================================
+     PAYMENTS
+  ========================================================== */
+
+  async function loadPayments() {
+
+    const table =
+      document.getElementById(
+        "paymentsTable"
+      );
+
+    table.innerHTML = `
+      <tr>
+        <td colspan="6" class="loading">
+          Loading payments...
+        </td>
+      </tr>
+    `;
+
+
+    try {
+
+      const data =
+        await api("/admin/payments");
+
+      payments =
+        arrayFrom(data, "payments");
+
+      if (!payments.length) {
+        payments =
+          arrayFrom(data, "data");
+      }
+
+      renderPayments();
+
+      updateDashboardStats();
+
+    } catch (error) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            ${escapeHtml(error.message)}
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+
+  function renderPayments() {
+
+    const table =
+      document.getElementById(
+        "paymentsTable"
+      );
+
+    const search =
+      document
+        .getElementById("paymentSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const status =
+      document.getElementById(
+        "paymentStatus"
+      ).value;
+
+
+    const filtered =
+      payments.filter(payment => {
+
+        const student =
+          payment.student?.user ||
+          payment.student ||
+          {};
+
+        const studentName =
+          getName(student)
+            .toLowerCase();
+
+        const email =
+          String(
+            student.email || ""
+          ).toLowerCase();
+
+        const reference =
+          String(
+            payment.reference ||
+            payment.transactionReference ||
+            ""
+          ).toLowerCase();
+
+        const course =
+          getCourseTitle(
+            payment.course
+          ).toLowerCase();
+
+        const currentStatus =
+          String(
+            payment.status || ""
+          ).toUpperCase();
+
+
+        const matchesSearch =
+          !search ||
+          studentName.includes(search) ||
+          email.includes(search) ||
+          reference.includes(search) ||
+          course.includes(search);
+
+        const matchesStatus =
+          !status ||
+          currentStatus === status;
+
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
+      });
+
+
+    if (!filtered.length) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            No payments found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+
+    table.innerHTML =
+      filtered.map(payment => {
+
+        const student =
+          payment.student?.user ||
+          payment.student ||
+          {};
+
+        return `
+          <tr>
+
+            <td>
+              ${escapeHtml(
+                getName(student)
+              )}
+
+              <div
+                style="
+                  font-size:11px;
+                  color:#758178;
+                "
+              >
+                ${escapeHtml(
+                  student.email || ""
+                )}
+              </div>
+            </td>
+
+            <td>
+              ${escapeHtml(
+                getCourseTitle(
+                  payment.course
+                )
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                formatMoney(
+                  payment.amount,
+                  payment.currency || "NGN"
+                )
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                payment.reference ||
+                payment.transactionReference ||
+                "—"
+              )}
+            </td>
+
+            <td>
+              ${statusBadge(
+                payment.status
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                formatDate(
+                  payment.createdAt ||
+                  payment.paidAt
+                )
+              )}
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+  }
+
+
+  /* =========================================================
+     CERTIFICATES
+  ========================================================== */
+
+  async function loadCertificates() {
+
+    const table =
+      document.getElementById(
+        "certificatesTable"
+      );
+
+    table.innerHTML = `
+      <tr>
+        <td colspan="5" class="loading">
+          Loading certificates...
+        </td>
+      </tr>
+    `;
+
+
+    try {
+
+      const data =
+        await api(
+          "/certificates/admin/all"
+        );
+
+      certificates =
+        arrayFrom(
+          data,
+          "certificates"
+        );
+
+      if (!certificates.length) {
+
+        certificates =
+          arrayFrom(data, "data");
+      }
+
+      renderCertificates();
+
+      updateCertificateStats();
+
+      populateCertificateStudents();
+
+      populateCertificateCourses();
+
+    } catch (error) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="5" class="empty">
+            ${escapeHtml(error.message)}
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+
+  function populateCertificateStudents() {
+
+    const select =
+      document.getElementById(
+        "certificateStudent"
+      );
+
+    if (!select) return;
+
+    const current =
+      select.value;
+
+
+    const activeStudents =
+      students.filter(student => {
+
+        const profile =
+          getStudentProfile(student);
+
+        const status =
+          String(
+            profile.status ||
+            student.status ||
+            ""
+          ).toUpperCase();
+
+        return status !== "REJECTED";
+      });
+
+
+    select.innerHTML =
+      `<option value="">
+        Select student
+      </option>` +
+
+      activeStudents.map(student => {
+
+        const profile =
+          getStudentProfile(student);
+
+        const user =
+          student.user ||
+          profile.user ||
+          {};
+
+        const id =
+          profile.id ||
+          student.studentId ||
+          student.id;
+
+        return `
+          <option value="${escapeHtml(id)}">
+
+            ${escapeHtml(
+              getName(student)
+            )}
+
+            ${
+              user.email
+                ? ` — ${escapeHtml(user.email)}`
+                : ""
+            }
+
+          </option>
+        `;
+
+      }).join("");
+
+
+    if (current) {
+      select.value = current;
+    }
+  }
+
+
+  function populateCertificateCourses() {
+
+    const select =
+      document.getElementById(
+        "certificateCourse"
+      );
+
+    if (!select) return;
+
+    const current =
+      select.value;
+
+
+    select.innerHTML =
+      `<option value="">
+        General certificate
+      </option>` +
+
+      courses.map(course => {
+
+        return `
+          <option value="${escapeHtml(course.id)}">
+            ${escapeHtml(
+              getCourseTitle(course)
+            )}
+          </option>
+        `;
+
+      }).join("");
+
+
+    if (current) {
+      select.value = current;
+    }
+  }
+
+
+  function renderCertificates() {
+
+    const table =
+      document.getElementById(
+        "certificatesTable"
+      );
+
+    if (!table) return;
+
+
+    const search =
+      document
+        .getElementById(
+          "certificateSearch"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const filtered =
+      certificates.filter(cert => {
+
+        const student =
+          cert.student?.user ||
+          cert.student ||
+          {};
+
+        const studentName =
+          getName(student)
+            .toLowerCase();
+
+        const email =
+          String(
+            student.email || ""
+          ).toLowerCase();
+
+        const number =
+          String(
+            cert.certificateNumber || ""
+          ).toLowerCase();
+
+        const course =
+          String(
+            cert.course?.title ||
+            cert.course?.name ||
+            ""
+          ).toLowerCase();
+
+
+        return (
+          !search ||
+          studentName.includes(search) ||
+          email.includes(search) ||
+          number.includes(search) ||
+          course.includes(search)
+        );
+
+      });
+
+
+    if (!filtered.length) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="5" class="empty">
+            No certificates found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+
+    table.innerHTML =
+      filtered.map(cert => {
+
+        const student =
+          cert.student?.user ||
+          cert.student ||
+          {};
+
+        const courseTitle =
+          cert.course?.title ||
+          cert.course?.name ||
+          "General";
+
+
+        const file =
+          cert.certificateUrl
+
+            ? `
+              <a
+                href="${escapeHtml(
+                  cert.certificateUrl
+                )}"
+                target="_blank"
+                rel="noopener"
+                class="action-btn secondary"
+              >
+                Open
+              </a>
+            `
+
+            : "—";
+
+
+        return `
+          <tr>
+
+            <td>
+
+              <span class="certificate-number">
+
+                ${escapeHtml(
+                  cert.certificateNumber
+                )}
+
+              </span>
+
+            </td>
+
+            <td>
+
+              ${escapeHtml(
+                getName(student)
+              )}
+
+              <div
+                style="
+                  font-size:11px;
+                  color:#758178;
+                "
+              >
+
+                ${escapeHtml(
+                  student.email || ""
+                )}
+
+              </div>
+
+            </td>
+
+            <td>
+
+              ${escapeHtml(
+                courseTitle
+              )}
+
+            </td>
+
+            <td>
+
+              ${escapeHtml(
+                formatDate(
+                  cert.issuedAt
+                )
+              )}
+
+            </td>
+
+            <td>
+
+              ${file}
+
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+  }
+
+
+  function updateCertificateStats() {
+
+    const total =
+      certificates.length;
+
+    const courseCount =
+      certificates.filter(
+        certificate =>
+          Boolean(certificate.courseId) ||
+          Boolean(certificate.course)
+      ).length;
+
+    const generalCount =
+      total - courseCount;
+
+
+    document.getElementById(
+      "totalCertificates"
+    ).textContent = total;
+
+
+    document.getElementById(
+      "courseCertificates"
+    ).textContent = courseCount;
+
+
+    document.getElementById(
+      "generalCertificates"
+    ).textContent =
+      generalCount;
+  }
+
+
+  async function issueCertificate() {
+
+    const studentId =
+      document.getElementById(
+        "certificateStudent"
+      ).value;
+
+    const courseId =
+      document.getElementById(
+        "certificateCourse"
+      ).value;
+
+    const certificateUrl =
+      document
+        .getElementById(
+          "certificateUrl"
+        )
+        .value
+        .trim();
+
+
+    if (!studentId) {
+
+      showMessage(
+        "certificateMessage",
+        "Please select a student.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    if (
+      !confirm(
+        "Issue this certificate to the selected student?"
+      )
+    ) {
+      return;
+    }
+
+
+    const button =
+      document.getElementById(
+        "issueCertificateBtn"
+      );
+
+    const oldText =
+      button.textContent;
+
+
+    button.disabled = true;
+    button.textContent =
+      "Issuing...";
+
+
+    try {
+
+      const body = {
+        studentId
+      };
+
+
+      if (courseId) {
+        body.courseId = courseId;
+      }
+
+
+      if (certificateUrl) {
+        body.certificateUrl =
+          certificateUrl;
+      }
+
+
+      await api(
+        "/certificates/admin",
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+
+
+      document.getElementById(
+        "certificateUrl"
+      ).value = "";
+
+
+      showMessage(
+        "certificateMessage",
+        "Certificate issued successfully."
+      );
+
+
+      await loadCertificates();
+
+    } catch (error) {
+
+      showMessage(
+        "certificateMessage",
+        error.message,
+        "error"
+      );
+
+    } finally {
+
+      button.disabled = false;
+      button.textContent =
+        oldText;
+    }
+  }
+
+
+  /* =========================================================
+     LIVE CLASSES
+  ========================================================== */
+
+  async function loadLiveClasses() {
+
+    const table =
+      document.getElementById(
+        "liveTable"
+      );
+
+    table.innerHTML = `
+      <tr>
+        <td colspan="6" class="loading">
+          Loading live classes...
+        </td>
+      </tr>
+    `;
+
+
+    try {
+
+      const data =
+        await api("/admin/live-classes");
+
+      liveClasses =
+        arrayFrom(
+          data,
+          "liveClasses"
+        );
+
+      if (!liveClasses.length) {
+
+        liveClasses =
+          arrayFrom(data, "classes");
+      }
+
+      if (!liveClasses.length) {
+
+        liveClasses =
+          arrayFrom(data, "data");
+      }
+
+      renderLiveClasses();
+
+    } catch (error) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            ${escapeHtml(error.message)}
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+
+  function renderLiveClasses() {
+
+    const table =
+      document.getElementById(
+        "liveTable"
+      );
+
+    const search =
+      document
+        .getElementById("liveSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const filtered =
+      liveClasses.filter(item => {
+
+        const title =
+          String(
+            item.title ||
+            item.name ||
+            ""
+          ).toLowerCase();
+
+        const course =
+          getCourseTitle(
+            item.course
+          ).toLowerCase();
+
+        return (
+          !search ||
+          title.includes(search) ||
+          course.includes(search)
+        );
+      });
+
+
+    if (!filtered.length) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            No live classes found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+
+    table.innerHTML =
+      filtered.map(item => {
+
+        const teacher =
+          item.teacher?.user
+            ? getName(item.teacher.user)
+            : getName(item.teacher);
+
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHtml(
+                  item.title ||
+                  item.name ||
+                  "Untitled Class"
+                )}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHtml(
+                getCourseTitle(
+                  item.course
+                )
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                teacher || "—"
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                formatDateTime(
+                  item.startAt ||
+                  item.startsAt ||
+                  item.startTime
+                )
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                formatDateTime(
+                  item.endAt ||
+                  item.endsAt ||
+                  item.endTime
+                )
+              )}
+            </td>
+
+            <td>
+              ${statusBadge(
+                item.status ||
+                "SCHEDULED"
+              )}
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+  }
+
+
+  /* =========================================================
+     PROFILE
+  ========================================================== */
+
+  function renderProfile() {
+
+    if (!currentUser) return;
+
+
+    document.getElementById(
+      "profileName"
+    ).textContent =
+      getName(currentUser);
+
+
+    document.getElementById(
+      "profileEmail"
+    ).textContent =
+      currentUser.email || "—";
+
+
+    document.getElementById(
+      "profileRole"
+    ).textContent =
+      currentUser.role || "ADMIN";
+
+
+    document.getElementById(
+      "profileStatus"
+    ).textContent =
+      currentUser.status || "ACTIVE";
+  }
+
+
+  /* =========================================================
+     DASHBOARD
+  ========================================================== */
+
+  function updateDashboardStats() {
+
+    const totalStudents =
+      students.length;
+
+    const pendingStudents =
+      students.filter(student => {
+
+        const profile =
+          getStudentProfile(student);
+
+        return String(
+          profile.status ||
+          student.status ||
+          ""
+        ).toUpperCase() === "PENDING";
+
+      }).length;
+
+
+    document.getElementById(
+      "totalStudents"
+    ).textContent =
+      totalStudents;
+
+
+    document.getElementById(
+      "pendingStudents"
+    ).textContent =
+      pendingStudents;
+
+
+    document.getElementById(
+      "totalCourses"
+    ).textContent =
+      courses.length;
+
+
+    document.getElementById(
+      "totalPayments"
+    ).textContent =
+      payments.length;
+  }
+
+
+  async function refreshDashboard() {
+
+    try {
+
+      await Promise.allSettled([
+        loadStudents(),
+        loadCourses(),
+        loadPayments()
+      ]);
+
+      updateDashboardStats();
+
+      renderPendingPreview();
+
+    } catch (error) {
+
+      console.error(
+        "Dashboard refresh error:",
+        error
+      );
+    }
+  }
+
+
+  function renderPendingPreview() {
+
+    const element =
+      document.getElementById(
+        "pendingPreview"
+      );
+
+    const pending =
+      students.filter(student => {
+
+        const profile =
+          getStudentProfile(student);
+
+        return String(
+          profile.status ||
+          student.status ||
+          ""
+        ).toUpperCase() === "PENDING";
+
+      });
+
+
+    if (!pending.length) {
+
+      element.innerHTML = `
+        <div class="empty">
+          There are no pending student applications.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    element.innerHTML =
+      pending
+        .slice(0, 5)
+        .map(student => {
+
+          const profile =
+            getStudentProfile(student);
+
+          const user =
+            student.user ||
+            profile.user ||
+            {};
+
+          const id =
+            profile.id ||
+            student.studentId ||
+            student.id;
+
+
+          return `
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:10px;
+                padding:12px 0;
+                border-bottom:1px solid #e4ebe7;
+              "
+            >
+
+              <div>
+
+                <strong>
+                  ${escapeHtml(
+                    getName(student)
+                  )}
+                </strong>
+
+                <div
+                  style="
+                    color:#758178;
+                    font-size:12px;
+                    margin-top:3px;
+                  "
+                >
+                  ${escapeHtml(
+                    user.email ||
+                    student.email ||
+                    ""
+                  )}
+                </div>
+
+              </div>
+
+              <button
+                class="action-btn approve"
+                onclick="changeStudentStatus('${escapeHtml(id)}','APPROVED')"
+              >
+                Approve
+              </button>
+
+            </div>
+          `;
+
+        })
+        .join("");
+  }
+
+
+  /* =========================================================
+     EVENT LISTENERS
+  ========================================================== */
+
+  document
+    .getElementById("studentSearch")
+    .addEventListener(
+      "input",
+      renderStudents
+    );
+
+
+  document
+    .getElementById("studentStatus")
+    .addEventListener(
+      "change",
+      renderStudents
+    );
+
+
+  document
+    .getElementById("refreshStudents")
+    .addEventListener(
+      "click",
+      loadStudents
+    );
+
+
+  document
+    .getElementById("courseSearch")
+    .addEventListener(
+      "input",
+      renderCourses
+    );
+
+
+  document
+    .getElementById("refreshCourses")
+    .addEventListener(
+      "click",
+      loadCourses
+    );
+
+
+  document
+    .getElementById("examSearch")
+    .addEventListener(
+      "input",
+      renderExams
+    );
+
+
+  document
+    .getElementById("refreshExams")
+    .addEventListener(
+      "click",
+      loadExams
+    );
+
+
+  document
+    .getElementById("paymentSearch")
+    .addEventListener(
+      "input",
+      renderPayments
+    );
+
+
+  document
+    .getElementById("paymentStatus")
+    .addEventListener(
+      "change",
+      renderPayments
+    );
+
+
+  document
+    .getElementById("refreshPayments")
+    .addEventListener(
+      "click",
+      loadPayments
+    );
+
+
+  document
+    .getElementById("certificateSearch")
+    .addEventListener(
+      "input",
+      renderCertificates
+    );
+
+
+  document
+    .getElementById("issueCertificateBtn")
+    .addEventListener(
+      "click",
+      issueCertificate
+    );
+
+
+  document
+    .getElementById("refreshCertificates")
+    .addEventListener(
+      "click",
+      async () => {
+
+        await loadStudents();
+        await loadCourses();
+        await loadCertificates();
+
+      }
+    );
+
+
+  document
+    .getElementById("liveSearch")
+    .addEventListener(
+      "input",
+      renderLiveClasses
+    );
+
+
+  document
+    .getElementById("refreshLive")
+    .addEventListener(
+      "click",
+      loadLiveClasses
+    );
+
+
+  /* =========================================================
+     START ADMIN
+  ========================================================== */
+
+  async function startAdmin() {
+
+    await loadCurrentUser();
+
+    await Promise.allSettled([
+      loadStudents(),
+      loadCourses(),
+      loadPayments()
+    ]);
+
+    updateDashboardStats();
+
+    renderPendingPreview();
+
+  }
+
+
+  startAdmin();
+
+</script>
+
+</body>
+</html>
