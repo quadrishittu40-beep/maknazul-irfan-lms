@@ -307,18 +307,6 @@
         Select level
       </option>
 
-      <option value="Primary">
-        Primary
-      </option>
-
-      <option value="Junior Secondary">
-        Junior Secondary
-      </option>
-
-      <option value="Senior Secondary">
-        Senior Secondary
-      </option>
-
     </select>
 
   </div>
@@ -379,6 +367,20 @@
   </div></main><script>
 
 const form = document.getElementById("registerForm");
+
+fetch("/api/academic/levels")
+  .then(r => r.json())
+  .then(res => {
+    const levels = res.levels || (res.data && res.data.levels) || [];
+    const select = document.getElementById("levelId");
+    levels.forEach(l => {
+      const o = document.createElement("option");
+      o.value = l.id;
+      o.textContent = l.name;
+      select.appendChild(o);
+    });
+  })
+  .catch(() => {});
 const message = document.getElementById("message");
 const button = document.getElementById("registerButton");
 
@@ -411,31 +413,32 @@ form.addEventListener("submit", async function(event) {
 
   const data = {
 
-    first_name:
+    firstName:
       document.getElementById("firstName").value.trim(),
 
-    last_name:
+    lastName:
       document.getElementById("lastName").value.trim(),
 
     email:
       document.getElementById("email").value.trim(),
 
-    phone:
-      document.getElementById("phone").value.trim(),
-
-    password:
-      password,
-
-    date_of_birth:
-      document.getElementById("dateOfBirth").value || null,
-
-    gender:
-      document.getElementById("gender").value || null,
-
-    level:
-      document.getElementById("levelId").value || null
+    password: password
 
   };
+
+  const phone =
+    document.getElementById("phone").value.trim();
+  const dateOfBirth =
+    document.getElementById("dateOfBirth").value;
+  const gender =
+    document.getElementById("gender").value;
+  const levelId =
+    document.getElementById("levelId").value;
+
+  if (phone) data.phone = phone;
+  if (dateOfBirth) data.dateOfBirth = dateOfBirth;
+  if (gender) data.gender = gender;
+  if (levelId) data.levelId = levelId;
 
   button.disabled = true;
   button.textContent = "Creating Account...";

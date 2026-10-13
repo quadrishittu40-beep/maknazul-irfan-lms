@@ -88,7 +88,7 @@ export async function register(
     await prisma.notification.create({
       data: {
         userId: user.id,
-        type: "GENERAL",
+        type: "SYSTEM",
         title: "Registration Received",
         message:
           "Your student registration has been received and is awaiting administrator review."
