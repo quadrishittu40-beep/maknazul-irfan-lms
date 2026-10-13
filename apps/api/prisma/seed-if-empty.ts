@@ -3,23 +3,26 @@ import { spawnSync } from "child_process";
 
 async function run() {
   const prisma = new PrismaClient();
-  const users = await prisma.user.count();
+  const admin = await prisma.user.count({
+    where: { email: "admin@maknazulirfan.org" }
+  });
   await prisma.$disconnect();
 
-  if (users > 0) {
-    console.log("Database already has data. Skipping seed.");
+  if (admin > 0) {
+    console.log("Admin account already exists. Skipping seed.");
     return;
   }
 
-  console.log("Empty database. Running first-time seed...");
+  console.log("No admin account yet. Running first-time seed...");
   const result = spawnSync("npx", ["tsx", "prisma/seed.ts"], {
     stdio: "inherit",
     shell: true
   });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+  if (result.status !== 0) {
+    console.error("Seed failed. The server will still start, and the seed will retry on the next restart.");
+  }
 }
 
 run().catch((e) => {
-  console.error(e);
-  process.exit(1);
+  console.error("Seed check failed (server will still start):", e);
 });
