@@ -5,7 +5,7 @@ const providerSchema = z.enum([
   "GOOGLE_MEET"
 ]);
 
-export const createLiveClassSchema = z.object({
+const liveClassBaseSchema = z.object({
   title: z
     .string()
     .trim()
@@ -55,22 +55,28 @@ export const createLiveClassSchema = z.object({
   published: z
     .boolean()
     .default(false)
-}).superRefine((data, ctx) => {
-  const start = new Date(data.scheduledStart);
-  const end = new Date(data.scheduledEnd);
-
-  if (end <= start) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["scheduledEnd"],
-      message:
-        "End time must be after start time."
-    });
-  }
 });
 
+export const createLiveClassSchema =
+  liveClassBaseSchema.superRefine((data, ctx) => {
+    const start = new Date(data.scheduledStart);
+    const end = new Date(data.scheduledEnd);
+
+    if (end <= start) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["scheduledEnd"],
+        message:
+          "End time must be after start time."
+      });
+    }
+  });
+
 export const updateLiveClassSchema =
-  createLiveClassSchema.partial().superRefine(
+  liveClassBaseSchema
+    .partial()
+    .extend({ published: z.boolean().optional() })
+    .superRefine(
     (data, ctx) => {
       if (
         data.scheduledStart &&
