@@ -35,10 +35,12 @@ function verifySession(token: string): SessionPayload | null {
     .update(encoded)
     .digest("base64url");
 
-  const valid = crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expectedSignature);
+
+  const valid =
+    a.length === b.length &&
+    crypto.timingSafeEqual(a, b);
 
   if (!valid) {
     return null;

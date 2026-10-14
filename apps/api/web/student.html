@@ -712,10 +712,14 @@ async function apiRequest(
 
   if (!response.ok) {
 
-    throw new Error(
+    const err = new Error(
       data.message ||
       "Request failed."
     );
+
+    err.status = response.status;
+
+    throw err;
 
   }
 
@@ -820,8 +824,30 @@ async function loadCurrentUser() {
 
   } catch (error) {
 
-    window.location.href =
-      "login.html";
+    // Only a real "not logged in" answer sends the user to login.
+    // Other problems (slow server, temporary error) get one retry,
+    // then a visible message so the cause can be seen.
+    if (error && (error.status === 401 || error.status === 403)) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    if (!window.__meRetried) {
+      window.__meRetried = true;
+      await new Promise(function (r) { setTimeout(r, 2500); });
+      return loadCurrentUser();
+    }
+
+    var box = document.createElement("div");
+    box.style.cssText =
+      "position:fixed;top:0;left:0;right:0;z-index:9999;padding:12px;" +
+      "background:#fdecec;color:#a12626;font:14px Arial;text-align:center";
+    box.textContent =
+      "Could not confirm your session (" +
+      (error && error.status ? "status " + error.status + ": " : "") +
+      (error && error.message ? error.message : "network problem") +
+      "). Please refresh. If it keeps happening, tell support this message.";
+    document.body.appendChild(box);
 
   }
 
