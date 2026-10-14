@@ -9,18 +9,22 @@ async function run() {
   await prisma.$disconnect();
 
   if (admin > 0) {
-    console.log("Admin account already exists. Skipping seed.");
-    return;
+    console.log("Admin account already exists. Skipping base seed.");
+  } else {
+    console.log("No admin account yet. Running first-time seed...");
+    const result = spawnSync("npx", ["tsx", "prisma/seed.ts"], {
+      stdio: "inherit",
+      shell: true
+    });
+    if (result.status !== 0) {
+      console.error("Seed failed. The server will still start, and the seed will retry on the next restart.");
+    }
   }
 
-  console.log("No admin account yet. Running first-time seed...");
-  const result = spawnSync("npx", ["tsx", "prisma/seed.ts"], {
+  spawnSync("npx", ["tsx", "prisma/seed-sample.ts"], {
     stdio: "inherit",
     shell: true
   });
-  if (result.status !== 0) {
-    console.error("Seed failed. The server will still start, and the seed will retry on the next restart.");
-  }
 }
 
 run().catch((e) => {
