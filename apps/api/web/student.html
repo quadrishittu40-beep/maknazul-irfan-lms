@@ -51,6 +51,22 @@
       font-size: 14px;
     }
 
+    .academy-logo {
+      height: 44px;
+      width: 44px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 50%;
+      margin-right: 10px;
+      flex: none;
+    }
+
+    .brand { display: flex; align-items: center; }
+
+    .brand h1 { font-size: 17px; margin: 0; }
+
+    .brand p { font-size: 12px; margin: 2px 0 0; opacity: .85; }
+
     .logout {
       border: none;
       background: #d4af37;
@@ -335,11 +351,6 @@
 
 <header>
 
-  <div class="brand">
-    MAKNAZUL IRFAN
-    <span>Online Islamic & Arabic Institute</span>
-  </div>
-
 <div class="brand">
   <img
     src="assets/logo.png"
@@ -349,7 +360,7 @@
 
   <div>
     <h1>MAKNAZUL IRFAN ACADEMY</h1>
-    <p>Online Islamic & Arabic Institute</p>
+    <p>Online Islamic & Arabic Institute <span id="userName"></span></p>
   </div>
 </div>
 
@@ -809,15 +820,12 @@ async function loadCurrentUser() {
       );
 
 
-    document.getElementById(
-      "userName"
-    ).textContent =
-      name.trim() || "Student";
+    var un = document.getElementById("userName");
+    if (un) un.textContent = name.trim() ? "· " + name.trim() : "";
 
 
-    document.getElementById(
-      "welcomeName"
-    ).textContent =
+    var wn = document.getElementById("welcomeName");
+    if (wn) wn.textContent =
       currentUser.firstName ||
       "Student";
 
