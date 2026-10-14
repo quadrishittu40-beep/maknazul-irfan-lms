@@ -669,7 +669,7 @@ export async function getCourse(
                   title: true,
                   durationMinutes: true,
                   passMark: true,
-                  isPublished: true
+                  published: true
                 }
               }
             }

@@ -238,3 +238,64 @@ export async function checkCourseAccess(
     );
   }
 }
+
+export async function listCourseStudents(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  try {
+    if (!req.user) {
+      return failure(res, "Authentication required.", 401);
+    }
+
+    const role = String((req.user as any).role);
+    const courseId = String(req.params.courseId);
+
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: { id: true, teacherId: true }
+    });
+
+    if (!course) {
+      return failure(res, "Course not found.", 404);
+    }
+
+    if (
+      role !== "ADMIN" &&
+      !(role === "TEACHER" && course.teacherId === req.user.id)
+    ) {
+      return failure(res, "Access denied.", 403);
+    }
+
+    const enrollments = await prisma.courseEnrollment.findMany({
+      where: { courseId },
+      orderBy: { enrolledAt: "desc" },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const students = enrollments.map((e: any) => ({
+      id: e.student.userId,
+      studentId: e.student.id,
+      enrolledAt: e.enrolledAt,
+      user: e.student.user
+    }));
+
+    return success(res, { students });
+  } catch (error) {
+    console.error("listCourseStudents error:", error);
+    return failure(res, "Unable to load students.", 500);
+  }
+}

@@ -227,7 +227,7 @@ export async function me(
             id: true,
             qualification: true,
             specialization: true,
-            biography: true
+            bio: true
           }
         }
       }

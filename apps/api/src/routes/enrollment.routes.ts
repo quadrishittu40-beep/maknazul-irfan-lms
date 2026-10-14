@@ -3,7 +3,8 @@ import { Router } from "express";
 import {
   enrollInCourse,
   listMyCourses,
-  checkCourseAccess
+  checkCourseAccess,
+  listCourseStudents
 } from "../controllers/enrollment.controller";
 
 import {
@@ -17,6 +18,11 @@ router.use(requireAuth);
 router.get(
   "/my-courses",
   listMyCourses
+);
+
+router.get(
+  "/course/:courseId/students",
+  listCourseStudents
 );
 
 router.get(

@@ -190,6 +190,8 @@ model TeacherProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+qualification String?
 }
 
 // ============================================================
@@ -211,6 +213,8 @@ model Level {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+questions Question[]
 }
 
 // ============================================================
@@ -234,6 +238,8 @@ model Class {
   updatedAt DateTime @updatedAt
 
   @@unique([levelId, name])
+
+questions Question[]
 }
 
 // ============================================================
@@ -255,6 +261,9 @@ model Subject {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+questions Question[]
+tests Test[]
 }
 
 // ============================================================
@@ -272,12 +281,17 @@ model Topic {
 
   subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
-  courses Course[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([subjectId])
+
+courseId String?
+course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+lectures Lecture[]
+tests Test[]
+questions Question[]
 }
 
 // ============================================================
@@ -335,6 +349,11 @@ model Course {
   @@index([subjectId])
 
   certificates Certificate[]
+
+thumbnail String?
+isFree Boolean @default(false)
+startDate DateTime?
+endDate DateTime?
 }
 
 // ============================================================
@@ -396,6 +415,10 @@ model Lecture {
 
   @@index([courseId])
   @@index([courseId, order])
+
+topicId String?
+topic Topic? @relation(fields: [topicId], references: [id], onDelete: SetNull)
+orderNumber Int @default(0)
 }
 
 // ============================================================
@@ -500,6 +523,14 @@ model Test {
 
   @@index([courseId])
   @@index([createdById])
+
+subjectId String?
+topicId String?
+numberOfQuestions Int?
+availableFrom DateTime?
+availableUntil DateTime?
+subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+topic Topic? @relation(fields: [topicId], references: [id], onDelete: SetNull)
 }
 
 // ============================================================
@@ -529,6 +560,17 @@ model Question {
   updatedAt DateTime @updatedAt
 
   @@index([createdById])
+
+imageUrl String?
+audioUrl String?
+subjectId String?
+topicId String?
+levelId String?
+classId String?
+subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+topic Topic? @relation(fields: [topicId], references: [id], onDelete: SetNull)
+level Level? @relation(fields: [levelId], references: [id], onDelete: SetNull)
+class Class? @relation(fields: [classId], references: [id], onDelete: SetNull)
 }
 
 // ============================================================
@@ -576,6 +618,8 @@ model TestQuestion {
 
   @@index([testId])
   @@index([questionId])
+
+orderNumber Int @default(0)
 }
 
 // ============================================================
@@ -616,6 +660,10 @@ model TestAttempt {
   @@index([testId])
   @@index([studentId])
   @@index([status])
+
+totalQuestions Int?
+correctAnswers Int?
+rawScore Decimal? @db.Decimal(8, 2)
 }
 
 // ============================================================
@@ -794,6 +842,10 @@ model Certificate {
 
   @@index([studentId])
   @@index([courseId])
+
+score Decimal? @db.Decimal(5, 2)
+grade String?
+completionDate DateTime?
 }
 
 // ============================================================
@@ -819,6 +871,8 @@ model Notification {
 
   @@index([userId])
   @@index([read])
+
+readAt DateTime?
 }
 
 // ============================================================
