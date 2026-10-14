@@ -168,7 +168,7 @@ export async function markAttempt(
     const isCorrect =
       Boolean(
         correctOption &&
-        answer.selectedOptionId ===
+        answer.optionId ===
           correctOption.id
       );
 

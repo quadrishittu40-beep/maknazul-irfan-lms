@@ -27,6 +27,8 @@ import { notFoundHandler as notFound } from "./middleware/error";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 /* =========================================================
    BASIC SECURITY
 ========================================================= */
@@ -112,7 +114,7 @@ app.use(cookieParser());
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 300,
+  limit: 1500,
   standardHeaders: true,
   legacyHeaders: true,
   message: {
