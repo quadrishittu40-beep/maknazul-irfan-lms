@@ -369,10 +369,15 @@ export const submitAttemptSchema =
           .string()
           .min(1),
 
+        optionId: z
+          .string()
+          .nullable()
+          .optional(),
+
         selectedOptionId: z
           .string()
-          .min(1)
           .nullable()
+          .optional()
       })
     )
   });

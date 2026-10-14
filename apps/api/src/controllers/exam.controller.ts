@@ -12,10 +12,6 @@ import {
   addTestQuestionSchema,
   submitAttemptSchema
 } from "../validators/exam";
-import {
-  buildAttemptQuestions,
-  markAttempt
-} from "../services/exam.service";
 import { getStudentProfileId } from "../services/access.service";
 import { calculateGrade } from "../services/grading.service";
 import { audit } from "../services/audit.service";
@@ -65,6 +61,34 @@ async function teacherOwnsCourse(
   });
 
   return Boolean(course);
+}
+
+function shuffleCopy<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function pickAttemptQuestions(test: any) {
+  let items: any[] = [...test.questions];
+  if (test.randomQuestions) items = shuffleCopy(items);
+  if (test.numberOfQuestions && items.length > test.numberOfQuestions) {
+    items = items.slice(0, test.numberOfQuestions);
+  }
+  return items.map((item: any) => {
+    let options: any[] = [...item.question.options];
+    if (test.randomOptions) options = shuffleCopy(options);
+    return {
+      id: item.question.id,
+      text: item.question.text,
+      imageUrl: item.question.imageUrl,
+      audioUrl: item.question.audioUrl,
+      options: options.map((o: any) => ({ id: o.id, text: o.text }))
+    };
+  });
 }
 
 async function studentHasTestAccess(
@@ -1181,12 +1205,15 @@ export async function startAttempt(
         );
 
       if (now < expiresAt) {
+        const resumedQuestions = pickAttemptQuestions(test);
         return success(res, {
-          attemptId:
-            activeAttempt.id,
-          startedAt:
-            activeAttempt.startedAt,
-          expiresAt
+          id: activeAttempt.id,
+          attemptId: activeAttempt.id,
+          testId,
+          startedAt: activeAttempt.startedAt,
+          expiresAt,
+          durationMinutes: test.durationMinutes,
+          questions: resumedQuestions
         });
       }
 
@@ -1201,13 +1228,7 @@ export async function startAttempt(
       });
     }
 
-    const selectedQuestions =
-      buildAttemptQuestions(
-        test.questions,
-        test.numberOfQuestions,
-        test.randomQuestions,
-        test.randomOptions
-      );
+    const selectedQuestions = pickAttemptQuestions(test);
 
     if (
       selectedQuestions.length === 0
@@ -1252,30 +1273,13 @@ export async function startAttempt(
     return success(
       res,
       {
+        id: attempt.id,
         attemptId: attempt.id,
         testId,
         startedAt: now,
         expiresAt,
-        durationMinutes:
-          test.durationMinutes,
-        questions:
-          selectedQuestions.map(
-            (item: any) => ({
-              id: item.question.id,
-              text: item.question.text,
-              imageUrl:
-                item.question.imageUrl,
-              audioUrl:
-                item.question.audioUrl,
-              options:
-                item.question.options.map(
-                  (option: any) => ({
-                    id: option.id,
-                    text: option.text
-                  })
-                )
-            })
-          )
+        durationMinutes: test.durationMinutes,
+        questions: selectedQuestions
       },
       201
     );
@@ -1445,10 +1449,12 @@ export async function submitAttempt(
           answer.questionId
         )
       ) {
-        uniqueAnswers.set(
-          answer.questionId,
-          answer.optionId
-        );
+        const chosen =
+          (answer as any).optionId ??
+          (answer as any).selectedOptionId;
+        if (chosen) {
+          uniqueAnswers.set(answer.questionId, chosen);
+        }
       }
     }
 
@@ -1537,10 +1543,55 @@ export async function submitAttempt(
     /*
      * Marking is performed server-side.
      */
-    const result =
-      await markAttempt(
-        refreshedAttempt
+    const savedAnswers =
+      await prisma.studentAnswer.findMany({
+        where: { attemptId },
+        select: { id: true, questionId: true, optionId: true }
+      });
+
+    const answerByQuestion = new Map(
+      savedAnswers.map((a) => [a.questionId, a])
+    );
+
+    let correctCount = 0;
+
+    for (const item of refreshedAttempt.test.questions as any[]) {
+      const saved = answerByQuestion.get(item.questionId);
+      if (!saved) continue;
+      const correctOption = item.question.options.find(
+        (o: any) => o.isCorrect
       );
+      const isCorrect = Boolean(
+        correctOption && saved.optionId === correctOption.id
+      );
+      if (isCorrect) correctCount++;
+      await prisma.studentAnswer.update({
+        where: { id: saved.id },
+        data: { isCorrect }
+      });
+    }
+
+    const totalForMarking =
+      refreshedAttempt.totalQuestions ||
+      refreshedAttempt.test.questions.length;
+
+    const pct =
+      totalForMarking === 0
+        ? 0
+        : Number(((correctCount / totalForMarking) * 100).toFixed(2));
+
+    const gradeInfo = await calculateGrade(
+      pct,
+      Number(refreshedAttempt.test.passMark)
+    );
+
+    const result = {
+      correctAnswers: correctCount,
+      score: correctCount,
+      percentage: pct,
+      grade: gradeInfo.grade,
+      passed: gradeInfo.passed
+    };
 
     const updatedAttempt =
       await prisma.testAttempt.update({
@@ -1560,9 +1611,7 @@ export async function submitAttempt(
             result.grade,
           passed:
             result.passed,
-          totalQuestions:
-            refreshedAttempt.test
-              .questions.length
+          totalQuestions: totalForMarking
         }
       });
 
