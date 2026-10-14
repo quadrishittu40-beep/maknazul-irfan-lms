@@ -807,6 +807,14 @@ async function loadCurrentUser() {
       throw new Error("Not authenticated.");
     }
 
+    // Wrong kind of account in this browser: send it to its own portal.
+    if (currentUser.role && currentUser.role !== "STUDENT") {
+      window.location.href =
+        currentUser.role === "ADMIN" ? "admin.html" :
+        currentUser.role === "TEACHER" ? "teacher.html" : "login.html";
+      return;
+    }
+
 
     const name =
       (
