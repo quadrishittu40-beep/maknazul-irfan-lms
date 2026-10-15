@@ -1041,6 +1041,16 @@
     document.getElementById("tests").style.display =
       "block";
 
+    const isStaff =
+      loggedInUser &&
+      (loggedInUser.role === "TEACHER" || loggedInUser.role === "ADMIN");
+
+    if (isStaff) {
+      document.getElementById("tests").style.display = "none";
+      await loadLectures();
+      return;
+    }
+
     await Promise.all([
       loadLectures(),
       loadTests()

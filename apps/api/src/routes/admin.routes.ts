@@ -11,7 +11,7 @@ import {
   academicOverview
 } from "../controllers/admin.controller";
 
-import { listStaff, createStaff } from "../controllers/staff.controller";
+import { listStaff, createStaff, updateStudentProfile } from "../controllers/staff.controller";
 import { listCourses } from "../controllers/academic.controller";
 import { listTests } from "../controllers/exam.controller";
 import { listAllPayments } from "../controllers/payment.controller";
@@ -41,6 +41,8 @@ router.get(
   "/students/:id",
   getStudent
 );
+
+router.patch("/students/:id/profile", updateStudentProfile);
 
 router.post(
   "/students/:id/approve",

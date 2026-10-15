@@ -982,6 +982,10 @@
          COURSES
     ====================================================== -->
 
+    <div id="modalBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;overflow:auto;padding:12px">
+      <div id="modalBox" class="card" style="max-width:540px;margin:20px auto"></div>
+    </div>
+
     <section class="page" id="page-staff">
 
       <div class="page-header">
@@ -1068,6 +1072,14 @@
             id="courseSearch"
             placeholder="Search courses..."
           >
+
+          <button
+            class="action-btn primary"
+            id="newCourseBtn"
+            onclick="newCourse()"
+          >
+            + New course
+          </button>
 
           <button
             class="action-btn primary"
@@ -2320,6 +2332,278 @@
     }
   });
 
+
+  /* ===== MODAL, STUDENT EDIT, COURSE TEACHER ===== */
+
+  function el(tag, attrs, children) {
+    const e = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === "text") e.textContent = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { e.appendChild(c); });
+    return e;
+  }
+
+  function closeModal() {
+    document.getElementById("modalBack").style.display = "none";
+    document.getElementById("modalBox").textContent = "";
+  }
+
+  function field(label, input) {
+    return el("div", { "class": "form-group" }, [
+      el("label", { text: label }),
+      input
+    ]);
+  }
+
+  function selectBox(options, value) {
+    const sel = el("select", {});
+    options.forEach(function (o) {
+      const opt = el("option", { value: o.value, text: o.label });
+      if (String(o.value) === String(value || "")) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    return sel;
+  }
+
+  function openModal(title, fields, saveLabel, onSave) {
+    const box = document.getElementById("modalBox");
+    box.textContent = "";
+    box.appendChild(el("h3", { text: title }));
+    const form = el("div", { "class": "form-grid" }, fields);
+    box.appendChild(form);
+    const note = el("div", { style: "color:#a12626;margin:8px 0;font-size:14px" });
+    box.appendChild(note);
+    const save = el("button", { "class": "btn", type: "button", text: saveLabel });
+    const cancel = el("button", { "class": "action-btn neutral", type: "button", text: "Cancel", style: "margin-left:8px" });
+    cancel.addEventListener("click", closeModal);
+    save.addEventListener("click", async function () {
+      save.disabled = true;
+      note.textContent = "";
+      try {
+        await onSave();
+        closeModal();
+      } catch (e) {
+        note.textContent = e.message || "Something went wrong.";
+      } finally {
+        save.disabled = false;
+      }
+    });
+    box.appendChild(save);
+    box.appendChild(cancel);
+    document.getElementById("modalBack").style.display = "block";
+  }
+
+  let refLevels = null;
+  let refClasses = null;
+
+  async function loadLevelsAndClasses() {
+    if (!refLevels) {
+      refLevels = arrayFrom(await api("/academic/levels"), "levels");
+    }
+    if (!refClasses) {
+      refClasses = arrayFrom(await api("/academic/classes"), "classes");
+    }
+  }
+
+  async function editStudent(id) {
+    try {
+      await loadLevelsAndClasses();
+    } catch (e) {
+      showMessage("studentMessage", e.message, "error");
+      return;
+    }
+
+    const student = students.find(function (s) {
+      const p = getStudentProfile(s);
+      return String(p.id || s.id) === String(id);
+    });
+    if (!student) return;
+
+    const p = getStudentProfile(student);
+    const u = student.user || p.user || {};
+
+    const first = el("input", { value: u.firstName || "" });
+    const last = el("input", { value: u.lastName || "" });
+    const phone = el("input", { value: u.phone || "" });
+    const dob = el("input", { type: "date", value: p.dateOfBirth ? String(p.dateOfBirth).slice(0, 10) : "" });
+    const gender = selectBox([
+      { value: "", label: "Not set" },
+      { value: "MALE", label: "Male" },
+      { value: "FEMALE", label: "Female" }
+    ], p.gender);
+    const gName = el("input", { value: p.guardianName || "" });
+    const gPhone = el("input", { value: p.guardianPhone || "" });
+
+    const levelSel = selectBox(
+      [{ value: "", label: "No level" }].concat(
+        refLevels.map(function (l) { return { value: l.id, label: l.name }; })
+      ),
+      (p.level && p.level.id) || ""
+    );
+    const classSel = el("select", {});
+
+    function fillClasses(keep) {
+      classSel.textContent = "";
+      classSel.appendChild(el("option", { value: "", text: "No class" }));
+      refClasses
+        .filter(function (c) { return !levelSel.value || c.levelId === levelSel.value; })
+        .forEach(function (c) {
+          const o = el("option", { value: c.id, text: c.name });
+          if (keep && p.class && p.class.id === c.id) o.selected = true;
+          classSel.appendChild(o);
+        });
+    }
+    fillClasses(true);
+    levelSel.addEventListener("change", function () { fillClasses(false); });
+
+    const statusSel = selectBox([
+      { value: "PENDING", label: "Pending" },
+      { value: "APPROVED", label: "Approved" },
+      { value: "ENROLLED", label: "Enrolled" },
+      { value: "SUSPENDED", label: "Suspended" },
+      { value: "GRADUATED", label: "Graduated" },
+      { value: "REJECTED", label: "Rejected" }
+    ], p.status);
+
+    openModal(
+      "Edit student: " + (u.firstName || "") + " " + (u.lastName || ""),
+      [
+        field("First name", first),
+        field("Last name", last),
+        field("Phone", phone),
+        field("Date of birth", dob),
+        field("Gender", gender),
+        field("Guardian name", gName),
+        field("Guardian phone", gPhone),
+        field("Level", levelSel),
+        field("Class", classSel),
+        field("Status", statusSel)
+      ],
+      "Save changes",
+      async function () {
+        await api("/admin/students/" + encodeURIComponent(id) + "/profile", {
+          method: "PATCH",
+          body: JSON.stringify({
+            firstName: first.value.trim(),
+            lastName: last.value.trim(),
+            phone: phone.value.trim() || null,
+            dateOfBirth: dob.value || null,
+            gender: gender.value || null,
+            guardianName: gName.value.trim() || null,
+            guardianPhone: gPhone.value.trim() || null,
+            levelId: levelSel.value || null,
+            classId: classSel.value || null,
+            status: statusSel.value
+          })
+        });
+        showMessage("studentMessage", "Student updated.");
+        await loadStudents();
+      }
+    );
+  }
+
+  async function getTeachers() {
+    const data = await api("/admin/staff");
+    const staff = (data && (data.staff || (data.data && data.data.staff))) || [];
+    return staff.filter(function (u) { return u.role === "TEACHER" && u.isActive; });
+  }
+
+  async function assignTeacher(courseId) {
+    let teachers;
+    try {
+      teachers = await getTeachers();
+    } catch (e) {
+      showMessage("courseMessage", e.message, "error");
+      return;
+    }
+    if (!teachers.length) {
+      showMessage("courseMessage", "Create a teacher account first (Staff screen).", "error");
+      return;
+    }
+    const course = courses.find(function (c) { return String(c.id) === String(courseId); }) || {};
+    const sel = selectBox(
+      teachers.map(function (t) {
+        return { value: t.id, label: t.firstName + " " + t.lastName + " (" + t.email + ")" };
+      }),
+      course.teacher && course.teacher.id
+    );
+    openModal(
+      "Assign teacher to: " + (course.title || "course"),
+      [field("Teacher", sel)],
+      "Assign",
+      async function () {
+        await api("/academic/courses/" + encodeURIComponent(courseId), {
+          method: "PATCH",
+          body: JSON.stringify({ teacherId: sel.value })
+        });
+        showMessage("courseMessage", "Teacher assigned.");
+        await loadCourses();
+      }
+    );
+  }
+
+  async function newCourse() {
+    let teachers, subjects;
+    try {
+      teachers = await getTeachers();
+      subjects = arrayFrom(await api("/academic/subjects"), "subjects");
+      await loadLevelsAndClasses();
+    } catch (e) {
+      showMessage("courseMessage", e.message, "error");
+      return;
+    }
+    if (!teachers.length || !subjects.length) {
+      showMessage("courseMessage", "You need at least one teacher account and one subject first.", "error");
+      return;
+    }
+    const title = el("input", {});
+    const desc = el("textarea", { rows: "3" });
+    const subj = selectBox(subjects.map(function (s) { return { value: s.id, label: s.name }; }), "");
+    const teach = selectBox(teachers.map(function (t) { return { value: t.id, label: t.firstName + " " + t.lastName }; }), "");
+    const lvl = selectBox(
+      [{ value: "", label: "All levels" }].concat(refLevels.map(function (l) { return { value: l.id, label: l.name }; })),
+      ""
+    );
+    const price = el("input", { type: "number", min: "0", placeholder: "0 = free" });
+    const status = selectBox([
+      { value: "PUBLISHED", label: "Published" },
+      { value: "DRAFT", label: "Draft" }
+    ], "PUBLISHED");
+
+    openModal(
+      "New course",
+      [
+        field("Title", title),
+        field("Description", desc),
+        field("Subject", subj),
+        field("Teacher", teach),
+        field("Level", lvl),
+        field("Price in NGN (0 = free)", price),
+        field("Status", status)
+      ],
+      "Create course",
+      async function () {
+        const amount = Number(price.value || 0);
+        const body = {
+          title: title.value.trim(),
+          description: desc.value.trim() || undefined,
+          subjectId: subj.value,
+          teacherId: teach.value,
+          levelId: lvl.value || undefined,
+          isFree: amount <= 0,
+          price: amount > 0 ? amount : undefined,
+          currency: "NGN",
+          status: status.value
+        };
+        await api("/academic/courses", { method: "POST", body: JSON.stringify(body) });
+        showMessage("courseMessage", "Course created.");
+        await loadCourses();
+      }
+    );
+  }
+
   document
     .querySelectorAll(".nav-btn")
     .forEach(button => {
@@ -2632,6 +2916,13 @@
                 onclick="viewStudent('${escapeHtml(id)}')"
               >
                 View
+              </button>
+
+              <button
+                class="action-btn primary"
+                onclick="editStudent('${escapeHtml(id)}')"
+              >
+                Edit / Class
               </button>
 
               ${
@@ -3057,6 +3348,13 @@
                 onclick="viewCourse('${escapeHtml(course.id)}')"
               >
                 View
+              </button>
+
+              <button
+                class="action-btn primary"
+                onclick="assignTeacher('${escapeHtml(course.id)}')"
+              >
+                Assign teacher
               </button>
             </td>
 

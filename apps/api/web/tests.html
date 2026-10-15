@@ -2274,5 +2274,15 @@ loadTests();
 
 </script>
 
+<script>
+  fetch("/api/auth/me", { credentials: "include" })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var u = d && (d.user || (d.data && d.data.user));
+      if (u && u.role === "TEACHER") location.replace("teacher.html");
+      else if (u && u.role === "ADMIN") location.replace("admin.html");
+    })
+    .catch(function () {});
+</script>
 </body>
 </html>
