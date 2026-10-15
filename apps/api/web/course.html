@@ -825,6 +825,20 @@
     loginButton.style.display = "none";
     continueButton.style.display = "none";
 
+    // Teachers and admins can view any course; they never enroll.
+    if (
+      loggedInUser &&
+      (loggedInUser.role === "TEACHER" || loggedInUser.role === "ADMIN")
+    ) {
+      hasAccess = true;
+      title.textContent = "Staff view";
+      text.textContent =
+        "You are viewing this course as " +
+        (loggedInUser.role === "ADMIN" ? "an administrator" : "a teacher") +
+        ". Students enroll from their own portal.";
+      return;
+    }
+
     if (!loggedInUser) {
 
       title.textContent =
@@ -922,6 +936,11 @@
 
       return;
 
+    }
+
+    if (loggedInUser.role === "TEACHER" || loggedInUser.role === "ADMIN") {
+      showAccessState({ hasAccess: true });
+      return;
     }
 
     try {
