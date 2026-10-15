@@ -171,6 +171,18 @@
 </main>
 
 <script>
+  (function () {
+    var staff = /[?&]portal=staff/.test(location.search);
+    if (staff) {
+      document.title = "Staff Login | MAKNAZUL IRFAN";
+      document.querySelector("h1").textContent = "Staff Login";
+      document.querySelector(".intro").textContent =
+        "Teachers and administrators: sign in to your portal.";
+      var alt = document.querySelector(".alt-link");
+      if (alt) alt.innerHTML = 'Student? <a href="login.html">Student login</a>';
+    }
+  })();
+
   var form = document.getElementById("loginForm");
   var message = document.getElementById("message");
   var button = document.getElementById("loginButton");

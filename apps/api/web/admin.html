@@ -684,6 +684,10 @@
       Students
     </button>
 
+    <button class="nav-btn" data-page="staff">
+      Staff
+    </button>
+
     <button class="nav-btn" data-page="courses">
       Courses
     </button>
@@ -968,6 +972,67 @@
     <!-- =====================================================
          COURSES
     ====================================================== -->
+
+    <section class="page" id="page-staff">
+
+      <div class="page-header">
+        <h2>Staff Accounts</h2>
+        <p>Create teacher or admin accounts and see who has access.</p>
+      </div>
+
+      <div id="staffMessage" class="message"></div>
+
+      <div class="card">
+        <h3>Add a staff account</h3>
+
+        <form id="staffForm" class="form-grid">
+
+          <div class="form-group">
+            <label for="staffFirst">First name</label>
+            <input id="staffFirst" required>
+          </div>
+
+          <div class="form-group">
+            <label for="staffLast">Last name</label>
+            <input id="staffLast" required>
+          </div>
+
+          <div class="form-group">
+            <label for="staffEmail">Email</label>
+            <input id="staffEmail" type="email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="staffPassword">Temporary password (8+ characters)</label>
+            <input id="staffPassword" type="text" minlength="8" required>
+          </div>
+
+          <div class="form-group">
+            <label for="staffRole">Role</label>
+            <select id="staffRole">
+              <option value="TEACHER">Teacher</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="staffSpec">Specialization (teachers)</label>
+            <input id="staffSpec">
+          </div>
+
+          <div class="form-group full">
+            <button type="submit" class="btn" id="staffSubmit">Create account</button>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Current staff</h3>
+        <div id="staffList">Loading...</div>
+      </div>
+
+    </section>
 
     <section class="page" id="page-courses">
 
@@ -2130,6 +2195,10 @@
       loadStudents();
     }
 
+    if (pageName === "staff") {
+      loadStaff();
+    }
+
     if (pageName === "courses") {
       loadCourses();
     }
@@ -2159,6 +2228,88 @@
     }
   }
 
+
+
+  /* ===== STAFF ACCOUNTS ===== */
+
+  function staffNote(text, ok) {
+    const box = document.getElementById("staffMessage");
+    box.textContent = text;
+    box.className = "message show " + (ok ? "success" : "error");
+    box.style.display = "block";
+    box.style.color = ok ? "#176b3a" : "#a12626";
+  }
+
+  async function loadStaff() {
+    const list = document.getElementById("staffList");
+    try {
+      const data = await api("/admin/staff");
+      const staff = (data && (data.staff || (data.data && data.data.staff))) || [];
+      list.textContent = "";
+      if (!staff.length) {
+        list.textContent = "No staff accounts yet.";
+        return;
+      }
+      const table = document.createElement("table");
+      table.style.width = "100%";
+      const head = table.insertRow();
+      ["Name", "Email", "Role", "Status", ""].forEach(function (h) {
+        const th = document.createElement("th");
+        th.textContent = h;
+        th.style.textAlign = "left";
+        head.appendChild(th);
+      });
+      staff.forEach(function (u) {
+        const row = table.insertRow();
+        row.insertCell().textContent = u.firstName + " " + u.lastName;
+        row.insertCell().textContent = u.email;
+        row.insertCell().textContent = u.role;
+        row.insertCell().textContent = u.isActive ? "Active" : "Disabled";
+        const cell = row.insertCell();
+        const btn = document.createElement("button");
+        btn.className = "btn";
+        btn.textContent = u.isActive ? "Disable" : "Enable";
+        btn.addEventListener("click", async function () {
+          try {
+            await api("/admin/users/" + encodeURIComponent(u.id) + (u.isActive ? "/deactivate" : "/activate"), { method: "PATCH" });
+            loadStaff();
+          } catch (e) {
+            staffNote(e.message, false);
+          }
+        });
+        cell.appendChild(btn);
+      });
+      list.appendChild(table);
+    } catch (e) {
+      list.textContent = "Unable to load staff: " + e.message;
+    }
+  }
+
+  document.getElementById("staffForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const submit = document.getElementById("staffSubmit");
+    submit.disabled = true;
+    try {
+      await api("/admin/staff", {
+        method: "POST",
+        body: JSON.stringify({
+          firstName: document.getElementById("staffFirst").value.trim(),
+          lastName: document.getElementById("staffLast").value.trim(),
+          email: document.getElementById("staffEmail").value.trim(),
+          password: document.getElementById("staffPassword").value,
+          role: document.getElementById("staffRole").value,
+          specialization: document.getElementById("staffSpec").value.trim() || undefined
+        })
+      });
+      staffNote("Account created. Share the email and temporary password with the staff member.", true);
+      event.target.reset();
+      loadStaff();
+    } catch (e) {
+      staffNote(e.message, false);
+    } finally {
+      submit.disabled = false;
+    }
+  });
 
   document
     .querySelectorAll(".nav-btn")

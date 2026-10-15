@@ -11,6 +11,7 @@ import {
   academicOverview
 } from "../controllers/admin.controller";
 
+import { listStaff, createStaff } from "../controllers/staff.controller";
 import { listCourses } from "../controllers/academic.controller";
 import { listTests } from "../controllers/exam.controller";
 import { listAllPayments } from "../controllers/payment.controller";
@@ -55,6 +56,14 @@ router.patch(
   "/students/:id/status",
   updateStudentStatus
 );
+
+/*
+ * Staff accounts (teachers and admins)
+ */
+
+router.get("/staff", listStaff);
+
+router.post("/staff", createStaff);
 
 /*
  * User account administration
