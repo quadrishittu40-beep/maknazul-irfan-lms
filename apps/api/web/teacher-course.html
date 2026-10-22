@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Workspace | MAKNAZUL IRFAN</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#064e3b">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/assets/icon-192.png">
+<script src="/pwa.js" defer></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f5f8f6; color: #17251e; }
+  header { background: #064e3b; color: #fff; padding: 14px 5%; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  header h1 { font-size: 17px; }
+  header a { color: #fff; text-decoration: none; font-size: 14px; border: 1px solid #d4af37; padding: 8px 12px; border-radius: 6px; }
+  main { max-width: 900px; margin: 20px auto; padding: 0 4%; }
+  .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 18px; box-shadow: 0 4px 18px rgba(0,0,0,.06); }
+  .card h2 { color: #064e3b; font-size: 18px; margin-bottom: 12px; }
+  label { display: block; font-weight: bold; font-size: 13px; margin: 10px 0 5px; color: #263b31; }
+  input, textarea, select { width: 100%; padding: 11px; border: 1px solid #ccd8d1; border-radius: 7px; font-size: 15px; font-family: inherit; }
+  textarea { min-height: 90px; resize: vertical; }
+  button { background: #d4af37; border: 0; border-radius: 7px; padding: 11px 18px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 12px; }
+  button.green { background: #064e3b; color: #fff; }
+  button.small { padding: 6px 10px; font-size: 12px; margin: 0 0 0 6px; }
+  button:disabled { opacity: .6; }
+  .msg { padding: 10px 12px; border-radius: 7px; margin-bottom: 14px; font-size: 14px; display: none; }
+  .msg.ok { display: block; background: #e8f7ed; color: #176b3a; }
+  .msg.err { display: block; background: #fdecec; color: #a12626; }
+  .item { border-top: 1px solid #e4ece7; padding: 12px 0; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+  .item:first-of-type { border-top: 0; }
+  .item small { color: #68756d; display: block; margin-top: 3px; }
+  .badge { font-size: 11px; padding: 3px 8px; border-radius: 20px; background: #e8f7ed; color: #176b3a; font-weight: bold; }
+  .badge.draft { background: #fff4d6; color: #8a6a00; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .row2 { grid-template-columns: 1fr; } .item { flex-direction: column; align-items: flex-start; } }
+  .mat { margin: -4px 0 12px 12px; padding: 8px 12px; background: #f5f8f6; border-radius: 8px; font-size: 13px; }
+  .matrow { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; gap: 8px; }
+  .matrow a { color: #064e3b; word-break: break-all; }
+  .matform { display: grid; grid-template-columns: 1fr 1fr 120px auto; gap: 6px; margin-top: 8px; }
+  .matform input, .matform select { padding: 8px; font-size: 13px; }
+  @media (max-width: 600px) { .matform { grid-template-columns: 1fr; } }
+  .empty { color: #68756d; font-size: 14px; padding: 8px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="pageTitle">Course Workspace</h1>
+  <a href="teacher.html">&larr; Teacher Portal</a>
+</header>
+
+<main>
+  <div id="msg" class="msg"></div>
+
+  <div class="card">
+    <h2>Course details</h2>
+    <label for="cTitle">Title</label>
+    <input id="cTitle">
+    <label for="cDesc">Description</label>
+    <textarea id="cDesc"></textarea>
+    <label for="cStatus">Status</label>
+    <select id="cStatus">
+      <option value="DRAFT">Draft (hidden from students)</option>
+      <option value="PUBLISHED">Published (students can enrol)</option>
+      <option value="ARCHIVED">Archived</option>
+    </select>
+    <button class="green" id="saveCourse">Save course</button>
+  </div>
+
+  <div class="card">
+    <h2>Lectures</h2>
+    <div id="lectureList"><p class="empty">Loading...</p></div>
+
+    <h2 style="margin-top:22px;font-size:16px">Add a lecture</h2>
+    <label for="lTitle">Lecture title</label>
+    <input id="lTitle">
+    <label for="lDesc">Short description</label>
+    <input id="lDesc">
+    <label for="lContent">Lesson text (optional)</label>
+    <textarea id="lContent"></textarea>
+    <div class="row2">
+      <div>
+        <label for="lVideo">Video link (optional)</label>
+        <input id="lVideo" placeholder="https://...">
+      </div>
+      <div>
+        <label for="lOrder">Order number</label>
+        <input id="lOrder" type="number" min="0" value="1">
+      </div>
+    </div>
+    <button class="green" id="addLecture">Add lecture</button>
+  </div>
+
+  <div class="card">
+    <h2>Tests</h2>
+    <div id="testList"><p class="empty">Loading...</p></div>
+  </div>
+
+  <div class="card">
+    <h2>Enrol a student</h2>
+    <label for="sQuery">Search approved students (name or email)</label>
+    <input id="sQuery" placeholder="Type a name or email, or leave empty to list">
+    <button class="green" id="sSearch">Search</button>
+    <div id="sResults" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Enrolled students</h2>
+    <div id="studentList"><p class="empty">Loading...</p></div>
+  </div>
+</main>
+
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var courseId = params.get("id");
+  var msg = document.getElementById("msg");
+
+  function note(text, ok) {
+    msg.textContent = text;
+    msg.className = "msg " + (ok ? "ok" : "err");
+    window.scrollTo(0, 0);
+  }
+
+  async function api(path, options) {
+    options = options || {};
+    var res = await fetch("/api" + path, {
+      credentials: "include",
+      method: options.method || "GET",
+      headers: options.body ? { "Content-Type": "application/json" } : {},
+      body: options.body
+    });
+    var data = {};
+    try { data = await res.json(); } catch (e) {}
+    if (res.status === 401) { location.href = "login.html?portal=staff"; throw new Error("Please log in."); }
+    if (!res.ok) throw new Error(data.message || "Request failed (" + res.status + ")");
+    return data;
+  }
+
+  function el(tag, text, cls) {
+    var e = document.createElement(tag);
+    if (text !== undefined) e.textContent = text;
+    if (cls) e.className = cls;
+    return e;
+  }
+
+  function badge(published) {
+    return el("span", published ? "Published" : "Draft", "badge" + (published ? "" : " draft"));
+  }
+
+  var course = null;
+
+  function render() {
+    document.getElementById("pageTitle").textContent = course.title;
+    document.getElementById("cTitle").value = course.title || "";
+    document.getElementById("cDesc").value = course.description || "";
+    document.getElementById("cStatus").value = course.status || "DRAFT";
+
+    var ll = document.getElementById("lectureList");
+    ll.textContent = "";
+    if (!course.lectures.length) ll.appendChild(el("p", "No lectures yet.", "empty"));
+    course.lectures.forEach(function (lec) {
+      var row = el("div", undefined, "item");
+      var left = el("div");
+      left.appendChild(el("strong", (lec.orderNumber || 0) + ". " + lec.title));
+      if (lec.description) left.appendChild(el("small", lec.description));
+      row.appendChild(left);
+      var right = el("div");
+      right.appendChild(badge(lec.published));
+      var tog = el("button", lec.published ? "Unpublish" : "Publish", "small");
+      tog.addEventListener("click", async function () {
+        tog.disabled = true;
+        try {
+          await api("/lectures/" + encodeURIComponent(lec.id), {
+            method: "PATCH",
+            body: JSON.stringify({ published: !lec.published })
+          });
+          await load();
+        } catch (e) { note(e.message, false); tog.disabled = false; }
+      });
+      right.appendChild(tog);
+      row.appendChild(right);
+      ll.appendChild(row);
+
+      var mat = el("div", undefined, "mat");
+      (lec.materials || []).forEach(function (m) {
+        var mr = el("div", undefined, "matrow");
+        var a = el("a", m.title + " (" + m.type + ")");
+        a.href = m.fileUrl || "#"; a.target = "_blank"; a.rel = "noopener";
+        mr.appendChild(a);
+        var rm = el("button", "Remove", "small");
+        rm.addEventListener("click", async function () {
+          rm.disabled = true;
+          try { await api("/teacher/materials/" + encodeURIComponent(m.id), { method: "DELETE" }); await load(); }
+          catch (e) { note(e.message, false); rm.disabled = false; }
+        });
+        mr.appendChild(rm);
+        mat.appendChild(mr);
+      });
+      var form = el("div", undefined, "matform");
+      var mt = document.createElement("input"); mt.placeholder = "Material title";
+      var mu = document.createElement("input"); mu.placeholder = "Link (https://...) to PDF, video, audio, doc";
+      var ty = document.createElement("select");
+      ["PDF","DOCUMENT","VIDEO","AUDIO","IMAGE","PRESENTATION","OTHER"].forEach(function (t) {
+        var o = document.createElement("option"); o.value = t; o.textContent = t; ty.appendChild(o);
+      });
+      var ab = el("button", "Add material", "small");
+      ab.addEventListener("click", async function () {
+        ab.disabled = true;
+        try {
+          await api("/teacher/lectures/" + encodeURIComponent(lec.id) + "/materials", {
+            method: "POST",
+            body: JSON.stringify({ title: mt.value.trim(), url: mu.value.trim(), type: ty.value })
+          });
+          note("Material added.", true);
+          await load();
+        } catch (e) { note(e.message, false); ab.disabled = false; }
+      });
+      form.appendChild(mt); form.appendChild(mu); form.appendChild(ty); form.appendChild(ab);
+      mat.appendChild(form);
+      ll.appendChild(mat);
+    });
+
+    var tl = document.getElementById("testList");
+    tl.textContent = "";
+    if (!course.tests.length) tl.appendChild(el("p", "No tests for this course yet.", "empty"));
+    course.tests.forEach(function (t) {
+      var row = el("div", undefined, "item");
+      var left = el("div");
+      left.appendChild(el("strong", t.title));
+      left.appendChild(el("small",
+        (t._count ? t._count.questions : 0) + " questions, " +
+        t.durationMinutes + " min, " +
+        (t._count ? t._count.attempts : 0) + " attempts"));
+      row.appendChild(left);
+      row.appendChild(badge(t.published));
+      tl.appendChild(row);
+    });
+
+    var sl = document.getElementById("studentList");
+    sl.textContent = "";
+    if (!course.enrollments.length) sl.appendChild(el("p", "No students have enrolled yet.", "empty"));
+    course.enrollments.forEach(function (en) {
+      var u = (en.student && en.student.user) || {};
+      var row = el("div", undefined, "item");
+      var left = el("div");
+      left.appendChild(el("strong", (u.firstName || "") + " " + (u.lastName || "")));
+      left.appendChild(el("small", u.email || ""));
+      row.appendChild(left);
+      var cls = [en.student && en.student.level && en.student.level.name,
+                 en.student && en.student.class && en.student.class.name].filter(Boolean).join(" / ");
+      row.appendChild(el("small", cls || ""));
+      var rb = el("button", "Remove", "small");
+      rb.addEventListener("click", async function () {
+        if (!confirm("Remove this student from the course?")) return;
+        rb.disabled = true;
+        try {
+          await api("/teacher/courses/" + encodeURIComponent(courseId) + "/enroll/" + encodeURIComponent(en.student.id), { method: "DELETE" });
+          await load();
+        } catch (e) { note(e.message, false); rb.disabled = false; }
+      });
+      row.appendChild(rb);
+      sl.appendChild(row);
+    });
+  }
+
+  async function load() {
+    var data = await api("/teacher/courses/" + encodeURIComponent(courseId));
+    course = (data.course) || (data.data && data.data.course);
+    if (!course) throw new Error("Course not found.");
+    render();
+  }
+
+  document.getElementById("saveCourse").addEventListener("click", async function () {
+    var b = this; b.disabled = true;
+    try {
+      await api("/teacher/courses/" + encodeURIComponent(courseId), {
+        method: "PATCH",
+        body: JSON.stringify({
+          title: document.getElementById("cTitle").value.trim(),
+          description: document.getElementById("cDesc").value.trim(),
+          status: document.getElementById("cStatus").value
+        })
+      });
+      note("Course saved.", true);
+      await load();
+    } catch (e) { note(e.message, false); }
+    b.disabled = false;
+  });
+
+  document.getElementById("addLecture").addEventListener("click", async function () {
+    var b = this; b.disabled = true;
+    try {
+      var title = document.getElementById("lTitle").value.trim();
+      if (title.length < 2) throw new Error("Please enter a lecture title.");
+      await api("/lectures", {
+        method: "POST",
+        body: JSON.stringify({
+          courseId: courseId,
+          title: title,
+          description: document.getElementById("lDesc").value.trim() || undefined,
+          content: document.getElementById("lContent").value.trim() || undefined,
+          videoUrl: document.getElementById("lVideo").value.trim() || undefined,
+          orderNumber: Number(document.getElementById("lOrder").value) || 0,
+          published: true
+        })
+      });
+      ["lTitle", "lDesc", "lContent", "lVideo"].forEach(function (id) { document.getElementById(id).value = ""; });
+      document.getElementById("lOrder").value = (course.lectures.length + 2);
+      note("Lecture added and visible to enrolled students.", true);
+      await load();
+    } catch (e) { note(e.message, false); }
+    b.disabled = false;
+  });
+
+  async function searchStudents() {
+    var box = document.getElementById("sResults");
+    box.textContent = "Searching...";
+    try {
+      var q = document.getElementById("sQuery").value.trim();
+      var data = await api("/teacher/students?courseId=" + encodeURIComponent(courseId) + "&q=" + encodeURIComponent(q));
+      var list = data.students || [];
+      box.textContent = "";
+      if (!list.length) { box.appendChild(el("p", "No matching approved students who are not already enrolled.", "empty")); return; }
+      list.forEach(function (st) {
+        var row = el("div", undefined, "item");
+        var left = el("div");
+        left.appendChild(el("strong", st.user.firstName + " " + st.user.lastName));
+        left.appendChild(el("small", st.user.email));
+        row.appendChild(left);
+        var eb = el("button", "Enrol", "small");
+        eb.addEventListener("click", async function () {
+          eb.disabled = true;
+          try {
+            await api("/teacher/courses/" + encodeURIComponent(courseId) + "/enroll", {
+              method: "POST", body: JSON.stringify({ studentId: st.id })
+            });
+            note("Student enrolled.", true);
+            await load();
+            searchStudents();
+          } catch (e) { note(e.message, false); eb.disabled = false; }
+        });
+        row.appendChild(eb);
+        box.appendChild(row);
+      });
+    } catch (e) { box.textContent = ""; note(e.message, false); }
+  }
+  document.getElementById("sSearch").addEventListener("click", searchStudents);
+
+  if (!courseId) {
+    note("No course selected. Go back to the teacher portal.", false);
+    return;
+  }
+
+  load().then(function () {
+    document.getElementById("lOrder").value = course.lectures.length + 1;
+  }).catch(function (e) { note(e.message, false); });
+})();
+</script>
+</body>
+</html>
