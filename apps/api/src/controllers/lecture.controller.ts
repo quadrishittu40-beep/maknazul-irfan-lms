@@ -363,7 +363,12 @@ export async function createLecture(
             data.description,
           courseId: data.courseId,
           topicId: data.topicId,
+          content: data.content ?? undefined,
+          videoUrl: data.videoUrl ?? undefined,
+          published: data.published ?? true,
           orderNumber:
+            data.orderNumber,
+          order:
             data.orderNumber
         },
         include: {
@@ -787,6 +792,13 @@ export async function getMaterialUrl(
           403
         );
       }
+    }
+
+    if (material.fileUrl) {
+      return success(res, {
+        url: material.fileUrl,
+        expiresInSeconds: 300
+      });
     }
 
     const signedUrl =
