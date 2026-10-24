@@ -22,6 +22,7 @@ import liveClassRoutes from "./routes/live-class.routes";
 import paymentRoutes from "./routes/payment.routes";
 import notificationRoutes from "./routes/notification.routes";
 import certificateRoutes from "./routes/certificate.routes";
+import teacherRoutes from "./routes/teacher.routes";
 
 import { notFoundHandler as notFound } from "./middleware/error";
 
@@ -164,6 +165,12 @@ app.get("/api/health", async (_req, res) => {
 app.use(
   "/api/auth",
   authRoutes
+);
+
+/* Teacher workspace */
+app.use(
+  "/api/teacher",
+  teacherRoutes
 );
 
 /* Administration */
