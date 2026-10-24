@@ -689,8 +689,23 @@
         <h2>My Courses</h2>
 
         <p>
-          Courses assigned to your teacher account.
+          Courses assigned to you, plus any you create yourself.
         </p>
+
+      </div>
+
+      <div class="card">
+
+        <h3>Create a new course</h3>
+
+        <div id="newCourseMsg" class="message"></div>
+
+        <input id="ncTitle" placeholder="Course title" style="width:100%;padding:11px;margin:8px 0;border:1px solid #ccd8d1;border-radius:7px">
+        <textarea id="ncDesc" placeholder="Short description" style="width:100%;padding:11px;margin:0 0 8px;border:1px solid #ccd8d1;border-radius:7px;min-height:70px"></textarea>
+        <select id="ncSubject" style="width:100%;padding:11px;margin-bottom:8px;border:1px solid #ccd8d1;border-radius:7px">
+          <option value="">Subject (optional)</option>
+        </select>
+        <button class="btn btn-green" id="ncCreate" type="button">Create course</button>
 
       </div>
 
@@ -1146,7 +1161,7 @@ async function loadCourses() {
 
     const response =
       await apiFetch(
-        "/academic/courses"
+        "/teacher/courses"
       );
 
     const data =
@@ -1172,6 +1187,16 @@ async function loadCourses() {
       "courseCount"
     ).textContent =
       courses.length;
+
+    (function () {
+      var t = 0, st = 0;
+      courses.forEach(function (c) {
+        var n = c && c._count;
+        if (n) { t += n.tests || 0; st += n.enrollments || 0; }
+      });
+      document.getElementById("testCount").textContent = t;
+      document.getElementById("studentCount").textContent = st;
+    })();
 
     renderCourses(
       document.getElementById(
@@ -1263,7 +1288,7 @@ function renderCourses(container, list) {
       <div class="actions">
 
         <a
-          href="course.html?id=${encodeURIComponent(id)}"
+          href="teacher-course.html?id=${encodeURIComponent(id)}"
           class="btn btn-gold"
         >
           View
@@ -1348,6 +1373,62 @@ function loadLectureCourses() {
 
 }
 
+
+/* -----------------------------
+   CREATE COURSE (teacher)
+----------------------------- */
+
+(async function setupNewCourse() {
+  var sel = document.getElementById("ncSubject");
+  try {
+    var r = await fetch("/api/academic/subjects", { credentials: "include" });
+    var d = await r.json();
+    var list = (d.subjects || (d.data && d.data.subjects) || d.data || []);
+    if (Array.isArray(list)) {
+      list.forEach(function (sub) {
+        var o = document.createElement("option");
+        o.value = sub.id; o.textContent = sub.name;
+        sel.appendChild(o);
+      });
+    }
+  } catch (e) {}
+
+  document.getElementById("ncCreate").addEventListener("click", async function () {
+    var box = document.getElementById("newCourseMsg");
+    var btn = this;
+    btn.disabled = true;
+    try {
+      var title = document.getElementById("ncTitle").value.trim();
+      if (title.length < 3) throw new Error("Please enter a course title (3+ characters).");
+      var res = await fetch("/api/teacher/courses", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title,
+          description: document.getElementById("ncDesc").value.trim() || undefined,
+          subjectId: sel.value || undefined,
+          status: "DRAFT"
+        })
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(data.message || "Unable to create the course.");
+      box.textContent = "Course created as a draft. Open it with Manage to add lectures and publish it.";
+      box.className = "message success";
+      box.style.display = "block";
+      document.getElementById("ncTitle").value = "";
+      document.getElementById("ncDesc").value = "";
+      loadCourses();
+    } catch (e) {
+      box.textContent = e.message;
+      box.className = "message error";
+      box.style.display = "block";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+})();
+
 function manageCourse(courseId) {
 
   openPage("lectures");
@@ -1355,7 +1436,7 @@ function manageCourse(courseId) {
   setTimeout(() => {
 
     window.location.href =
-      "course.html?id=" +
+      "teacher-course.html?id=" +
       encodeURIComponent(courseId);
 
   }, 100);
