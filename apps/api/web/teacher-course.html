@@ -23,6 +23,7 @@
   textarea { min-height: 90px; resize: vertical; }
   button { background: #d4af37; border: 0; border-radius: 7px; padding: 11px 18px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 12px; }
   button.green { background: #064e3b; color: #fff; }
+  a.small { font-size: 12px; margin-left: 6px; color: #064e3b; font-weight: bold; }
   button.small { padding: 6px 10px; font-size: 12px; margin: 0 0 0 6px; }
   button:disabled { opacity: .6; }
   .msg { padding: 10px 12px; border-radius: 7px; margin-bottom: 14px; font-size: 14px; display: none; }
@@ -251,6 +252,12 @@
       var cls = [en.student && en.student.level && en.student.level.name,
                  en.student && en.student.class && en.student.class.name].filter(Boolean).join(" / ");
       row.appendChild(el("small", cls || ""));
+      var pa = el("a", "Profile PDF", "small");
+      pa.href = "/api/pdf/profile?studentId=" + encodeURIComponent(en.student.id);
+      var ra = el("a", "Results PDF", "small");
+      ra.href = "/api/pdf/results?studentId=" + encodeURIComponent(en.student.id);
+      row.appendChild(pa);
+      row.appendChild(ra);
       var rb = el("button", "Remove", "small");
       rb.addEventListener("click", async function () {
         if (!confirm("Remove this student from the course?")) return;

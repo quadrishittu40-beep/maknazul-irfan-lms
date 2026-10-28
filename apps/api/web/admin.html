@@ -1741,6 +1741,7 @@
         <p>
           Administrator account information.
         </p>
+        <a href="/api/pdf/profile" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:6px 6px 0 0">Download Profile (PDF)</a>
 
       </div>
 
@@ -2924,6 +2925,22 @@
               >
                 Edit / Class
               </button>
+
+              <a
+                class="action-btn neutral"
+                style="text-decoration:none;display:inline-block"
+                href="/api/pdf/profile?studentId=${encodeURIComponent(id)}"
+              >
+                Profile PDF
+              </a>
+
+              <a
+                class="action-btn neutral"
+                style="text-decoration:none;display:inline-block"
+                href="/api/pdf/results?studentId=${encodeURIComponent(id)}"
+              >
+                Results PDF
+              </a>
 
               ${
                 String(status).toUpperCase() ===
@@ -4189,6 +4206,13 @@
             <td>
 
               ${file}
+
+              <a
+                href="/api/pdf/certificate/${encodeURIComponent(cert.id)}"
+                style="font-weight:bold;color:#064e3b;margin-left:6px"
+              >
+                Download PDF
+              </a>
 
             </td>
 

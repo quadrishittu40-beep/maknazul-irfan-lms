@@ -566,11 +566,19 @@
 
             <div class="certificate-actions">
 
-              <button
+              <a
                 class="btn-primary"
+                style="text-decoration:none;display:inline-block;text-align:center"
+                href="/api/pdf/certificate/${encodeURIComponent(certificate.id)}"
+              >
+                Download PDF
+              </a>
+
+              <button
+                class="btn-secondary"
                 onclick="printCertificate(${index})"
               >
-                Print Certificate
+                Print
               </button>
 
               ${
