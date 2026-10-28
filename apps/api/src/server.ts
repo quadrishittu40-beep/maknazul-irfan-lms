@@ -23,6 +23,7 @@ import paymentRoutes from "./routes/payment.routes";
 import notificationRoutes from "./routes/notification.routes";
 import certificateRoutes from "./routes/certificate.routes";
 import teacherRoutes from "./routes/teacher.routes";
+import pdfRoutes from "./routes/pdf.routes";
 
 import { notFoundHandler as notFound } from "./middleware/error";
 
@@ -201,6 +202,12 @@ app.use(
 app.use(
   "/api/lectures",
   lectureRoutes
+);
+
+/* PDF downloads */
+app.use(
+  "/api/pdf",
+  pdfRoutes
 );
 
 /* Student learning progress */
