@@ -11,11 +11,8 @@ import { success, failure } from "../utils/http";
 function getUserId(req: Request): string | null {
   const user = (req as any).user;
 
-  if (!user?.userId) {
-    return null;
-  }
-
-  return user.userId;
+  // requireAuth stores the signed-in user as req.user.id
+  return user?.id ?? user?.userId ?? null;
 }
 
 
