@@ -139,7 +139,7 @@ async function canViewStudent(
 export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
   try {
     const cert = await prisma.certificate.findUnique({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       include: {
         course: { select: { id: true, title: true, teacherId: true } },
         student: {
