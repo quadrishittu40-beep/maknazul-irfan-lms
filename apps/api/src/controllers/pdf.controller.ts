@@ -6,6 +6,7 @@ import { prisma } from "../config/prisma";
 import { AuthenticatedRequest } from "../middleware/auth";
 import { failure } from "../utils/http";
 import { shapeArabic } from "../utils/arabic";
+import { env } from "../config/env";
 
 const GREEN = "#064e3b";
 const GOLD = "#b8932a";
@@ -21,6 +22,43 @@ function fmtDate(d: Date | null | undefined) {
     month: "long",
     year: "numeric"
   });
+}
+
+/* Public address of the site, used in verification links. */
+function baseUrl(req: AuthenticatedRequest): string {
+  const configured = String(env.APP_URL || "").replace(/\/+$/, "");
+  if (configured && !/localhost|127\.0\.0\.1/.test(configured)) return configured;
+  return `${req.protocol}://${req.get("host")}`;
+}
+
+/* Draws a QR code (scannable with any phone camera) straight into the PDF. */
+function drawQr(doc: any, text: string, x: number, y: number, size: number) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const QRCode = require("qrcode");
+    const qr = QRCode.create(text, { errorCorrectionLevel: "M" });
+    const n = qr.modules.size;
+    const cell = size / n;
+    doc.save();
+    doc.rect(x - 4, y - 4, size + 8, size + 8).fill("#ffffff");
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (qr.modules.get(r, c)) {
+          doc.rect(x + c * cell, y + r * cell, cell + 0.15, cell + 0.15).fill("#000000");
+        }
+      }
+    }
+    doc.restore();
+    doc.font("Body").fontSize(7).fillColor(GREY)
+      .text("Scan to verify", x - 10, y + size + 6, { width: size + 20, align: "center" });
+  } catch (error) {
+    console.error("QR code error:", error);
+  }
+}
+
+function photoBuffer(avatar: string | null | undefined): Buffer | null {
+  const m = avatar && /^data:image\/(?:jpeg|png);base64,(.+)$/.exec(avatar);
+  return m ? Buffer.from(m[1], "base64") : null;
 }
 
 function safeName(s: string) {
@@ -206,9 +244,27 @@ export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
         .text(extra.join("     "), 0, 385, { align: "center", width: w });
     }
 
+    const verifyUrl = `${baseUrl(req)}/verify.html?no=${encodeURIComponent(cert.certificateNumber)}`;
+
     doc.fillColor(GREY).font("Body").fontSize(11)
-      .text(`Date: ${fmtDate(cert.completionDate || cert.issuedAt)}`, 70, h - 110, { width: 250 });
-    doc.text(`Certificate No: ${cert.certificateNumber}`, w - 320, h - 110, { width: 250, align: "right" });
+      .text(`Date: ${fmtDate(cert.completionDate || cert.issuedAt)}`, 70, h - 120, { width: 300 });
+    doc.text(`Certificate No: ${cert.certificateNumber}`, 70, h - 102, { width: 300 });
+
+    const qrText = [
+      "MAKNAZUL IRFAN ACADEMY",
+      "CERTIFICATE OF COMPLETION",
+      `No: ${cert.certificateNumber}`,
+      `Name: ${name}`,
+      `Course: ${cert.course?.title || "-"}`,
+      cert.grade ? `Grade: ${cert.grade}` : "",
+      cert.score !== null && cert.score !== undefined ? `Score: ${cert.score}%` : "",
+      `Issued: ${fmtDate(cert.completionDate || cert.issuedAt)}`,
+      `Verify: ${verifyUrl}`
+    ].filter(Boolean).join("\n");
+    drawQr(doc, qrText, w - 150, h - 160, 84);
+
+    doc.fillColor(GREY).font("Body").fontSize(8)
+      .text(`Verify this certificate at: ${verifyUrl}`, 60, h - 54, { align: "center", width: w - 120 });
 
     doc.moveTo(w / 2 - 80, h - 78).lineTo(w / 2 + 80, h - 78).lineWidth(1).strokeColor(GREEN).stroke();
     doc.fillColor(GREY).fontSize(10)
@@ -254,8 +310,19 @@ export async function profilePdf(req: AuthenticatedRequest, res: Response) {
     const doc = startPdf(res, `Profile_${fullName}`);
     letterhead(doc, "Profile");
 
-    doc.font("Body-Bold").fontSize(20).fillColor("#111111").text(fullName, 50);
+    const photo = photoBuffer(user.avatar);
+    if (photo) {
+      try {
+        doc.image(photo, doc.page.width - 140, 122, { fit: [90, 90], align: "center", valign: "center" });
+        doc.rect(doc.page.width - 140, 122, 90, 90).lineWidth(1).strokeColor(GREEN).stroke();
+      } catch (e) {
+        console.error("photo error:", e);
+      }
+    }
+
+    doc.font("Body-Bold").fontSize(20).fillColor("#111111").text(fullName, 50, doc.y, { width: 390 });
     doc.moveDown(0.8);
+    if (photo && doc.y < 222) doc.y = 222;
 
     row(doc, "Role", user.role);
     row(doc, "Email", user.email);
@@ -301,9 +368,27 @@ export async function profilePdf(req: AuthenticatedRequest, res: Response) {
       );
     }
 
-    doc.moveDown(2);
+    doc.moveDown(1);
+    if (doc.y > doc.page.height - 190) doc.addPage();
+    const qy = doc.page.height - 150;
+    drawQr(
+      doc,
+      [
+        "MAKNAZUL IRFAN ACADEMY",
+        "PROFILE",
+        `Name: ${fullName}`,
+        `Role: ${user.role}`,
+        `Email: ${user.email}`,
+        user.studentProfile ? `Status: ${user.studentProfile.status}` : "",
+        user.studentProfile ? `Courses: ${user.studentProfile.enrollments.length}` : "",
+        `Generated: ${fmtDate(new Date())}`
+      ].filter(Boolean).join("\n"),
+      doc.page.width - 140,
+      qy,
+      84
+    );
     doc.font("Body").fontSize(9).fillColor(GREY)
-      .text(`Generated on ${fmtDate(new Date())}`, 50);
+      .text(`Generated on ${fmtDate(new Date())}`, 50, qy + 70, { width: 300 });
 
     doc.end();
   } catch (error) {
@@ -410,8 +495,33 @@ export async function resultsPdf(req: AuthenticatedRequest, res: Response) {
       );
     }
 
-    doc.moveDown(2);
-    doc.font("Body").fontSize(9).fillColor(GREY).text(`Generated on ${fmtDate(new Date())}`, 50);
+    doc.moveDown(1);
+    if (doc.y > doc.page.height - 190) doc.addPage();
+    const qy = doc.page.height - 150;
+    const avg = attempts.length
+      ? (attempts.reduce((t, a) => t + (a.percentage !== null ? Number(a.percentage) : 0), 0) / attempts.length).toFixed(1)
+      : "0";
+    drawQr(
+      doc,
+      [
+        "MAKNAZUL IRFAN ACADEMY",
+        "EXAMINATION RESULTS",
+        `Name: ${fullName}`,
+        `Email: ${user.email}`,
+        `Tests taken: ${attempts.length}`,
+        `Passed: ${attempts.filter((a) => a.passed).length}`,
+        `Average: ${avg}%`,
+        attempts[0]
+          ? `Latest: ${attempts[0].test.title} - ${attempts[0].percentage !== null ? Number(attempts[0].percentage).toFixed(0) + "%" : "-"}`
+          : "",
+        `Generated: ${fmtDate(new Date())}`
+      ].filter(Boolean).join("\n"),
+      doc.page.width - 140,
+      qy,
+      84
+    );
+    doc.font("Body").fontSize(9).fillColor(GREY)
+      .text(`Generated on ${fmtDate(new Date())}`, 50, qy + 70, { width: 300 });
     doc.end();
   } catch (error) {
     console.error("resultsPdf error:", error);
