@@ -124,7 +124,8 @@ export async function listLectures(
     const lectures =
       await prisma.lecture.findMany({
         where: {
-          courseId
+          courseId,
+          ...(req.user.role === "STUDENT" ? { published: true } : {})
         },
         include: {
           topic: true,
@@ -134,6 +135,7 @@ export async function listLectures(
               type: true,
               title: true,
               originalName: true,
+              fileUrl: true,
               mimeType: true,
               fileSize: true
             }
@@ -210,6 +212,7 @@ export async function getLecture(
               type: true,
               title: true,
               originalName: true,
+              fileUrl: true,
               mimeType: true,
               fileSize: true,
               storageKey: true
@@ -242,6 +245,17 @@ export async function getLecture(
           403
         );
       }
+    }
+
+    if (
+      req.user.role === "STUDENT" &&
+      !lecture.published
+    ) {
+      return failure(
+        res,
+        "This lecture is not available yet.",
+        404
+      );
     }
 
     if (

@@ -56,6 +56,59 @@ function drawQr(doc: any, text: string, x: number, y: number, size: number) {
   }
 }
 
+/* Red round "official seal" with curved lettering, drawn as vector shapes. */
+function drawStamp(doc: any, cx: number, cy: number, r: number) {
+  const RED = "#c1121f";
+  doc.save();
+  doc.translate(cx, cy);
+  doc.rotate(-12);
+  doc.opacity(0.88);
+
+  doc.lineWidth(2.6).strokeColor(RED).circle(0, 0, r).stroke();
+  doc.lineWidth(0.8).strokeColor(RED).circle(0, 0, r - 5).stroke();
+  doc.lineWidth(0.8).strokeColor(RED).circle(0, 0, r - 28).stroke();
+
+  const fs = 7.6;
+  const rt = r - 17;
+  doc.font("Body-Bold").fontSize(fs).fillColor(RED);
+
+  function arc(text: string, top: boolean) {
+    const chars = Array.from(text);
+    const widths = chars.map((c) => doc.widthOfString(c) + 0.9);
+    const total = widths.reduce((a, b) => a + b, 0);
+    const span = (total / rt) * (180 / Math.PI);
+    let angle = top ? -span / 2 : span / 2;
+    chars.forEach((ch, i) => {
+      const step = (widths[i] / rt) * (180 / Math.PI);
+      const mid = top ? angle + step / 2 : angle - step / 2;
+      doc.save();
+      doc.rotate(mid);
+      const y = top ? -rt - fs * 0.5 : rt - fs * 0.62;
+      doc.text(ch, -widths[i] / 2, y, { lineBreak: false });
+      doc.restore();
+      angle = top ? angle + step : angle - step;
+    });
+  }
+
+  arc("MAKNAZUL 'IRFAN ACADEMY", true);
+  arc("ONLINE ISLAMIC & ARABIC INSTITUTE", false);
+
+  // small stars between the two arcs
+  doc.font("Body-Bold").fontSize(9).fillColor(RED);
+  doc.text("\u2605", -r + 6.5, -5, { lineBreak: false });
+  doc.text("\u2605", r - 15.5, -5, { lineBreak: false });
+
+  // centre
+  doc.font("Body-Bold").fontSize(15).fillColor(RED)
+    .text("\u2605", -8, -r + 31, { lineBreak: false });
+  doc.font("Body-Bold").fontSize(8.5).fillColor(RED)
+    .text("OFFICIAL", -r + 20, -7, { width: 2 * (r - 20), align: "center", lineBreak: false });
+  doc.font("Body-Bold").fontSize(8.5).fillColor(RED)
+    .text("SEAL", -r + 20, 4, { width: 2 * (r - 20), align: "center", lineBreak: false });
+
+  doc.restore();
+}
+
 function photoBuffer(avatar: string | null | undefined): Buffer | null {
   const m = avatar && /^data:image\/(?:jpeg|png);base64,(.+)$/.exec(avatar);
   return m ? Buffer.from(m[1], "base64") : null;
@@ -205,70 +258,101 @@ export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
     const w = doc.page.width;
     const h = doc.page.height;
 
+    const verifyUrl = `${baseUrl(req)}/verify.html?no=${encodeURIComponent(cert.certificateNumber)}`;
+    const issued = fmtDate(cert.completionDate || cert.issuedAt);
+
+    // borders and corner ornaments
     doc.lineWidth(4).strokeColor(GREEN).rect(24, 24, w - 48, h - 48).stroke();
     doc.lineWidth(1).strokeColor(GOLD).rect(34, 34, w - 68, h - 68).stroke();
+    doc.lineWidth(0.5).strokeColor(GOLD).rect(40, 40, w - 80, h - 80).stroke();
+    [[34, 34], [w - 34, 34], [34, h - 34], [w - 34, h - 34]].forEach(([x, y]) => {
+      doc.save().rect(x - 5, y - 5, 10, 10).fill(GOLD).restore();
+    });
 
     try {
       if (fs.existsSync(LOGO_PATH)) {
-        doc.image(LOGO_PATH, w / 2 - 32, 50, { fit: [64, 64] });
+        doc.image(LOGO_PATH, w / 2 - 28, 50, { fit: [56, 56] });
       }
     } catch {
       /* optional */
     }
 
-    doc.fillColor(GREEN).font("Body-Bold").fontSize(26)
-      .text("MAKNAZUL IRFAN ACADEMY", 0, 125, { align: "center", width: w });
-    doc.fillColor(GREY).font("Body").fontSize(11)
-      .text("Online Islamic & Arabic Institute", 0, 156, { align: "center", width: w });
-
-    doc.fillColor(GOLD).font("Body-Bold").fontSize(32)
-      .text("Certificate of Completion", 0, 190, { align: "center", width: w });
-
-    doc.fillColor(GREY).font("Body").fontSize(13)
-      .text("This is to certify that", 0, 245, { align: "center", width: w });
-
-    doc.fillColor("#111111").font("Body-Bold").fontSize(30)
-      .text(name, 0, 270, { align: "center", width: w });
-
-    doc.fillColor(GREY).font("Body").fontSize(13)
-      .text("has successfully completed the course", 0, 318, { align: "center", width: w });
-
     doc.fillColor(GREEN).font("Body-Bold").fontSize(22)
-      .text(cert.course?.title || "Course", 60, 342, { align: "center", width: w - 120 });
+      .text("MAKNAZUL IRFAN ACADEMY", 0, 112, { align: "center", width: w });
+    doc.fillColor(GREY).font("Body").fontSize(10)
+      .text("Online Islamic & Arabic Institute", 0, 140, { align: "center", width: w });
+    doc.fillColor(GREY).font("Body").fontSize(8.5)
+      .text("In the name of Allah, the Most Gracious, the Most Merciful", 0, 156, { align: "center", width: w });
 
-    const extra: string[] = [];
-    if (cert.grade) extra.push(`Grade: ${cert.grade}`);
-    if (cert.score !== null && cert.score !== undefined) extra.push(`Score: ${cert.score}%`);
-    if (extra.length) {
-      doc.fillColor("#111111").font("Body").fontSize(13)
-        .text(extra.join("     "), 0, 385, { align: "center", width: w });
-    }
+    doc.moveTo(w / 2 - 110, 174).lineTo(w / 2 + 110, 174).lineWidth(1).strokeColor(GOLD).stroke();
 
-    const verifyUrl = `${baseUrl(req)}/verify.html?no=${encodeURIComponent(cert.certificateNumber)}`;
+    doc.fillColor(GOLD).font("Body-Bold").fontSize(28)
+      .text("CERTIFICATE OF COMPLETION", 0, 184, { align: "center", width: w });
 
-    doc.fillColor(GREY).font("Body").fontSize(11)
-      .text(`Date: ${fmtDate(cert.completionDate || cert.issuedAt)}`, 70, h - 120, { width: 300 });
-    doc.text(`Certificate No: ${cert.certificateNumber}`, 70, h - 102, { width: 300 });
+    doc.fillColor(GREY).font("Body").fontSize(12)
+      .text("This is to certify that", 0, 226, { align: "center", width: w });
 
+    doc.fillColor("#111111").font("Body-Bold").fontSize(26)
+      .text(name, 60, 244, { align: "center", width: w - 120 });
+    const nameBottom = doc.y;
+    doc.moveTo(w / 2 - 170, nameBottom + 2).lineTo(w / 2 + 170, nameBottom + 2)
+      .lineWidth(0.8).strokeColor(GOLD).stroke();
+
+    doc.fillColor("#333333").font("Body").fontSize(11)
+      .text(
+        "having duly fulfilled all the academic requirements, attended the prescribed lectures and " +
+        "satisfactorily completed the assessments of the course of study entitled",
+        90, nameBottom + 12, { align: "center", width: w - 180, lineGap: 2 }
+      );
+
+    doc.fillColor(GREEN).font("Body-Bold").fontSize(20)
+      .text(cert.course?.title || "Course", 70, doc.y + 6, { align: "center", width: w - 140 });
+
+    const result: string[] = [];
+    if (cert.grade) result.push(`Grade ${cert.grade}`);
+    if (cert.score !== null && cert.score !== undefined) result.push(`a score of ${cert.score}%`);
+
+    doc.fillColor("#333333").font("Body").fontSize(11)
+      .text(
+        "offered by Maknazul 'Irfan Academy, Online Islamic & Arabic Institute" +
+        (result.length ? `, with a final result of ${result.join(" and ")}` : "") +
+        ". This certificate is hereby issued and awarded in recognition of the above achievement, " +
+        `given under the seal of the Academy on ${issued}.`,
+        90, doc.y + 6, { align: "center", width: w - 180, lineGap: 2 }
+      );
+
+    // signatures
+    const lineY = h - 112;
+    doc.lineWidth(0.8).strokeColor(GREEN);
+    doc.moveTo(70, lineY).lineTo(235, lineY).stroke();
+    doc.moveTo(265, lineY).lineTo(430, lineY).stroke();
+    doc.fillColor(GREY).font("Body-Bold").fontSize(9.5)
+      .text("Director of Studies", 70, lineY + 4, { width: 165, align: "center" });
+    doc.text("Registrar", 265, lineY + 4, { width: 165, align: "center" });
+
+    doc.fillColor(GREY).font("Body").fontSize(9)
+      .text(`Date of issue: ${issued}`, 70, h - 84, { width: 380 });
+    doc.text(`Certificate No: ${cert.certificateNumber}`, 70, h - 71, { width: 380 });
+
+    // official red seal
+    drawStamp(doc, 520, h - 124, 52);
+
+    // QR code with the certificate details
     const qrText = [
-      "MAKNAZUL IRFAN ACADEMY",
+      "MAKNAZUL 'IRFAN ACADEMY",
       "CERTIFICATE OF COMPLETION",
       `No: ${cert.certificateNumber}`,
       `Name: ${name}`,
       `Course: ${cert.course?.title || "-"}`,
       cert.grade ? `Grade: ${cert.grade}` : "",
       cert.score !== null && cert.score !== undefined ? `Score: ${cert.score}%` : "",
-      `Issued: ${fmtDate(cert.completionDate || cert.issuedAt)}`,
+      `Issued: ${issued}`,
       `Verify: ${verifyUrl}`
     ].filter(Boolean).join("\n");
-    drawQr(doc, qrText, w - 150, h - 160, 84);
+    drawQr(doc, qrText, w - 150, h - 168, 84);
 
-    doc.fillColor(GREY).font("Body").fontSize(8)
-      .text(`Verify this certificate at: ${verifyUrl}`, 60, h - 54, { align: "center", width: w - 120 });
-
-    doc.moveTo(w / 2 - 80, h - 78).lineTo(w / 2 + 80, h - 78).lineWidth(1).strokeColor(GREEN).stroke();
-    doc.fillColor(GREY).fontSize(10)
-      .text("Director", 0, h - 72, { align: "center", width: w });
+    doc.fillColor(GREY).font("Body").fontSize(7.5)
+      .text(`Verify this certificate at: ${verifyUrl}`, 60, h - 56, { align: "center", width: w - 120 });
 
     doc.end();
   } catch (error) {

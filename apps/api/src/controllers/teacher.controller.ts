@@ -184,7 +184,10 @@ export async function getTeacherCourse(
 
 const materialSchema = z.object({
   title: z.string().trim().min(2).max(200),
-  type: z.enum(["VIDEO", "AUDIO", "IMAGE", "PDF", "DOCUMENT", "PRESENTATION", "OTHER"]).default("DOCUMENT"),
+  type: z
+    .enum(["VIDEO", "AUDIO", "IMAGE", "PDF", "DOCUMENT", "PRESENTATION", "LINK", "OTHER"])
+    .default("DOCUMENT")
+    .transform((t) => (t === "PRESENTATION" ? "DOCUMENT" : t)),
   url: z.string().trim().url().max(1000)
 });
 
@@ -330,7 +333,7 @@ function materialTypeFor(mime: string, name: string) {
   if (mime.startsWith("image/")) return "IMAGE" as const;
   if (mime.startsWith("audio/")) return "AUDIO" as const;
   if (mime.startsWith("video/")) return "VIDEO" as const;
-  if (/\.(pptx?|key)$/.test(n)) return "PRESENTATION" as const;
+  if (/\.(pptx?|key)$/.test(n)) return "DOCUMENT" as const;
   if (/\.(docx?|xlsx?|txt|rtf|odt)$/.test(n)) return "DOCUMENT" as const;
   return "OTHER" as const;
 }
