@@ -24,6 +24,8 @@ import notificationRoutes from "./routes/notification.routes";
 import certificateRoutes from "./routes/certificate.routes";
 import teacherRoutes from "./routes/teacher.routes";
 import pdfRoutes from "./routes/pdf.routes";
+import avatarRoutes from "./routes/avatar.routes";
+import verifyRoutes from "./routes/verify.routes";
 
 import { notFoundHandler as notFound } from "./middleware/error";
 
@@ -202,6 +204,18 @@ app.use(
 app.use(
   "/api/lectures",
   lectureRoutes
+);
+
+/* Profile photos */
+app.use(
+  "/api/avatar",
+  avatarRoutes
+);
+
+/* Public certificate verification */
+app.use(
+  "/api/verify",
+  verifyRoutes
 );
 
 /* PDF downloads */
