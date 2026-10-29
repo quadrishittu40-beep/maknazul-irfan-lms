@@ -1140,6 +1140,22 @@
               )}
             </p>
 
+            ${
+              Array.isArray(lecture?.materials) && lecture.materials.length
+                ? `<div style="margin:8px 0">` +
+                  lecture.materials.map(m => `
+                    <a
+                      href="${escapeHtml(m.fileUrl || ("lecture.html?id=" + encodeURIComponent(id)))}"
+                      target="_blank"
+                      rel="noopener"
+                      style="display:inline-block;margin:3px 6px 3px 0;padding:6px 10px;background:#e8f7ed;color:#064e3b;border-radius:6px;font-size:13px;font-weight:bold;text-decoration:none"
+                    >
+                      &#128206; ${escapeHtml(m.title || m.originalName || "Material")} (${escapeHtml(m.type || "FILE")})
+                    </a>`).join("") +
+                  `</div>`
+                : ""
+            }
+
             <div class="progress-area">
 
               <div class="progress-track">
@@ -1352,6 +1368,16 @@
       clearMessage();
 
       await loadUser();
+
+      if (loggedInUser && loggedInUser.role === "TEACHER") {
+        window.location.replace("teacher-course.html?id=" + encodeURIComponent(courseId));
+        return;
+      }
+
+      if (loggedInUser && loggedInUser.role === "ADMIN") {
+        window.location.replace("admin.html");
+        return;
+      }
 
       await loadCourse();
 
