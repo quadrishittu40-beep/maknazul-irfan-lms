@@ -569,6 +569,8 @@
         My Results
       </h2>
 
+      <a href="/api/pdf/results" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 0 14px">Download Results (PDF)</a>
+
       <div id="resultsList">
         <div class="loading">
           Loading results...
@@ -670,6 +672,8 @@
       <h2 class="section-title">
         My Profile
       </h2>
+
+      <a href="/api/pdf/profile" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 0 14px">Download Profile (PDF)</a>
 
       <div id="profileContent">
 
@@ -1550,6 +1554,13 @@ async function loadCertificates() {
               cert.issuedAt
             )}
           </p>
+
+          <a
+            href="/api/pdf/certificate/${encodeURIComponent(cert.id)}"
+            style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:9px 14px;border-radius:7px;font-size:14px;margin:4px 6px 4px 0"
+          >
+            Download PDF
+          </a>
 
           ${
             cert.certificateUrl
