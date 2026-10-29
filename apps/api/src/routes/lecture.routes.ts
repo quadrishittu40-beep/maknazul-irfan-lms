@@ -10,6 +10,8 @@ import {
   getMaterialUrl
 } from "../controllers/lecture.controller";
 
+import { downloadMaterialFile } from "../controllers/teacher.controller";
+
 import {
   requireAuth
 } from "../middleware/auth";
@@ -41,6 +43,11 @@ router.get(
 router.get(
   "/materials/:id/url",
   getMaterialUrl
+);
+
+router.get(
+  "/materials/:id/file",
+  downloadMaterialFile
 );
 
 /*

@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express, { Router } from "express";
 
 import {
   listTeacherCourses,
@@ -9,7 +9,8 @@ import {
   deleteLectureMaterial,
   searchStudents,
   enrollStudent,
-  unenrollStudent
+  unenrollStudent,
+  uploadLectureMaterial
 } from "../controllers/teacher.controller";
 
 import { requireAuth } from "../middleware/auth";
@@ -29,6 +30,11 @@ router.get("/students", searchStudents);
 router.post("/courses/:id/enroll", enrollStudent);
 router.delete("/courses/:id/enroll/:studentId", unenrollStudent);
 router.post("/lectures/:id/materials", addLectureMaterial);
+router.post(
+  "/lectures/:id/materials/upload",
+  express.raw({ type: () => true, limit: "16mb" }),
+  uploadLectureMaterial
+);
 router.delete("/materials/:id", deleteLectureMaterial);
 
 export default router;
