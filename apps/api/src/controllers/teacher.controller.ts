@@ -316,3 +316,109 @@ export async function unenrollStudent(req: AuthenticatedRequest, res: Response) 
     return failure(res, "Unable to remove the student.", 500);
   }
 }
+
+
+/* =========================================================
+   Direct file upload (PDF, documents, images, audio, video)
+========================================================= */
+
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+
+function materialTypeFor(mime: string, name: string) {
+  const n = name.toLowerCase();
+  if (mime === "application/pdf" || n.endsWith(".pdf")) return "PDF" as const;
+  if (mime.startsWith("image/")) return "IMAGE" as const;
+  if (mime.startsWith("audio/")) return "AUDIO" as const;
+  if (mime.startsWith("video/")) return "VIDEO" as const;
+  if (/\.(pptx?|key)$/.test(n)) return "PRESENTATION" as const;
+  if (/\.(docx?|xlsx?|txt|rtf|odt)$/.test(n)) return "DOCUMENT" as const;
+  return "OTHER" as const;
+}
+
+export async function uploadLectureMaterial(req: AuthenticatedRequest, res: Response) {
+  try {
+    const owned = await loadOwnedLecture(req, req.params.id);
+    if ("error" in owned) return failure(res, owned.error, owned.code);
+
+    const body: any = req.body;
+    if (!Buffer.isBuffer(body) || body.length === 0) {
+      return failure(res, "No file was received.", 422);
+    }
+    if (body.length > MAX_UPLOAD_BYTES) {
+      return failure(res, "The file is too large. The limit is 15 MB.", 413);
+    }
+
+    const mime = String(req.headers["content-type"] || "application/octet-stream").split(";")[0];
+    const originalName = String(req.query.name || "file").slice(0, 200);
+    const title = String(req.query.title || originalName).trim().slice(0, 200);
+    if (title.length < 2) return failure(res, "Enter a title for the material.", 422);
+
+    const material = await prisma.lectureMaterial.create({
+      data: {
+        lectureId: req.params.id,
+        type: materialTypeFor(mime, originalName),
+        title,
+        storageKey: "upload:" + Date.now(),
+        originalName,
+        mimeType: mime,
+        fileSize: body.length
+      }
+    });
+
+    await prisma.materialFile.create({
+      data: { materialId: material.id, data: body }
+    });
+
+    const updated = await prisma.lectureMaterial.update({
+      where: { id: material.id },
+      data: { fileUrl: `/api/lectures/materials/${material.id}/file` },
+      select: { id: true, title: true, type: true, fileUrl: true, originalName: true }
+    });
+
+    return success(res, { material: updated }, 201);
+  } catch (error) {
+    console.error("uploadLectureMaterial error:", error);
+    return failure(res, "Unable to upload the file.", 500);
+  }
+}
+
+/* Serves an uploaded material to people allowed to see the course. */
+export async function downloadMaterialFile(req: AuthenticatedRequest, res: Response) {
+  try {
+    const material = await prisma.lectureMaterial.findUnique({
+      where: { id: String(req.params.id) },
+      include: {
+        file: true,
+        lecture: { select: { courseId: true, published: true, course: { select: { teacherId: true } } } }
+      }
+    });
+    if (!material || !material.file) return res.status(404).end();
+
+    const me = req.user!;
+    let allowed = me.role === "ADMIN";
+    if (me.role === "TEACHER") allowed = material.lecture.course.teacherId === me.id;
+    if (me.role === "STUDENT") {
+      const sp = await prisma.studentProfile.findUnique({
+        where: { userId: me.id },
+        select: { id: true }
+      });
+      const enrolled = sp
+        ? await prisma.courseEnrollment.findUnique({
+            where: { studentId_courseId: { studentId: sp.id, courseId: material.lecture.courseId } },
+            select: { id: true }
+          })
+        : null;
+      allowed = !!enrolled && material.lecture.published;
+    }
+    if (!allowed) return res.status(403).end();
+
+    const safe = (material.originalName || material.title || "file").replace(/[^a-zA-Z0-9._-]+/g, "_");
+    res.setHeader("Content-Type", material.mimeType || "application/octet-stream");
+    res.setHeader("Content-Disposition", `inline; filename="${safe}"`);
+    res.setHeader("Cache-Control", "private, no-cache");
+    return res.send(Buffer.from(material.file.data));
+  } catch (error) {
+    console.error("downloadMaterialFile error:", error);
+    return res.status(500).end();
+  }
+}
