@@ -427,6 +427,18 @@ orderNumber Int @default(0)
 // LECTURE MATERIAL
 // ============================================================
 
+model MaterialFile {
+  id String @id @default(cuid())
+
+  materialId String @unique
+
+  material LectureMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  data Bytes
+
+  createdAt DateTime @default(now())
+}
+
 model LectureMaterial {
   id String @id @default(cuid())
 
@@ -441,6 +453,8 @@ model LectureMaterial {
   storageKey String
 
   fileUrl String?
+
+  file MaterialFile?
 
   originalName String?
 
