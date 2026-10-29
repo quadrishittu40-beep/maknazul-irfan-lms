@@ -40,6 +40,9 @@
   .matrow { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; gap: 8px; }
   .matrow a { color: #064e3b; word-break: break-all; }
   .matform { display: grid; grid-template-columns: 1fr 1fr 120px auto; gap: 6px; margin-top: 8px; }
+  .upform { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #c9d6ce; display: grid; gap: 6px; }
+  .uplabel { font-size: 12px; color: #4b5b52; }
+  .upform input { padding: 8px; font-size: 13px; }
   .matform input, .matform select { padding: 8px; font-size: 13px; }
   @media (max-width: 600px) { .matform { grid-template-columns: 1fr; } }
   .empty { color: #68756d; font-size: 14px; padding: 8px 0; }
@@ -220,6 +223,39 @@
       });
       form.appendChild(mt); form.appendChild(mu); form.appendChild(ty); form.appendChild(ab);
       mat.appendChild(form);
+
+      var up = el("div", undefined, "upform");
+      up.appendChild(el("div", "Or upload a file (PDF, document, image, audio or video, up to 15 MB):", "uplabel"));
+      var uf = document.createElement("input");
+      uf.type = "file";
+      uf.accept = ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,image/*,audio/*,video/*";
+      var ut = document.createElement("input");
+      ut.placeholder = "Title (optional - the file name is used if empty)";
+      var ub = el("button", "Upload file", "small");
+      ub.addEventListener("click", async function () {
+        var f = uf.files && uf.files[0];
+        if (!f) { note("Choose a file first.", false); return; }
+        if (f.size > 15 * 1024 * 1024) { note("That file is over 15 MB.", false); return; }
+        ub.disabled = true; ub.textContent = "Uploading...";
+        try {
+          var res = await fetch("/api/teacher/lectures/" + encodeURIComponent(lec.id) +
+            "/materials/upload?name=" + encodeURIComponent(f.name) +
+            "&title=" + encodeURIComponent(ut.value.trim() || f.name), {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": f.type || "application/octet-stream" },
+            body: f
+          });
+          var data = {};
+          try { data = await res.json(); } catch (e) {}
+          if (res.status === 401) { location.href = "login.html?portal=staff"; return; }
+          if (!res.ok) throw new Error(data.message || "Upload failed (" + res.status + ")");
+          note("File uploaded.", true);
+          await load();
+        } catch (e) { note(e.message, false); ub.disabled = false; ub.textContent = "Upload file"; }
+      });
+      up.appendChild(uf); up.appendChild(ut); up.appendChild(ub);
+      mat.appendChild(up);
       ll.appendChild(mat);
     });
 
