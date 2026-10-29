@@ -103,6 +103,8 @@ model User {
 
   phone String?
 
+  avatar String? @db.Text
+
   role Role @default(STUDENT)
 
   isActive Boolean @default(true)
