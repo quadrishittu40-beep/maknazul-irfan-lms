@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Certificate | MAKNAZUL IRFAN</title>
+<link rel="icon" type="image/png" href="/assets/icon-192.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f5f8f6; color: #17251e; }
+  header { background: #064e3b; color: #fff; padding: 16px 5%; display: flex; align-items: center; gap: 12px; }
+  header img { width: 48px; height: 48px; background: #fff; border-radius: 50%; padding: 3px; object-fit: contain; }
+  header h1 { font-size: 17px; }
+  header p { font-size: 12px; opacity: .9; }
+  main { max-width: 560px; margin: 24px auto; padding: 0 16px; }
+  .card { background: #fff; border-radius: 12px; padding: 22px; box-shadow: 0 4px 18px rgba(0,0,0,.07); }
+  h2 { color: #064e3b; margin-bottom: 14px; font-size: 20px; }
+  label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px; }
+  input { width: 100%; padding: 12px; border: 1px solid #ccd8d1; border-radius: 7px; font-size: 15px; }
+  button { margin-top: 12px; background: #064e3b; color: #fff; border: 0; border-radius: 7px; padding: 12px 20px; font-weight: bold; font-size: 15px; cursor: pointer; }
+  .result { margin-top: 18px; padding: 16px; border-radius: 10px; display: none; }
+  .ok { background: #e8f7ed; color: #176b3a; }
+  .bad { background: #fdecec; color: #a12626; }
+  .result h3 { margin-bottom: 10px; }
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid rgba(0,0,0,.08); font-size: 14px; }
+  .row span:first-child { font-weight: bold; }
+</style>
+</head>
+<body>
+<header>
+  <img src="/assets/logo.png" alt="Logo">
+  <div><h1>MAKNAZUL IRFAN ACADEMY</h1><p>Certificate verification</p></div>
+</header>
+<main>
+  <div class="card">
+    <h2>Verify a certificate</h2>
+    <label for="no">Certificate number</label>
+    <input id="no" placeholder="MIA-2026-XXXXXXXX" autocomplete="off">
+    <button id="go">Verify</button>
+    <div id="out" class="result"></div>
+  </div>
+</main>
+<script>
+(function () {
+  var input = document.getElementById("no");
+  var out = document.getElementById("out");
+
+  function row(label, value) {
+    var d = document.createElement("div");
+    d.className = "row";
+    var a = document.createElement("span"); a.textContent = label;
+    var b = document.createElement("span"); b.textContent = value;
+    d.appendChild(a); d.appendChild(b);
+    return d;
+  }
+  function fmt(d) {
+    if (!d) return "-";
+    return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+  }
+
+  async function check() {
+    var no = input.value.trim();
+    if (!no) return;
+    out.style.display = "block";
+    out.className = "result";
+    out.textContent = "Checking...";
+    try {
+      var r = await fetch("/api/verify/certificate/" + encodeURIComponent(no));
+      var d = await r.json().catch(function () { return {}; });
+      out.textContent = "";
+      if (r.ok && d.valid) {
+        var c = d.certificate;
+        out.className = "result ok";
+        var h = document.createElement("h3"); h.textContent = "Genuine certificate";
+        out.appendChild(h);
+        out.appendChild(row("Certificate No", c.certificateNumber));
+        out.appendChild(row("Awarded to", c.studentName));
+        out.appendChild(row("Course", c.course || "-"));
+        if (c.grade) out.appendChild(row("Grade", c.grade));
+        if (c.score !== null && c.score !== undefined) out.appendChild(row("Score", c.score + "%"));
+        out.appendChild(row("Issued", fmt(c.completionDate || c.issuedAt)));
+      } else {
+        out.className = "result bad";
+        var h2 = document.createElement("h3"); h2.textContent = "Not found";
+        out.appendChild(h2);
+        out.appendChild(document.createTextNode(d.message || "This certificate number is not in our records."));
+      }
+    } catch (e) {
+      out.className = "result bad";
+      out.textContent = "Could not reach the server. Please try again.";
+    }
+  }
+
+  document.getElementById("go").addEventListener("click", check);
+  input.addEventListener("keydown", function (e) { if (e.key === "Enter") check(); });
+
+  var q = new URLSearchParams(location.search).get("no");
+  if (q) { input.value = q; check(); }
+})();
+</script>
+</body>
+</html>
