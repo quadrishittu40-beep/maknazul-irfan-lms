@@ -66,13 +66,13 @@ function letterhead(doc: any, subtitle: string) {
   doc
     .fillColor(GREEN)
     .font("Body-Bold")
-    .fontSize(15)
-    .text("MAKNAZUL IRFAN ACADEMY  |  أكاديمية مكنزل عرفان", 118, 46, { width: w - 168 });
+    .fontSize(18)
+    .text("MAKNAZUL IRFAN ACADEMY", 118, 46, { width: w - 168 });
   doc
     .font("Body")
     .fontSize(10)
     .fillColor(GREY)
-    .text("Online Islamic & Arabic Institute  |  المعهد الإسلامي والعربي عبر الإنترنت", 118, 68, { width: w - 168 });
+    .text("Online Islamic & Arabic Institute", 118, 68, { width: w - 168 });
   doc
     .font("Body-Bold")
     .fontSize(12)
@@ -90,8 +90,8 @@ function letterhead(doc: any, subtitle: string) {
 
 function row(doc: any, label: string, value: string) {
   const y = doc.y;
-  doc.font("Body-Bold").fontSize(9).fillColor(GREEN).text(label, 50, y, { width: 200 });
-  doc.font("Body").fontSize(11).fillColor("#111111").text(value || "-", 255, y, { width: 290 });
+  doc.font("Body-Bold").fontSize(10).fillColor(GREEN).text(label, 50, y, { width: 150 });
+  doc.font("Body").fontSize(11).fillColor("#111111").text(value || "-", 205, y, { width: 340 });
   doc.moveDown(0.6);
 }
 
@@ -178,41 +178,41 @@ export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
       /* optional */
     }
 
-    doc.fillColor(GREEN).font("Body-Bold").fontSize(22)
-      .text("MAKNAZUL IRFAN ACADEMY  |  أكاديمية مكنزل عرفان", 0, 125, { align: "center", width: w });
+    doc.fillColor(GREEN).font("Body-Bold").fontSize(26)
+      .text("MAKNAZUL IRFAN ACADEMY", 0, 125, { align: "center", width: w });
     doc.fillColor(GREY).font("Body").fontSize(11)
-      .text("Online Islamic & Arabic Institute  |  المعهد الإسلامي والعربي عبر الإنترنت", 0, 156, { align: "center", width: w });
+      .text("Online Islamic & Arabic Institute", 0, 156, { align: "center", width: w });
 
-    doc.fillColor(GOLD).font("Body-Bold").fontSize(30)
-      .text("Certificate of Completion  |  شهادة إتمام", 0, 190, { align: "center", width: w });
+    doc.fillColor(GOLD).font("Body-Bold").fontSize(32)
+      .text("Certificate of Completion", 0, 190, { align: "center", width: w });
 
     doc.fillColor(GREY).font("Body").fontSize(13)
-      .text("This is to certify that  |  يشهد بأن", 0, 245, { align: "center", width: w });
+      .text("This is to certify that", 0, 245, { align: "center", width: w });
 
     doc.fillColor("#111111").font("Body-Bold").fontSize(30)
       .text(name, 0, 270, { align: "center", width: w });
 
     doc.fillColor(GREY).font("Body").fontSize(13)
-      .text("has successfully completed the course  |  قد أتمّ بنجاح دورة", 0, 318, { align: "center", width: w });
+      .text("has successfully completed the course", 0, 318, { align: "center", width: w });
 
     doc.fillColor(GREEN).font("Body-Bold").fontSize(22)
       .text(cert.course?.title || "Course", 60, 342, { align: "center", width: w - 120 });
 
     const extra: string[] = [];
-    if (cert.grade) extra.push(`Grade | التقدير: ${cert.grade}`);
-    if (cert.score !== null && cert.score !== undefined) extra.push(`Score | الدرجة: ${cert.score}%`);
+    if (cert.grade) extra.push(`Grade: ${cert.grade}`);
+    if (cert.score !== null && cert.score !== undefined) extra.push(`Score: ${cert.score}%`);
     if (extra.length) {
       doc.fillColor("#111111").font("Body").fontSize(13)
         .text(extra.join("     "), 0, 385, { align: "center", width: w });
     }
 
     doc.fillColor(GREY).font("Body").fontSize(11)
-      .text(`Date | التاريخ: ${fmtDate(cert.completionDate || cert.issuedAt)}`, 70, h - 110, { width: 250 });
-    doc.text(`Certificate No | رقم الشهادة: ${cert.certificateNumber}`, w - 320, h - 110, { width: 250, align: "right" });
+      .text(`Date: ${fmtDate(cert.completionDate || cert.issuedAt)}`, 70, h - 110, { width: 250 });
+    doc.text(`Certificate No: ${cert.certificateNumber}`, w - 320, h - 110, { width: 250, align: "right" });
 
     doc.moveTo(w / 2 - 80, h - 78).lineTo(w / 2 + 80, h - 78).lineWidth(1).strokeColor(GREEN).stroke();
     doc.fillColor(GREY).fontSize(10)
-      .text("Director | المدير", 0, h - 72, { align: "center", width: w });
+      .text("Director", 0, h - 72, { align: "center", width: w });
 
     doc.end();
   } catch (error) {
@@ -252,32 +252,32 @@ export async function profilePdf(req: AuthenticatedRequest, res: Response) {
 
     const fullName = `${user.firstName} ${user.lastName}`;
     const doc = startPdf(res, `Profile_${fullName}`);
-    letterhead(doc, "Profile  |  الملف الشخصي");
+    letterhead(doc, "Profile");
 
     doc.font("Body-Bold").fontSize(20).fillColor("#111111").text(fullName, 50);
     doc.moveDown(0.8);
 
-    row(doc, "Role | الدور", user.role);
-    row(doc, "Email | البريد الإلكتروني", user.email);
-    row(doc, "Phone | الهاتف", user.phone || "-");
-    row(doc, "Account status | حالة الحساب", user.isActive ? "Active" : "Disabled");
-    row(doc, "Registered | تاريخ التسجيل", fmtDate(user.createdAt));
+    row(doc, "Role", user.role);
+    row(doc, "Email", user.email);
+    row(doc, "Phone", user.phone || "-");
+    row(doc, "Account status", user.isActive ? "Active" : "Disabled");
+    row(doc, "Registered", fmtDate(user.createdAt));
 
     const sp: any = user.studentProfile;
     if (sp) {
       doc.moveDown(0.5);
-      doc.font("Body-Bold").fontSize(13).fillColor(GREEN).text("Student information  |  معلومات الطالب", 50);
+      doc.font("Body-Bold").fontSize(13).fillColor(GREEN).text("Student information", 50);
       doc.moveDown(0.5);
-      row(doc, "Status | الحالة", String(sp.status));
-      row(doc, "Level | المستوى", sp.level?.name || "-");
-      row(doc, "Class | الفصل", sp.class?.name || "-");
-      row(doc, "Gender | الجنس", sp.gender || "-");
-      row(doc, "Date of birth | تاريخ الميلاد", fmtDate(sp.dateOfBirth));
-      row(doc, "Guardian | ولي الأمر", sp.guardianName || "-");
-      row(doc, "Guardian phone | هاتف ولي الأمر", sp.guardianPhone || "-");
+      row(doc, "Status", String(sp.status));
+      row(doc, "Level", sp.level?.name || "-");
+      row(doc, "Class", sp.class?.name || "-");
+      row(doc, "Gender", sp.gender || "-");
+      row(doc, "Date of birth", fmtDate(sp.dateOfBirth));
+      row(doc, "Guardian", sp.guardianName || "-");
+      row(doc, "Guardian phone", sp.guardianPhone || "-");
       row(
         doc,
-        "Courses | الدورات",
+        "Courses",
         sp.enrollments.length
           ? sp.enrollments.map((e: any) => e.course.title).join(", ")
           : "None yet"
@@ -287,14 +287,14 @@ export async function profilePdf(req: AuthenticatedRequest, res: Response) {
     const tp: any = user.teacherProfile;
     if (tp || user.role === "TEACHER") {
       doc.moveDown(0.5);
-      doc.font("Body-Bold").fontSize(13).fillColor(GREEN).text("Teacher information  |  معلومات المعلم", 50);
+      doc.font("Body-Bold").fontSize(13).fillColor(GREEN).text("Teacher information", 50);
       doc.moveDown(0.5);
-      row(doc, "Specialization | التخصص", tp?.specialization || "-");
-      row(doc, "Qualification | المؤهل", tp?.qualification || "-");
-      row(doc, "About | نبذة", tp?.bio || "-");
+      row(doc, "Specialization", tp?.specialization || "-");
+      row(doc, "Qualification", tp?.qualification || "-");
+      row(doc, "About", tp?.bio || "-");
       row(
         doc,
-        "Courses taught | الدورات المدرّسة",
+        "Courses taught",
         user.coursesTaught.length
           ? user.coursesTaught.map((c) => c.title).join(", ")
           : "None assigned"
@@ -303,7 +303,7 @@ export async function profilePdf(req: AuthenticatedRequest, res: Response) {
 
     doc.moveDown(2);
     doc.font("Body").fontSize(9).fillColor(GREY)
-      .text(`Generated on | أُنشئ في ${fmtDate(new Date())}`, 50);
+      .text(`Generated on ${fmtDate(new Date())}`, 50);
 
     doc.end();
   } catch (error) {
@@ -349,34 +349,33 @@ export async function resultsPdf(req: AuthenticatedRequest, res: Response) {
 
     const fullName = `${user.firstName} ${user.lastName}`;
     const doc = startPdf(res, `Results_${fullName}`);
-    letterhead(doc, "Examination Results  |  نتائج الاختبارات");
+    letterhead(doc, "Examination Results");
 
     doc.font("Body-Bold").fontSize(16).fillColor("#111111").text(fullName, 50);
     doc.font("Body").fontSize(10).fillColor(GREY).text(user.email, 50);
     doc.moveDown(1);
 
     const cols = [
-      { t: "Test", a: "الاختبار", x: 50, w: 140 },
-      { t: "Course", a: "الدورة", x: 195, w: 115 },
-      { t: "Date", a: "التاريخ", x: 315, w: 75 },
-      { t: "Score", a: "الدرجة", x: 392, w: 45 },
-      { t: "Grade", a: "التقدير", x: 440, w: 45 },
-      { t: "Result", a: "النتيجة", x: 488, w: 62 }
+      { t: "Test", x: 50, w: 140 },
+      { t: "Course", x: 195, w: 115 },
+      { t: "Date", x: 315, w: 75 },
+      { t: "Score", x: 392, w: 45 },
+      { t: "Grade", x: 440, w: 45 },
+      { t: "Result", x: 488, w: 62 }
     ];
 
     function header() {
       const y = doc.y;
-      doc.rect(50, y - 3, 500, 28).fill(GREEN);
-      doc.fillColor("#ffffff").font("Body-Bold").fontSize(8);
+      doc.rect(50, y - 3, 500, 18).fill(GREEN);
+      doc.fillColor("#ffffff").font("Body-Bold").fontSize(9);
       cols.forEach((c) => {
         doc.text(c.t, c.x + 2, y, { width: c.w });
-        doc.text(c.a, c.x + 2, y + 10, { width: c.w });
       });
-      doc.y = y + 32;
+      doc.y = y + 22;
     }
 
     if (!attempts.length) {
-      doc.font("Body").fontSize(12).fillColor(GREY).text("No submitted tests yet. | لا توجد اختبارات مقدّمة بعد.", 50);
+      doc.font("Body").fontSize(12).fillColor(GREY).text("No submitted tests yet.", 50);
     } else {
       header();
       let passed = 0;
@@ -399,20 +398,20 @@ export async function resultsPdf(req: AuthenticatedRequest, res: Response) {
         doc.text(pct !== null ? `${pct.toFixed(0)}%` : "-", cols[3].x + 2, y, { width: cols[3].w });
         doc.text(a.grade || "-", cols[4].x + 2, y, { width: cols[4].w });
         doc.fillColor(a.passed ? "#176b3a" : "#a12626")
-          .text(a.passed ? "Pass/ناجح" : "Fail/راسب", cols[5].x + 2, y, { width: cols[5].w });
+          .text(a.passed ? "Pass" : "Fail", cols[5].x + 2, y, { width: cols[5].w });
         doc.y = y + 20;
       });
 
       doc.moveDown(1);
       doc.x = 50;
       doc.font("Body-Bold").fontSize(11).fillColor(GREEN).text(
-        `Tests taken | الاختبارات: ${attempts.length}    Passed | الناجحة: ${passed}    Average | المعدل: ${(totalPct / attempts.length).toFixed(1)}%`,
+        `Tests taken: ${attempts.length}    Passed: ${passed}    Average: ${(totalPct / attempts.length).toFixed(1)}%`,
         50
       );
     }
 
     doc.moveDown(2);
-    doc.font("Body").fontSize(9).fillColor(GREY).text(`Generated on | أُنشئ في ${fmtDate(new Date())}`, 50);
+    doc.font("Body").fontSize(9).fillColor(GREY).text(`Generated on ${fmtDate(new Date())}`, 50);
     doc.end();
   } catch (error) {
     console.error("resultsPdf error:", error);
