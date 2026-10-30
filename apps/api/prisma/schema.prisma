@@ -75,6 +75,7 @@ enum PaymentProvider {
 enum LiveClassProvider {
   ZOOM
   GOOGLE_MEET
+  JITSI
 }
 
 enum NotificationType {
