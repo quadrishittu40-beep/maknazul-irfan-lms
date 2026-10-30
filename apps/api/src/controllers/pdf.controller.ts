@@ -6,10 +6,15 @@ import { prisma } from "../config/prisma";
 import { AuthenticatedRequest } from "../middleware/auth";
 import { failure } from "../utils/http";
 import { shapeArabic } from "../utils/arabic";
+import { code128Widths } from "../utils/barcode";
+import crypto from "crypto";
 import { env } from "../config/env";
 
 const GREEN = "#064e3b";
 const GOLD = "#b8932a";
+const CREAM = "#fbf6e6";
+const ACADEMY_EMAIL = "quadrishittu40@gmail.com";
+const ACADEMY_PHONE = "0808 492 9862";
 const GREY = "#555555";
 
 const FONT_DIR = path.resolve(__dirname, "../../fonts");
@@ -109,6 +114,40 @@ function drawStamp(doc: any, cx: number, cy: number, r: number) {
   doc.restore();
 }
 
+/* Code 128 barcode drawn as vector bars, with the text underneath. */
+function drawBarcode(doc: any, text: string, x: number, y: number, width: number, height: number) {
+  const widths = code128Widths(text);
+  const total = widths.reduce((a, b) => a + b, 0);
+  const unit = width / total;
+  let cx = x;
+  widths.forEach((wd, i) => {
+    if (i % 2 === 0) doc.rect(cx, y, wd * unit, height).fill("#000000");
+    cx += wd * unit;
+  });
+  doc.font("Body").fontSize(8).fillColor("#333333")
+    .text(text, x, y + height + 3, { width, align: "center", lineBreak: false });
+}
+
+/* Green quarter-circle ornament for a certificate corner. */
+function cornerOrnament(doc: any, x: number, y: number, sx: number, sy: number, R: number) {
+  doc.save();
+  doc.translate(x, y);
+  doc.scale(sx, sy);
+  doc.path(`M 0 0 L ${R} 0 A ${R} ${R} 0 0 1 0 ${R} Z`).fill(GREEN);
+  doc.lineWidth(0.9).strokeColor("#d9bd5c");
+  [0.8, 0.6, 0.4].forEach((f) => {
+    doc.path(`M ${R * f} 0 A ${R * f} ${R * f} 0 0 1 0 ${R * f}`).stroke();
+  });
+  doc.path(`M ${R * 0.2} ${R * 0.08} L ${R * 0.32} ${R * 0.2} L ${R * 0.2} ${R * 0.32} L ${R * 0.08} ${R * 0.2} Z`).fill("#d9bd5c");
+  doc.restore();
+}
+
+function diamond(doc: any, cx: number, cy: number, r: number, color: string) {
+  doc.save();
+  doc.path(`M ${cx} ${cy - r} L ${cx + r} ${cy} L ${cx} ${cy + r} L ${cx - r} ${cy} Z`).fill(color);
+  doc.restore();
+}
+
 function photoBuffer(avatar: string | null | undefined): Buffer | null {
   const m = avatar && /^data:image\/(?:jpeg|png);base64,(.+)$/.exec(avatar);
   return m ? Buffer.from(m[1], "base64") : null;
@@ -130,6 +169,8 @@ function startPdf(
   // DejaVu Sans covers Latin and Arabic
   doc.registerFont("Body", path.join(FONT_DIR, "DejaVuSans.ttf"));
   doc.registerFont("Body-Bold", path.join(FONT_DIR, "DejaVuSans-Bold.ttf"));
+  doc.registerFont("Serif", path.join(FONT_DIR, "DejaVuSerif.ttf"));
+  doc.registerFont("Serif-Bold", path.join(FONT_DIR, "DejaVuSerif-Bold.ttf"));
 
   // Arabic text is shaped and put into visual order before drawing
   const originalText = doc.text.bind(doc);
@@ -261,81 +302,86 @@ export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
     const verifyUrl = `${baseUrl(req)}/verify.html?no=${encodeURIComponent(cert.certificateNumber)}`;
     const issued = fmtDate(cert.completionDate || cert.issuedAt);
 
-    // borders and corner ornaments
-    doc.lineWidth(4).strokeColor(GREEN).rect(24, 24, w - 48, h - 48).stroke();
-    doc.lineWidth(1).strokeColor(GOLD).rect(34, 34, w - 68, h - 68).stroke();
-    doc.lineWidth(0.5).strokeColor(GOLD).rect(40, 40, w - 80, h - 80).stroke();
-    [[34, 34], [w - 34, 34], [34, h - 34], [w - 34, h - 34]].forEach(([x, y]) => {
-      doc.save().rect(x - 5, y - 5, 10, 10).fill(GOLD).restore();
-    });
+    // parchment background, ornate frame and corner ornaments
+    doc.rect(0, 0, w, h).fill(CREAM);
+    doc.lineWidth(6).strokeColor(GREEN).rect(20, 20, w - 40, h - 40).stroke();
+    doc.lineWidth(1.2).strokeColor(GOLD).rect(31, 31, w - 62, h - 62).stroke();
+    doc.lineWidth(0.6).strokeColor(GREEN).rect(37, 37, w - 74, h - 74).stroke();
+    cornerOrnament(doc, 23, 23, 1, 1, 78);
+    cornerOrnament(doc, w - 23, 23, -1, 1, 78);
+    cornerOrnament(doc, 23, h - 23, 1, -1, 78);
+    cornerOrnament(doc, w - 23, h - 23, -1, -1, 78);
+    diamond(doc, w / 2, 23, 8, GOLD);
+    diamond(doc, w / 2, h - 23, 8, GOLD);
+    diamond(doc, 23, h / 2, 8, GOLD);
+    diamond(doc, w - 23, h / 2, 8, GOLD);
 
     try {
       if (fs.existsSync(LOGO_PATH)) {
-        doc.image(LOGO_PATH, w / 2 - 28, 50, { fit: [56, 56] });
+        doc.image(LOGO_PATH, w / 2 - 36, 44, { fit: [72, 72] });
       }
     } catch {
       /* optional */
     }
 
-    doc.fillColor(GREEN).font("Body-Bold").fontSize(22)
-      .text("MAKNAZUL IRFAN ACADEMY", 0, 112, { align: "center", width: w });
-    doc.fillColor(GREY).font("Body").fontSize(10)
-      .text("Online Islamic & Arabic Institute", 0, 140, { align: "center", width: w });
-    doc.fillColor(GREY).font("Body").fontSize(8.5)
-      .text("In the name of Allah, the Most Gracious, the Most Merciful", 0, 156, { align: "center", width: w });
+    doc.fillColor(GREEN).font("Serif-Bold").fontSize(24)
+      .text("MAKNAZUL IRFAN ACADEMY", 0, 122, { align: "center", width: w });
+    doc.fillColor(GREEN).font("Serif").fontSize(14)
+      .text("for Arabic and Islamic Studies", 0, 150, { align: "center", width: w });
 
-    doc.moveTo(w / 2 - 110, 174).lineTo(w / 2 + 110, 174).lineWidth(1).strokeColor(GOLD).stroke();
+    doc.moveTo(w / 2 - 130, 174).lineTo(w / 2 + 130, 174).lineWidth(1).strokeColor(GOLD).stroke();
 
-    doc.fillColor(GOLD).font("Body-Bold").fontSize(28)
+    doc.fillColor(GOLD).font("Serif-Bold").fontSize(28)
       .text("CERTIFICATE OF COMPLETION", 0, 184, { align: "center", width: w });
 
-    doc.fillColor(GREY).font("Body").fontSize(12)
-      .text("This is to certify that", 0, 226, { align: "center", width: w });
+    doc.fillColor(GREY).font("Serif").fontSize(14)
+      .text("Awarded to:", 0, 224, { align: "center", width: w });
 
-    doc.fillColor("#111111").font("Body-Bold").fontSize(26)
-      .text(name, 60, 244, { align: "center", width: w - 120 });
+    doc.fillColor("#111111").font("Serif-Bold").fontSize(26)
+      .text(name, 70, 244, { align: "center", width: w - 140 });
     const nameBottom = doc.y;
-    doc.moveTo(w / 2 - 170, nameBottom + 2).lineTo(w / 2 + 170, nameBottom + 2)
-      .lineWidth(0.8).strokeColor(GOLD).stroke();
+    doc.moveTo(w / 2 - 200, nameBottom + 2).lineTo(w / 2 + 200, nameBottom + 2)
+      .lineWidth(0.9).strokeColor(GOLD).stroke();
 
-    doc.fillColor("#333333").font("Body").fontSize(11)
+    doc.fillColor("#333333").font("Body").fontSize(10.5)
       .text(
         "having duly fulfilled all the academic requirements, attended the prescribed lectures and " +
-        "satisfactorily completed the assessments of the course of study entitled",
-        90, nameBottom + 12, { align: "center", width: w - 180, lineGap: 2 }
+        "satisfactorily completed the assessments of the course",
+        100, nameBottom + 10, { align: "center", width: w - 200, lineGap: 2 }
       );
 
-    doc.fillColor(GREEN).font("Body-Bold").fontSize(20)
-      .text(cert.course?.title || "Course", 70, doc.y + 6, { align: "center", width: w - 140 });
+    doc.fillColor(GREEN).font("Serif-Bold").fontSize(19)
+      .text((cert.course?.title || "Course").toUpperCase(), 70, doc.y + 5, { align: "center", width: w - 140 });
 
     const result: string[] = [];
     if (cert.grade) result.push(`Grade ${cert.grade}`);
-    if (cert.score !== null && cert.score !== undefined) result.push(`a score of ${cert.score}%`);
+    if (cert.score !== null && cert.score !== undefined) result.push(`${cert.score}%`);
 
-    doc.fillColor("#333333").font("Body").fontSize(11)
+    doc.fillColor("#333333").font("Body").fontSize(10.5)
       .text(
-        "offered by Maknazul 'Irfan Academy, Online Islamic & Arabic Institute" +
-        (result.length ? `, with a final result of ${result.join(" and ")}` : "") +
-        ". This certificate is hereby issued and awarded in recognition of the above achievement, " +
-        `given under the seal of the Academy on ${issued}.`,
-        90, doc.y + 6, { align: "center", width: w - 180, lineGap: 2 }
+        "This certificate recognizes dedication, diligence, and academic excellence within the Academy's " +
+        "comprehensive Arabic and Islamic studies curriculum" +
+        (result.length ? `, achieved with a final result of ${result.join(" - ")}` : "") +
+        `, and is issued under the seal of the Academy on ${issued}.`,
+        100, doc.y + 6, { align: "center", width: w - 200, lineGap: 2 }
       );
 
-    // signatures
-    const lineY = h - 112;
+    // date and signatures
+    const lineY = h - 124;
+    doc.fillColor("#222222").font("Body-Bold").fontSize(10)
+      .text(`DATE: ${issued}`, 80, lineY - 30, { width: 300 });
     doc.lineWidth(0.8).strokeColor(GREEN);
-    doc.moveTo(70, lineY).lineTo(235, lineY).stroke();
-    doc.moveTo(265, lineY).lineTo(430, lineY).stroke();
+    doc.moveTo(80, lineY).lineTo(245, lineY).stroke();
+    doc.moveTo(275, lineY).lineTo(440, lineY).stroke();
     doc.fillColor(GREY).font("Body-Bold").fontSize(9.5)
-      .text("Director of Studies", 70, lineY + 4, { width: 165, align: "center" });
-    doc.text("Registrar", 265, lineY + 4, { width: 165, align: "center" });
+      .text("DIRECTOR", 80, lineY + 4, { width: 165, align: "center" });
+    doc.text("PRINCIPAL", 275, lineY + 4, { width: 165, align: "center" });
 
-    doc.fillColor(GREY).font("Body").fontSize(9)
-      .text(`Date of issue: ${issued}`, 70, h - 84, { width: 380 });
-    doc.text(`Certificate No: ${cert.certificateNumber}`, 70, h - 71, { width: 380 });
+    // barcode with the certificate number
+    drawBarcode(doc, cert.certificateNumber, 80, h - 92, 200, 22);
 
     // official red seal
-    drawStamp(doc, 520, h - 124, 52);
+    drawStamp(doc, 540, h - 128, 52);
 
     // QR code with the certificate details
     const qrText = [
@@ -349,10 +395,10 @@ export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
       `Issued: ${issued}`,
       `Verify: ${verifyUrl}`
     ].filter(Boolean).join("\n");
-    drawQr(doc, qrText, w - 150, h - 168, 84);
+    drawQr(doc, qrText, w - 150, h - 172, 84);
 
-    doc.fillColor(GREY).font("Body").fontSize(7.5)
-      .text(`Verify this certificate at: ${verifyUrl}`, 60, h - 56, { align: "center", width: w - 120 });
+    doc.fillColor(GREY).font("Body").fontSize(7)
+      .text(`Verify at: ${verifyUrl}`, 300, h - 62, { align: "right", width: w - 350 });
 
     doc.end();
   } catch (error) {
@@ -610,5 +656,211 @@ export async function resultsPdf(req: AuthenticatedRequest, res: Response) {
   } catch (error) {
     console.error("resultsPdf error:", error);
     if (!res.headersSent) failure(res, "Unable to create the results PDF.", 500);
+  }
+}
+
+/* =========================================================
+   ID CARD
+========================================================= */
+
+async function loadIdCard(req: AuthenticatedRequest) {
+  const targetId = await resolveTargetUserId(req);
+  if (!(await canViewStudent(req, targetId))) return { error: "Access denied.", code: 403 } as const;
+
+  const user = await prisma.user.findUnique({
+    where: { id: targetId },
+    include: {
+      studentProfile: {
+        include: {
+          level: { select: { name: true } },
+          class: { select: { name: true } }
+        }
+      },
+      teacherProfile: true
+    }
+  });
+  if (!user) return { error: "User not found.", code: 404 } as const;
+
+  const prefix = user.role === "TEACHER" ? "T" : user.role === "ADMIN" ? "A" : "S";
+  const digest = crypto.createHash("sha1").update(user.id).digest("hex");
+  const serial = String(parseInt(digest.slice(0, 8), 16) % 10000).padStart(4, "0");
+  const year = new Date(user.createdAt).getFullYear();
+  const sp: any = user.studentProfile;
+  const tp: any = user.teacherProfile;
+
+  const title =
+    user.role === "TEACHER"
+      ? "TEACHER IDENTITY CARD"
+      : user.role === "ADMIN"
+      ? "STAFF IDENTITY CARD"
+      : "STUDENT IDENTITY CARD";
+
+  const details: Array<[string, string]> = [];
+  if (user.role === "STUDENT") {
+    details.push(["LEVEL", sp?.level?.name || "-"]);
+    details.push(["CLASS", sp?.class?.name || "-"]);
+    details.push(["STATUS", sp?.status ? String(sp.status) : "-"]);
+  } else if (user.role === "TEACHER") {
+    details.push(["SPECIALIZATION", tp?.specialization || "-"]);
+    details.push(["QUALIFICATION", tp?.qualification || "-"]);
+  } else {
+    details.push(["POSITION", "Administrator"]);
+  }
+  details.push(["EMAIL", user.email]);
+
+  return {
+    user,
+    card: {
+      userId: user.id,
+      name: `${user.firstName} ${user.lastName}`,
+      role: user.role,
+      title,
+      idNumber: `MIA-${prefix}-${year}-${serial}`,
+      details,
+      issued: fmtDate(user.createdAt)
+    }
+  } as const;
+}
+
+export async function idCardJson(req: AuthenticatedRequest, res: Response) {
+  try {
+    const result = await loadIdCard(req);
+    if ("error" in result) return failure(res, result.error, result.code);
+    return res.json({ success: true, card: result.card });
+  } catch (error) {
+    console.error("idCardJson error:", error);
+    return failure(res, "Unable to load the ID card.", 500);
+  }
+}
+
+export async function idCardPdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const result = await loadIdCard(req);
+    if ("error" in result) return failure(res, result.error, result.code);
+    const { user, card } = result;
+
+    const doc = startPdf(res, `ID_Card_${card.name}`);
+    const pw = doc.page.width;
+    const CW = 340;
+    const CH = 214;
+    const x = (pw - CW) / 2;
+
+    doc.font("Body").fontSize(8).fillColor(GREY)
+      .text("Identity card - print and cut along the outline. Front on top, back below.", 50, 36, {
+        width: pw - 100,
+        align: "center"
+      });
+
+    /* ---------------- FRONT ---------------- */
+    const fy = 62;
+    doc.roundedRect(x, fy, CW, CH, 10).fill(CREAM);
+    doc.save();
+    doc.roundedRect(x, fy, CW, CH, 10).clip();
+    doc.rect(x, fy, CW, 56).fill(GREEN);
+    doc.rect(x, fy + CH - 22, CW, 22).fill(GREEN);
+    doc.restore();
+    doc.lineWidth(1.4).strokeColor(GREEN).roundedRect(x, fy, CW, CH, 10).stroke();
+    doc.lineWidth(0.6).strokeColor(GOLD).roundedRect(x + 4, fy + 4, CW - 8, CH - 8, 7).stroke();
+
+    try {
+      if (fs.existsSync(LOGO_PATH)) {
+        doc.save();
+        doc.circle(x + 30, fy + 28, 20).fill("#ffffff");
+        doc.restore();
+        doc.image(LOGO_PATH, x + 12, fy + 10, { fit: [36, 36] });
+      }
+    } catch {
+      /* optional */
+    }
+    doc.fillColor("#ffffff").font("Serif-Bold").fontSize(13.5)
+      .text("MAKNAZUL IRFAN ACADEMY", x + 56, fy + 14, { width: CW - 66 });
+    doc.fillColor("#e6c85a").font("Body-Bold").fontSize(8.5)
+      .text(card.title, x + 56, fy + 34, { width: CW - 66 });
+
+    // photo
+    const px = x + 14;
+    const py = fy + 68;
+    const photo = photoBuffer(user.avatar);
+    doc.rect(px, py, 80, 96).fill("#e8efe9");
+    if (photo) {
+      try {
+        doc.image(photo, px, py, { fit: [80, 96], align: "center", valign: "center" });
+      } catch (e) {
+        console.error("photo error:", e);
+      }
+    } else {
+      const initials = `${user.firstName[0] || ""}${user.lastName[0] || ""}`.toUpperCase();
+      doc.fillColor(GREEN).font("Serif-Bold").fontSize(30)
+        .text(initials, px, py + 32, { width: 80, align: "center", lineBreak: false });
+    }
+    doc.lineWidth(1.2).strokeColor(GREEN).rect(px, py, 80, 96).stroke();
+
+    // details
+    const tx = x + 106;
+    let ty = fy + 66;
+    function field(label: string, value: string, big = false) {
+      doc.font("Body-Bold").fontSize(6.5).fillColor(GREY).text(label, tx, ty, { width: CW - 118, lineBreak: false });
+      doc.font(big ? "Serif-Bold" : "Body-Bold").fontSize(big ? 13 : 8.5).fillColor("#111111")
+        .text(value, tx, ty + 8, { width: CW - 118, height: big ? 18 : 12, ellipsis: true });
+      ty += big ? 30 : 21;
+    }
+    field("FULL NAME", card.name, true);
+    field("ID NUMBER", card.idNumber);
+    card.details.slice(0, 3).forEach(([l, v]) => field(l, v));
+
+    doc.fillColor("#e6c85a").font("Body-Bold").fontSize(6.5)
+      .text("KNOWLEDGE  •  FAITH  •  EXCELLENCE", x, fy + CH - 15, { width: CW, align: "center", lineBreak: false });
+
+    /* ---------------- BACK ---------------- */
+    const by = fy + CH + 40;
+    doc.roundedRect(x, by, CW, CH, 10).fill(CREAM);
+    doc.save();
+    doc.roundedRect(x, by, CW, CH, 10).clip();
+    doc.rect(x, by, CW, 44).fill(GREEN);
+    doc.restore();
+    doc.lineWidth(1.4).strokeColor(GREEN).roundedRect(x, by, CW, CH, 10).stroke();
+    doc.lineWidth(0.6).strokeColor(GOLD).roundedRect(x + 4, by + 4, CW - 8, CH - 8, 7).stroke();
+
+    doc.fillColor("#ffffff").font("Serif-Bold").fontSize(14)
+      .text("MAKNAZUL IRFAN ACADEMY", x, by + 16, { width: CW, align: "center" });
+
+    const site = baseUrl(req).replace(/^https?:\/\//, "");
+    doc.fillColor("#222222").font("Body").fontSize(7.5);
+    doc.text(`Web: ${site}`, x + 16, by + 54, { width: CW - 32 });
+    doc.text(`Email: ${ACADEMY_EMAIL}`, x + 16, by + 66, { width: CW - 32 });
+    doc.text("Address: Online Campus & Registered Offices", x + 16, by + 78, { width: CW - 32 });
+    doc.text(`Phone: ${ACADEMY_PHONE}`, x + 16, by + 90, { width: CW - 32 });
+
+    doc.fillColor(GREY).font("Body").fontSize(6)
+      .text(
+        "THIS CARD IS THE PROPERTY OF MAKNAZUL IRFAN ACADEMY. IT IS NON-TRANSFERABLE AND MUST BE " +
+        "PRESENTED UPON REQUEST. IF FOUND, PLEASE RETURN IT TO THE ADDRESS ABOVE.",
+        x + 16, by + 108, { width: CW - 32, align: "left", lineGap: 1 }
+      );
+
+    drawBarcode(doc, card.idNumber, x + 16, by + 150, 150, 26);
+    doc.fillColor(GREY).font("Body").fontSize(6)
+      .text("Library & Campus Access", x + 16, by + 192, { width: 150, align: "center", lineBreak: false });
+
+    drawQr(
+      doc,
+      [
+        "MAKNAZUL IRFAN ACADEMY",
+        card.title,
+        `ID: ${card.idNumber}`,
+        `Name: ${card.name}`,
+        `Role: ${card.role}`,
+        `Issued: ${card.issued}`,
+        `Web: ${baseUrl(req)}`
+      ].join("\n"),
+      x + CW - 16 - 58,
+      by + 112,
+      58
+    );
+
+    doc.end();
+  } catch (error) {
+    console.error("idCardPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the ID card PDF.", 500);
   }
 }

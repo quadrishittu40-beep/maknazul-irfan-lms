@@ -4,6 +4,7 @@ import {
   NextFunction
 } from "express";
 
+import crypto from "crypto";
 import { prisma } from "../config/prisma";
 import {
   AuthenticatedRequest
@@ -243,6 +244,7 @@ export async function listLiveClasses(
           title: true,
           description: true,
           provider: true,
+          meetingUrl: true,
           scheduledStart: true,
           scheduledEnd: true,
           recordingUrl: true,
@@ -558,7 +560,9 @@ export async function createLiveClass(
           provider:
             data.provider,
           meetingUrl:
-            data.meetingUrl,
+            data.provider === "JITSI" && !data.meetingUrl
+              ? `https://${process.env.JITSI_DOMAIN || "meet.jit.si"}/MaknazulIrfan-${crypto.randomBytes(6).toString("hex")}`
+              : (data.meetingUrl as string),
           recordingUrl:
             data.recordingUrl || null,
           scheduledStart:
