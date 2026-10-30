@@ -292,8 +292,11 @@
       pa.href = "/api/pdf/profile?studentId=" + encodeURIComponent(en.student.id);
       var ra = el("a", "Results PDF", "small");
       ra.href = "/api/pdf/results?studentId=" + encodeURIComponent(en.student.id);
+      var ia = el("a", "ID Card", "small");
+      ia.href = "/api/pdf/idcard?studentId=" + encodeURIComponent(en.student.id);
       row.appendChild(pa);
       row.appendChild(ra);
+      row.appendChild(ia);
       var rb = el("button", "Remove", "small");
       rb.addEventListener("click", async function () {
         if (!confirm("Remove this student from the course?")) return;

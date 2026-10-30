@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Schedule Live Classes</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f1e8;color:#1a1a1a}
+header{background:#0b5c3b;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+header a{color:#d4af37;font-weight:bold;text-decoration:none;font-size:14px}
+main{max-width:720px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+label{display:block;font-size:13px;font-weight:bold;margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:7px;font-size:15px}
+button{background:#0b5c3b;color:#fff;border:0;border-radius:7px;padding:11px 16px;font-size:15px;font-weight:bold;margin-top:14px;cursor:pointer}
+button.d{background:#b3261e;padding:7px 11px;font-size:13px;margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0}
+.m{padding:10px;border-radius:7px;margin-top:10px;display:none;font-size:14px}
+.ok{background:#e4f5ea;color:#0b5c3b}.er{background:#fde8e6;color:#b3261e}
+small{color:#666}
+</style></head><body>
+<header><b>Live Classes</b><a id="back" href="teacher.html">&larr; Back</a></header>
+<main>
+<div class="card"><h3 style="margin-top:0">Schedule a class</h3>
+<label>Course</label><select id="course"></select>
+<label>Title</label><input id="title" placeholder="e.g. Tajweed - Lesson 3">
+<label>Description (optional)</label><textarea id="desc" rows="2"></textarea>
+<label>Starts</label><input id="start" type="datetime-local">
+<label>Ends</label><input id="end" type="datetime-local">
+<label>Room type</label>
+<select id="prov"><option value="JITSI">Built-in video room (recommended)</option><option value="ZOOM">Zoom link</option><option value="GOOGLE_MEET">Google Meet link</option></select>
+<div id="urlbox" style="display:none"><label>Meeting link</label><input id="url" type="url" placeholder="https://"></div>
+<button id="go">Schedule class</button>
+<div class="m" id="msg"></div>
+<small style="display:block;margin-top:10px">Only students enrolled in the course will see the class. Times use your device's time zone.</small></div>
+<div class="card"><h3 style="margin-top:0">Your scheduled classes</h3><div id="list">Loading...</div></div>
+</main>
+<script>
+function $(i){return document.getElementById(i);}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");m.style.display="block";}
+async function call(path,opt){
+  opt=opt||{};opt.credentials="include";
+  if(opt.body){opt.headers={"Content-Type":"application/json"};}
+  var r=await fetch("/api"+path,opt);var d=await r.json().catch(function(){return{};});
+  if(!r.ok)throw new Error(d.message||"Request failed.");return d;
+}
+var role="",courses=[];
+function arr(d){var x=d.data!==undefined?d.data:d;if(Array.isArray(x))return x;return x.courses||x.items||x.liveClasses||[];}
+async function init(){
+  try{
+    var me=await call("/auth/me");var u=(me.data&&me.data.user)||me.user||me.data||{};
+    role=u.role;
+    if(role==="ADMIN")$("back").href="admin.html";
+    var d=await call(role==="ADMIN"?"/admin/courses":"/teacher/courses");
+    courses=arr(d);
+    $("course").innerHTML=courses.map(function(c){return '<option value="'+c.id+'">'+(c.title||c.name||c.id).replace(/</g,"&lt;")+'</option>';}).join("")||'<option value="">No courses</option>';
+    load();
+  }catch(e){$("list").textContent=e.message;}
+}
+$("prov").onchange=function(){$("urlbox").style.display=this.value==="JITSI"?"none":"block";};
+async function load(){
+  try{
+    var items=arr(await call("/live-classes"));
+    $("list").innerHTML=items.length?items.map(function(i){
+      return '<div class="row"><div><b>'+String(i.title).replace(/</g,"&lt;")+'</b><br><small>'+new Date(i.scheduledStart).toLocaleString()+' · '+i.provider+(i.published?'':' · hidden')+'</small></div>'+
+      '<div><a href="'+(i.provider==="JITSI"?"live-room.html?id="+i.id:i.meetingUrl)+'" target="_blank" style="margin-right:8px;font-size:13px">Open</a><button class="d" onclick="del(\''+i.id+'\')">Delete</button></div></div>';
+    }).join(""):"No classes scheduled yet.";
+  }catch(e){$("list").textContent=e.message;}
+}
+async function del(id){if(!confirm("Delete this class?"))return;try{await call("/live-classes/"+id,{method:"DELETE"});load();}catch(e){say(e.message,false);}}
+$("go").onclick=async function(){
+  try{
+    var s=$("start").value,e=$("end").value,c=$("course").value,t=$("title").value.trim();
+    if(!c)throw new Error("Choose a course.");
+    if(t.length<2)throw new Error("Enter a title.");
+    if(!s||!e)throw new Error("Choose start and end times.");
+    var body={title:t,description:$("desc").value.trim()||undefined,courseId:c,provider:$("prov").value,
+      scheduledStart:new Date(s).toISOString(),scheduledEnd:new Date(e).toISOString(),published:true};
+    if(body.provider!=="JITSI"){body.meetingUrl=$("url").value.trim();}
+    if(role==="ADMIN"){var co=courses.filter(function(x){return x.id===c})[0]||{};body.teacherId=co.teacherId||(co.teacher&&co.teacher.id);}
+    await call("/live-classes",{method:"POST",body:JSON.stringify(body)});
+    say("Class scheduled. Enrolled students will now see it.",true);$("title").value="";load();
+  }catch(x){say(x.message,false);}
+};
+init();
+</script></body></html>

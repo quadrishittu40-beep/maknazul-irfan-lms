@@ -564,6 +564,7 @@
 
   function getStart(item) {
     return (
+      item?.scheduledStart ||
       item?.startAt ||
       item?.startsAt ||
       item?.startTime ||
@@ -574,6 +575,7 @@
 
   function getEnd(item) {
     return (
+      item?.scheduledEnd ||
       item?.endAt ||
       item?.endsAt ||
       item?.endTime ||
@@ -818,9 +820,8 @@
       joinButton = `
         <a
           class="meeting-link"
-          href="${escapeHtml(meetingUrl)}"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="${provider === 'JITSI' ? 'live-room.html?id=' + encodeURIComponent(item.id) : escapeHtml(meetingUrl)}"
+          ${provider === 'JITSI' ? '' : 'target="_blank" rel="noopener noreferrer"'}
         >
           ${state === "LIVE"
             ? "Join Live Class"

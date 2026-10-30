@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" href="/assets/icon-192.png">
 <script src="/pwa.js" defer></script>
 <script src="/avatar.js" defer></script>
+<script src="/idcard.js" defer></script>
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -814,6 +815,13 @@
           Manage your scheduled online classes.
         </p>
 
+        <a
+          href="live-manage.html"
+          style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin-top:8px"
+        >
+          Schedule / Manage Live Classes
+        </a>
+
       </div>
 
       <div class="card">
@@ -844,6 +852,8 @@
       </div>
 
       <div id="avatarMount"></div>
+
+      <div id="idCardMount"></div>
 
       <div class="card">
 
@@ -1899,11 +1909,11 @@ async function loadLiveClasses() {
         </td>
 
         <td>
-          ${formatDate(item?.startAt)}
+          ${formatDate(item?.scheduledStart || item?.startAt)}
         </td>
 
         <td>
-          ${formatDate(item?.endAt)}
+          ${formatDate(item?.scheduledEnd || item?.endAt)}
         </td>
 
         <td>
