@@ -2,7 +2,8 @@ import { z } from "zod";
 
 const providerSchema = z.enum([
   "ZOOM",
-  "GOOGLE_MEET"
+  "GOOGLE_MEET",
+  "JITSI"
 ]);
 
 const liveClassBaseSchema = z.object({
@@ -36,7 +37,9 @@ const liveClassBaseSchema = z.object({
 
   meetingUrl: z
     .string()
-    .url(),
+    .url()
+    .optional()
+    .or(z.literal("")),
 
   recordingUrl: z
     .string()
@@ -54,7 +57,7 @@ const liveClassBaseSchema = z.object({
 
   published: z
     .boolean()
-    .default(false)
+    .default(true)
 });
 
 export const createLiveClassSchema =
@@ -68,6 +71,15 @@ export const createLiveClassSchema =
         path: ["scheduledEnd"],
         message:
           "End time must be after start time."
+      });
+    }
+
+    if (data.provider !== "JITSI" && !data.meetingUrl) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["meetingUrl"],
+        message:
+          "Please paste the meeting link."
       });
     }
   });
