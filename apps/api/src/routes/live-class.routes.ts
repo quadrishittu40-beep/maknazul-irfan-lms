@@ -8,6 +8,11 @@ import {
   deleteLiveClass
 } from "../controllers/live-class.controller";
 
+import {
+  markAttendance,
+  getAttendance
+} from "../controllers/live-attendance.controller";
+
 import { requireAuth } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
 
@@ -18,6 +23,14 @@ router.use(requireAuth);
 router.get(
   "/",
   listLiveClasses
+);
+
+router.post("/:id/attend", markAttendance);
+
+router.get(
+  "/:id/attendance",
+  requireRole("ADMIN", "TEACHER"),
+  getAttendance
 );
 
 router.get(
