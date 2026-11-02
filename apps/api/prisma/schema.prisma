@@ -122,6 +122,8 @@ model User {
 
   liveClassesTaught LiveClass[] @relation("TeacherLiveClasses")
 
+  liveAttendance LiveAttendance[]
+
   notifications Notification[]
 
   auditLogs AuditLog[]
@@ -808,6 +810,8 @@ model LiveClass {
 
   teacher User @relation("TeacherLiveClasses", fields: [teacherId], references: [id])
 
+  attendance LiveAttendance[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -921,4 +925,24 @@ model AuditLog {
   @@index([entity])
   @@index([entityId])
   @@index([createdAt])
+}
+
+model LiveAttendance {
+  id String @id @default(cuid())
+
+  liveClassId String
+
+  userId String
+
+  liveClass LiveClass @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime @default(now())
+
+  lastSeenAt DateTime @default(now())
+
+  @@unique([liveClassId, userId])
+
+  @@index([liveClassId])
 }
