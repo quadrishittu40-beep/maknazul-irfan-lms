@@ -1,6 +1,7 @@
 import { Response } from "express";
 
 import { prisma } from "../config/prisma";
+import { notifyCourseStudents } from "../services/notify.service";
 
 import {
   AuthenticatedRequest
@@ -390,6 +391,11 @@ export async function createLecture(
         }
       });
 
+    if (lecture.published) {
+      const c = await prisma.course.findUnique({ where: { id: data.courseId }, select: { title: true } });
+      await notifyCourseStudents(data.courseId, "COURSE", "New lecture available", `"${lecture.title}" was added to ${c?.title || "your course"}.`);
+    }
+
     await createAuditLog({
       userId: req.user.id,
       action: "CREATE",
@@ -500,6 +506,8 @@ export async function updateLecture(
       }
     }
 
+    const before = await prisma.lecture.findUnique({ where: { id }, select: { published: true } });
+
     const lecture =
       await prisma.lecture.update({
         where: {
@@ -507,6 +515,11 @@ export async function updateLecture(
         },
         data: parsed.data
       });
+
+    if (lecture.published && before && !before.published) {
+      const c = await prisma.course.findUnique({ where: { id: lecture.courseId }, select: { title: true } });
+      await notifyCourseStudents(lecture.courseId, "COURSE", "New lecture available", `"${lecture.title}" is now available in ${c?.title || "your course"}.`);
+    }
 
     await createAuditLog({
       userId: req.user.id,

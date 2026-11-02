@@ -5,6 +5,7 @@ import {
 } from "express";
 
 import crypto from "crypto";
+import { notifyCourseStudents } from "../services/notify.service";
 import { prisma } from "../config/prisma";
 import {
   AuthenticatedRequest
@@ -580,6 +581,15 @@ export async function createLiveClass(
             data.published
         }
       });
+
+    if (liveClass.published) {
+      await notifyCourseStudents(
+        liveClass.courseId,
+        "LIVE_CLASS",
+        "New live class scheduled",
+        `${liveClass.title} starts ${liveClass.scheduledStart.toLocaleString("en-GB", { timeZone: "Africa/Lagos", dateStyle: "medium", timeStyle: "short" })} (Lagos time).`
+      );
+    }
 
     await audit({
       userId,
