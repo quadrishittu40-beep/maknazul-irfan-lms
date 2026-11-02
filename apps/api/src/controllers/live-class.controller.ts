@@ -467,9 +467,12 @@ export async function createLiveClass(
       );
 
     if (!parsed.success) {
+      const issue = parsed.error.issues[0];
       return failure(
         res,
-        "Invalid live class data.",
+        issue?.message && issue.code === "custom"
+          ? issue.message
+          : "Invalid live class data: check " + (issue?.path?.join(".") || "the form") + ".",
         400
       );
     }

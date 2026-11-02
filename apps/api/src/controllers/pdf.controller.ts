@@ -67,19 +67,19 @@ function drawStamp(doc: any, cx: number, cy: number, r: number) {
   doc.save();
   doc.translate(cx, cy);
   doc.rotate(-12);
-  doc.opacity(0.88);
+  doc.opacity(0.95);
 
-  doc.lineWidth(2.6).strokeColor(RED).circle(0, 0, r).stroke();
-  doc.lineWidth(0.8).strokeColor(RED).circle(0, 0, r - 5).stroke();
-  doc.lineWidth(0.8).strokeColor(RED).circle(0, 0, r - 28).stroke();
+  doc.lineWidth(3.4).strokeColor(RED).circle(0, 0, r).stroke();
+  doc.lineWidth(1.2).strokeColor(RED).circle(0, 0, r - 6).stroke();
+  doc.lineWidth(1.2).strokeColor(RED).circle(0, 0, r - 31).stroke();
 
-  const fs = 7.6;
-  const rt = r - 17;
-  doc.font("Body-Bold").fontSize(fs).fillColor(RED);
+  const fs = 8.8;
+  const rt = r - 18.5;
+  doc.font("Body-Bold").fontSize(fs).fillColor(RED).lineWidth(0.45).strokeColor(RED);
 
   function arc(text: string, top: boolean) {
     const chars = Array.from(text);
-    const widths = chars.map((c) => doc.widthOfString(c) + 0.9);
+    const widths = chars.map((c) => doc.widthOfString(c) + 0.7);
     const total = widths.reduce((a, b) => a + b, 0);
     const span = (total / rt) * (180 / Math.PI);
     let angle = top ? -span / 2 : span / 2;
@@ -89,27 +89,22 @@ function drawStamp(doc: any, cx: number, cy: number, r: number) {
       doc.save();
       doc.rotate(mid);
       const y = top ? -rt - fs * 0.5 : rt - fs * 0.62;
-      doc.text(ch, -widths[i] / 2, y, { lineBreak: false });
+      doc.text(ch, -widths[i] / 2, y, { lineBreak: false, fill: true, stroke: true });
       doc.restore();
       angle = top ? angle + step : angle - step;
     });
   }
 
   arc("MAKNAZUL 'IRFAN ACADEMY", true);
-  arc("ONLINE ISLAMIC & ARABIC INSTITUTE", false);
-
-  // small stars between the two arcs
-  doc.font("Body-Bold").fontSize(9).fillColor(RED);
-  doc.text("\u2605", -r + 6.5, -5, { lineBreak: false });
-  doc.text("\u2605", r - 15.5, -5, { lineBreak: false });
+  arc("ISLAMIC & ARABIC INSTITUTE", false);
 
   // centre
-  doc.font("Body-Bold").fontSize(15).fillColor(RED)
-    .text("\u2605", -8, -r + 31, { lineBreak: false });
-  doc.font("Body-Bold").fontSize(8.5).fillColor(RED)
-    .text("OFFICIAL", -r + 20, -7, { width: 2 * (r - 20), align: "center", lineBreak: false });
-  doc.font("Body-Bold").fontSize(8.5).fillColor(RED)
-    .text("SEAL", -r + 20, 4, { width: 2 * (r - 20), align: "center", lineBreak: false });
+  doc.font("Body-Bold").fontSize(16).fillColor(RED).lineWidth(0.4).strokeColor(RED)
+    .text("\u2605", -9, -r + 38, { lineBreak: false, fill: true, stroke: true });
+  doc.font("Body-Bold").fontSize(11.5).fillColor(RED)
+    .text("OFFICIAL", -r + 20, -6, { width: 2 * (r - 20), align: "center", lineBreak: false, fill: true, stroke: true });
+  doc.font("Body-Bold").fontSize(11.5).fillColor(RED)
+    .text("SEAL", -r + 20, 8, { width: 2 * (r - 20), align: "center", lineBreak: false, fill: true, stroke: true });
 
   doc.restore();
 }
@@ -381,7 +376,7 @@ export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
     drawBarcode(doc, cert.certificateNumber, 80, h - 92, 200, 22);
 
     // official red seal
-    drawStamp(doc, 540, h - 128, 52);
+    drawStamp(doc, 545, h - 126, 70);
 
     // QR code with the certificate details
     const qrText = [
