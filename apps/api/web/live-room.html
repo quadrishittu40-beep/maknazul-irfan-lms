@@ -25,6 +25,8 @@ html,body{margin:0;height:100%;background:#0f1d17;font-family:Arial,sans-serif;c
     var url=c.meetingUrl;
     if(!url) return fail("This class has no meeting room yet.");
     document.getElementById("title").textContent=c.title||"Live Class";
+    var ping=function(){fetch("/api/live-classes/"+encodeURIComponent(id)+"/attend",{method:"POST",credentials:"include"}).catch(function(){});};
+    ping();setInterval(ping,60000);
     var u=new URL(url);
     var room=u.pathname.replace(/^\//,"");
     var me=await fetch("/api/auth/me",{credentials:"include"}).then(function(x){return x.json();}).catch(function(){return{};});

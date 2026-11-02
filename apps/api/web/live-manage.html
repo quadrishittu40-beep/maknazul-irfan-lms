@@ -31,6 +31,7 @@ small{color:#666}
 <button id="go">Schedule class</button>
 <div class="m" id="msg"></div>
 <small style="display:block;margin-top:10px">Only students enrolled in the course will see the class. Times use your device's time zone.</small></div>
+<div class="card" id="attbox" style="display:none"></div>
 <div class="card"><h3 style="margin-top:0">Your scheduled classes</h3><div id="list">Loading...</div></div>
 </main>
 <script>
@@ -61,9 +62,17 @@ async function load(){
     var items=arr(await call("/live-classes"));
     $("list").innerHTML=items.length?items.map(function(i){
       return '<div class="row"><div><b>'+String(i.title).replace(/</g,"&lt;")+'</b><br><small>'+new Date(i.scheduledStart).toLocaleString()+' · '+i.provider+(i.published?'':' · hidden')+'</small></div>'+
-      '<div><a href="'+(i.provider==="JITSI"?"live-room.html?id="+i.id:i.meetingUrl)+'" target="_blank" style="margin-right:8px;font-size:13px">Open</a><button class="d" onclick="del(\''+i.id+'\')">Delete</button></div></div>';
+      '<div><a href="'+(i.provider==="JITSI"?"live-room.html?id="+i.id:i.meetingUrl)+'" target="_blank" style="margin-right:8px;font-size:13px">Open</a><button class="d" style="background:#0b5c3b;margin-right:6px" onclick="att(\''+i.id+'\')">Attendance</button><button class="d" onclick="del(\''+i.id+'\')">Delete</button></div></div>';
     }).join(""):"No classes scheduled yet.";
   }catch(e){$("list").textContent=e.message;}
+}
+async function att(id){
+  try{
+    var d=(await call("/live-classes/"+id+"/attendance")).data;d=d.students?d:(d.data||d);
+    $("attbox").innerHTML='<h3 style="margin-top:0">Attendance: '+String(d.title).replace(/</g,"&lt;")+'</h3><p><b>'+d.present+'</b> present · <b>'+d.absent+'</b> absent · '+d.total+' enrolled</p>'+
+    (d.students.map(function(s){return '<div class="row"><span>'+s.name.replace(/</g,"&lt;")+'</span><span style="color:'+(s.present?"#0b5c3b":"#b3261e")+'">'+(s.present?"Present · "+s.minutes+" min":"Absent")+'</span></div>';}).join("")||"No students enrolled.");
+    $("attbox").style.display="block";$("attbox").scrollIntoView();
+  }catch(e){say(e.message,false);}
 }
 async function del(id){if(!confirm("Delete this class?"))return;try{await call("/live-classes/"+id,{method:"DELETE"});load();}catch(e){say(e.message,false);}}
 $("go").onclick=async function(){
@@ -72,6 +81,7 @@ $("go").onclick=async function(){
     if(!c)throw new Error("Choose a course.");
     if(t.length<2)throw new Error("Enter a title.");
     if(!s||!e)throw new Error("Choose start and end times.");
+    if(new Date(e)<=new Date(s))throw new Error("The end time must be after the start time. Please check the end date.");
     var body={title:t,description:$("desc").value.trim()||undefined,courseId:c,provider:$("prov").value,
       scheduledStart:new Date(s).toISOString(),scheduledEnd:new Date(e).toISOString(),published:true};
     if(body.provider!=="JITSI"){body.meetingUrl=$("url").value.trim();}
