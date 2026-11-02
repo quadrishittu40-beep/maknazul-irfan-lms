@@ -768,6 +768,15 @@ function showSection(
   button
 ) {
 
+  if (sectionId === "notifications") {
+    apiRequest("/notifications/read-all", { method: "PATCH" })
+      .then(() => {
+        const c = document.getElementById("notificationCount");
+        if (c) c.textContent = "0";
+      })
+      .catch(() => {});
+  }
+
   document
     .querySelectorAll(".section")
     .forEach(section => {
@@ -1633,7 +1642,7 @@ async function loadNotifications() {
     document.getElementById(
       "notificationCount"
     ).textContent =
-      notifications.length;
+      notifications.filter(n => !n.read).length;
 
 
     if (!notifications.length) {
@@ -1648,6 +1657,10 @@ async function loadNotifications() {
 
     }
 
+
+    if (notifications.some(n => !n.read) && document.getElementById("notifications").classList.contains("active")) {
+      apiRequest("/notifications/read-all", { method: "PATCH" }).catch(() => {});
+    }
 
     container.innerHTML =
       notifications.map(notification => `

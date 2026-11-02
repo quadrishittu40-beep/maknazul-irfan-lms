@@ -821,7 +821,7 @@
         <a
           class="meeting-link"
           href="${provider === 'JITSI' ? 'live-room.html?id=' + encodeURIComponent(item.id) : escapeHtml(meetingUrl)}"
-          ${provider === 'JITSI' ? '' : 'target="_blank" rel="noopener noreferrer"'}
+          ${provider === 'JITSI' ? '' : 'target="_blank" rel="noopener noreferrer" onclick="fetch(\'/api/live-classes/' + encodeURIComponent(item.id) + '/attend\',{method:\'POST\',credentials:\'include\'})"'}
         >
           ${state === "LIVE"
             ? "Join Live Class"
