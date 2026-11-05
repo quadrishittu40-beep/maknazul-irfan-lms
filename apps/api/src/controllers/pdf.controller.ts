@@ -655,6 +655,92 @@ export async function resultsPdf(req: AuthenticatedRequest, res: Response) {
 }
 
 /* =========================================================
+   PAYMENT RECEIPT
+========================================================= */
+
+export async function receiptPdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const me = req.user!;
+    const payment = await prisma.payment.findUnique({
+      where: { id: req.params.id },
+      include: {
+        course: { select: { title: true } },
+        student: { include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } } }
+      }
+    });
+    if (!payment) return failure(res, "Payment not found.", 404);
+    if (me.role !== "ADMIN" && payment.student.user.id !== me.id) {
+      return failure(res, "Access denied.", 403);
+    }
+    if (payment.status !== "PAID") {
+      return failure(res, "A receipt is only available for paid payments.", 400);
+    }
+
+    const u = payment.student.user;
+    const name = `${u.firstName} ${u.lastName}`.trim();
+    const amount = Number(payment.amount);
+    const money = `${payment.currency === "NGN" ? "NGN " : payment.currency + " "}${amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const paidOn = fmtDate(payment.updatedAt);
+
+    const doc = startPdf(res, `Receipt_${payment.reference}`);
+    letterhead(doc, "Official Payment Receipt");
+
+    doc.font("Body").fontSize(10).fillColor(GREY).text("RECEIPT NO.", 50, 130);
+    doc.font("Body-Bold").fontSize(14).fillColor("#111111").text(payment.reference, 50, 144);
+
+    doc.font("Body").fontSize(10).fillColor(GREY).text("DATE PAID", 350, 130);
+    doc.font("Body-Bold").fontSize(14).fillColor("#111111").text(paidOn, 350, 144);
+
+    const rows: Array<[string, string]> = [
+      ["Received from", name],
+      ["Email", u.email],
+      ["Course / purpose", payment.course?.title || "-"],
+      ["Payment method", String(payment.provider)],
+      ["Status", "PAID"]
+    ];
+    let y = 190;
+    rows.forEach(([k, v], i) => {
+      if (i % 2 === 0) doc.rect(50, y - 5, 500, 26).fill("#f3f7f5");
+      doc.font("Body").fontSize(10).fillColor(GREY).text(k, 60, y, { width: 150 });
+      doc.font("Body-Bold").fontSize(11).fillColor("#111111").text(v, 215, y, { width: 330 });
+      y += 26;
+    });
+
+    doc.rect(50, y + 10, 500, 46).fill(GREEN);
+    doc.font("Body-Bold").fontSize(12).fillColor("#ffffff").text("AMOUNT PAID", 66, y + 26);
+    doc.font("Body-Bold").fontSize(20).fillColor("#ffffff")
+      .text(money, 250, y + 20, { width: 290, align: "right" });
+
+    const qy = y + 100;
+    drawQr(
+      doc,
+      [
+        "MAKNAZUL IRFAN ACADEMY",
+        "PAYMENT RECEIPT",
+        `Receipt No: ${payment.reference}`,
+        `Name: ${name}`,
+        `Course: ${payment.course?.title || "-"}`,
+        `Amount: ${money}`,
+        `Paid: ${paidOn}`
+      ].join("\n"),
+      50,
+      qy,
+      90
+    );
+    drawBarcode(doc, payment.reference, 160, qy + 20, 220, 30);
+    drawStamp(doc, 470, qy + 50, 52);
+
+    doc.font("Body").fontSize(9).fillColor(GREY)
+      .text("This receipt was generated electronically and is valid without a signature. Scan the QR code to see the payment details.",
+        50, qy + 120, { width: 500, align: "center" });
+    doc.end();
+  } catch (error) {
+    console.error("receiptPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the receipt.", 500);
+  }
+}
+
+/* =========================================================
    ID CARD
 ========================================================= */
 
