@@ -70,6 +70,7 @@ enum PaymentStatus {
 
 enum PaymentProvider {
   PAYSTACK
+  BANK_TRANSFER
 }
 
 enum LiveClassProvider {
@@ -764,6 +765,8 @@ model Payment {
 
   reference String @unique
 
+  proof PaymentProof?
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
@@ -945,4 +948,19 @@ model LiveAttendance {
   @@unique([liveClassId, userId])
 
   @@index([liveClassId])
+}
+
+
+model PaymentProof {
+  id String @id @default(cuid())
+
+  paymentId String @unique
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  mime String
+
+  data Bytes
+
+  createdAt DateTime @default(now())
 }
