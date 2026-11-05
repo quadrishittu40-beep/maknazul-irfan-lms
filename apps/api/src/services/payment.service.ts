@@ -576,3 +576,116 @@ export async function processPaystackWebhook(
     processed: true
   };
 }
+
+/* ---------------- Admission fee (Paystack) ---------------- */
+
+export const ADMISSION_FEE_AMOUNT = Number(process.env.ADMISSION_FEE || 10000);
+
+export async function initializeAdmissionPayment(userId: string, callbackUrl?: string) {
+  const student = await prisma.studentProfile.findUnique({
+    where: { userId },
+    include: { user: true, admissionFee: true }
+  });
+  if (!student) throw new Error("Student profile not found.");
+  if (student.admissionFee?.status === "PAID") {
+    throw new Error("Your admission fee has already been paid.");
+  }
+
+  const reference = `ADM-${Date.now()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+  await prisma.admissionFee.upsert({
+    where: { studentId: student.id },
+    create: { studentId: student.id, amount: ADMISSION_FEE_AMOUNT, status: "PENDING", provider: "PAYSTACK", reference },
+    update: { status: "PENDING", provider: "PAYSTACK", reference, amount: ADMISSION_FEE_AMOUNT }
+  });
+
+  const result = await paystackRequest<PaystackInitializeResponse>("/transaction/initialize", {
+    method: "POST",
+    body: JSON.stringify({
+      email: student.user.email,
+      amount: Math.round(ADMISSION_FEE_AMOUNT * 100),
+      currency: "NGN",
+      reference,
+      callback_url: callbackUrl || `${env.APP_URL}/admission.html`,
+      metadata: { type: "ADMISSION", studentId: student.id }
+    })
+  });
+  if (!result.status || !result.data) {
+    throw new Error(result.message || "Unable to start the payment.");
+  }
+  return { authorizationUrl: result.data.authorization_url, reference };
+}
+
+export async function verifyAdmissionPayment(userId: string, reference: string) {
+  const student = await prisma.studentProfile.findUnique({ where: { userId }, include: { admissionFee: true } });
+  const fee = student?.admissionFee;
+  if (!student || !fee || fee.reference !== reference) throw new Error("Payment record not found.");
+  if (fee.status === "PAID") return fee;
+
+  const result = await paystackRequest<PaystackVerifyResponse>(
+    `/transaction/verify/${encodeURIComponent(reference)}`,
+    { method: "GET" }
+  );
+  const tx = result.data;
+  if (!result.status || !tx) throw new Error(result.message || "Unable to verify payment.");
+  if (tx.reference !== fee.reference || tx.currency !== fee.currency || tx.amount !== Math.round(Number(fee.amount) * 100)) {
+    throw new Error("Payment details do not match.");
+  }
+  if (tx.status !== "success") throw new Error("Payment was not successful.");
+
+  const updated = await prisma.admissionFee.update({
+    where: { id: fee.id },
+    data: { status: "PAID", paidAt: new Date() }
+  });
+  await prisma.notification.create({
+    data: {
+      userId,
+      type: "PAYMENT",
+      title: "Admission fee received",
+      message: "Your admission fee was received. The academy will now review and approve your admission."
+    }
+  });
+  return updated;
+}
+
+
+/* ---------------- Admission fee paid BEFORE registration ---------------- */
+
+export async function initializeRegistrationPayment(email: string, callbackUrl?: string) {
+  const clean = email.trim().toLowerCase();
+  const reference = `REG-${Date.now()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+  await prisma.registrationPayment.create({
+    data: { email: clean, amount: ADMISSION_FEE_AMOUNT, reference }
+  });
+  const result = await paystackRequest<PaystackInitializeResponse>("/transaction/initialize", {
+    method: "POST",
+    body: JSON.stringify({
+      email: clean,
+      amount: Math.round(ADMISSION_FEE_AMOUNT * 100),
+      currency: "NGN",
+      reference,
+      callback_url: callbackUrl || `${env.APP_URL}/register.html`,
+      metadata: { type: "REGISTRATION" }
+    })
+  });
+  if (!result.status || !result.data) {
+    throw new Error(result.message || "Unable to start the payment.");
+  }
+  return { authorizationUrl: result.data.authorization_url, reference };
+}
+
+export async function verifyRegistrationPayment(reference: string) {
+  const rp = await prisma.registrationPayment.findUnique({ where: { reference } });
+  if (!rp) throw new Error("Payment record not found.");
+  if (rp.status === "PAID") return rp;
+  const result = await paystackRequest<PaystackVerifyResponse>(
+    `/transaction/verify/${encodeURIComponent(reference)}`,
+    { method: "GET" }
+  );
+  const tx = result.data;
+  if (!result.status || !tx) throw new Error(result.message || "Unable to verify payment.");
+  if (tx.reference !== rp.reference || tx.currency !== "NGN" || tx.amount !== Math.round(Number(rp.amount) * 100)) {
+    throw new Error("Payment details do not match.");
+  }
+  if (tx.status !== "success") throw new Error("Payment was not successful.");
+  return prisma.registrationPayment.update({ where: { id: rp.id }, data: { status: "PAID" } });
+}
