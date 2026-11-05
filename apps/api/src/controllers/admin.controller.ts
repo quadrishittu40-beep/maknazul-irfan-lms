@@ -321,6 +321,20 @@ export async function approveStudent(
       );
     }
 
+    const admissionFee =
+      await prisma.admissionFee.findUnique({
+        where: { studentId: student.id },
+        select: { status: true }
+      });
+
+    if (student.status !== "ENROLLED" && admissionFee?.status !== "PAID") {
+      return failure(
+        res,
+        "The admission fee (NGN 10,000) has not been paid. Record or confirm it under Payments > Admission Fees first.",
+        400
+      );
+    }
+
     const updatedStudent =
       await prisma.$transaction(
         async (tx) => {
@@ -512,6 +526,23 @@ export async function updateStudentStatus(
         "Student not found.",
         404
       );
+    }
+
+    if (
+      status === "APPROVED" &&
+      student.status === "PENDING"
+    ) {
+      const fee = await prisma.admissionFee.findUnique({
+        where: { studentId: student.id },
+        select: { status: true }
+      });
+      if (fee?.status !== "PAID") {
+        return failure(
+          res,
+          "The admission fee (NGN 10,000) has not been paid. Record or confirm it under Payments > Admission Fees first.",
+          400
+        );
+      }
     }
 
     const updated =

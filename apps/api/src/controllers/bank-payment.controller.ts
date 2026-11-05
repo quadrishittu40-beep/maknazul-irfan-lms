@@ -185,3 +185,53 @@ export async function rejectBankPayment(req: Request, res: Response, next: NextF
     return success(res, { rejected: true });
   } catch (e) { next(e); }
 }
+
+/* Admin records a payment received outside the site (cash or direct bank transfer). */
+export async function recordManualPayment(req: Request, res: Response, next: NextFunction) {
+  try {
+    const studentId = String(req.body?.studentId || "");
+    const courseId = String(req.body?.courseId || "");
+    const method = req.body?.method === "CASH" ? "CASH" : "BANK_TRANSFER";
+    const student = await prisma.studentProfile.findUnique({
+      where: { id: studentId },
+      select: { id: true, userId: true, status: true }
+    });
+    const course = await prisma.course.findUnique({ where: { id: courseId }, select: { id: true, title: true, price: true } });
+    if (!student) return failure(res, "Student not found.", 404);
+    if (!course) return failure(res, "Course not found.", 404);
+    const amount = Number(req.body?.amount ?? course.price ?? 0);
+    if (!Number.isFinite(amount) || amount <= 0) return failure(res, "Enter an amount greater than zero.", 400);
+
+    const payment = await prisma.$transaction(async (tx) => {
+      const p = await tx.payment.create({
+        data: {
+          studentId: student.id,
+          courseId: course.id,
+          amount,
+          currency: "NGN",
+          status: "PAID",
+          provider: method,
+          reference: `MAN-${Date.now()}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`
+        }
+      });
+      await tx.courseEnrollment.upsert({
+        where: { studentId_courseId: { studentId: student.id, courseId: course.id } },
+        create: { studentId: student.id, courseId: course.id },
+        update: {}
+      });
+      if (student.status === "APPROVED") {
+        await tx.studentProfile.update({ where: { id: student.id }, data: { status: "ENROLLED" } });
+      }
+      await tx.notification.create({
+        data: {
+          userId: student.userId,
+          type: "PAYMENT",
+          title: "Payment recorded",
+          message: `Your payment of NGN ${amount.toLocaleString("en-NG")} for "${course.title}" was recorded. You are enrolled. You can download your receipt from Payments.`
+        }
+      });
+      return p;
+    });
+    return success(res, { payment }, 201);
+  } catch (e) { next(e); }
+}
