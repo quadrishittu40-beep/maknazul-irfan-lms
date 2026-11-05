@@ -996,3 +996,24 @@ model AdmissionFee {
 
   updatedAt DateTime @updatedAt
 }
+
+
+model RegistrationPayment {
+  id String @id @default(cuid())
+
+  email String
+
+  amount Decimal @db.Decimal(12, 2)
+
+  reference String @unique
+
+  status PaymentStatus @default(PENDING)
+
+  usedByStudentId String?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
