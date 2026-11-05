@@ -201,8 +201,8 @@
 
 <div style="background:#fff4d6;border:1px solid #d4af37;border-radius:9px;padding:12px 14px;margin:12px 0;font-size:14px;line-height:1.6;color:#3a2f00">
   <strong>Admission fee: &#8358;10,000</strong><br>
-  A one-time admission fee of &#8358;10,000 is required before your admission is approved.
-  After creating your account, log in and pay it from your dashboard by card or bank transfer.
+  The one-time admission fee must be paid before your registration is submitted.
+  Fill in the form below, then pay by card or attach your bank transfer receipt.
 </div>
 
 <div id="message" class="message"></div>
@@ -360,6 +360,21 @@
 
   </div>
 
+  <div id="feeBox" style="border:1px solid #d4af37;border-radius:9px;padding:12px 14px;margin:14px 0;font-size:14px;line-height:1.7">
+    <strong>Pay the &#8358;10,000 admission fee</strong>
+    <div id="feePaid" style="display:none;color:#0b5c3b;font-weight:bold;margin-top:6px"></div>
+    <div id="feeChoose">
+      <label style="display:block;margin-top:6px"><input type="radio" name="feeMethod" value="card" checked> Pay now by card (Paystack)</label>
+      <label style="display:block"><input type="radio" name="feeMethod" value="bank"> Bank transfer (attach receipt)</label>
+      <div id="bankBox" style="display:none;margin-top:8px">
+        <div id="bankInfo" style="background:#f3f7f5;border:1px dashed #0b5c3b;border-radius:8px;padding:10px"></div>
+        <label for="proofFile" style="display:block;margin-top:8px">Photo of your transfer receipt</label>
+        <input type="file" id="proofFile" accept="image/*">
+        <small style="color:#666">Your registration will be reviewed after the academy confirms your transfer.</small>
+      </div>
+    </div>
+  </div>
+
   <button
     type="submit"
     id="registerButton"
@@ -405,6 +420,86 @@ function showMessage(text, type) {
   message.className = "message " + type;
 
 }
+
+let feeRef = "";
+
+function feeMethod() {
+  const r = document.querySelector('input[name="feeMethod"]:checked');
+  return r ? r.value : "card";
+}
+
+function updateButton() {
+  button.textContent = (!feeRef && feeMethod() === "card")
+    ? "Pay \u20a610,000 & Continue"
+    : "Create Student Account";
+}
+
+function shrinkImage(file) {
+  return new Promise(function (resolve, reject) {
+    const img = new Image();
+    const u = URL.createObjectURL(file);
+    img.onload = function () {
+      const k = Math.min(1, 1100 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * k);
+      c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      resolve(c.toDataURL("image/jpeg", 0.6));
+    };
+    img.onerror = function () { reject(new Error("Could not read that photo. Please choose another.")); };
+    img.src = u;
+  });
+}
+
+document.querySelectorAll('input[name="feeMethod"]').forEach(function (r) {
+  r.addEventListener("change", function () {
+    document.getElementById("bankBox").style.display = feeMethod() === "bank" ? "block" : "none";
+    updateButton();
+  });
+});
+
+fetch("/api/registration/info")
+  .then(function (r) { return r.json(); })
+  .then(function (d) {
+    const b = d.bank || (d.data && d.data.bank) || {};
+    document.getElementById("bankInfo").innerHTML = b.accountNumber
+      ? "Bank: <b>" + b.bankName + "</b><br>Account name: <b>" + b.accountName + "</b><br>Account number: <b>" + b.accountNumber + "</b><br>Amount: <b>\u20a610,000</b>"
+      : "Bank details are not available yet. Please pay by card.";
+  })
+  .catch(function () {});
+
+(async function returnFromPayment() {
+  const q = new URLSearchParams(location.search);
+  const ref = q.get("reference") || q.get("trxref");
+  updateButton();
+  if (!ref) return;
+  try {
+    const r = await fetch("/api/registration/verify/" + encodeURIComponent(ref));
+    const d = await r.json().catch(function () { return {}; });
+    if (!r.ok) throw new Error(d.message || "Could not confirm your payment.");
+    if (d.used) throw new Error("This payment has already been used for a registration.");
+    const saved = JSON.parse(sessionStorage.getItem("reg_form") || "{}");
+    Object.keys(saved).forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el && saved[id]) el.value = saved[id];
+    });
+    setTimeout(function () {
+      if (saved.levelId) document.getElementById("levelId").value = saved.levelId;
+    }, 1500);
+    const email = d.email || (d.data && d.data.email) || saved.email;
+    document.getElementById("email").value = email;
+    document.getElementById("email").readOnly = true;
+    feeRef = ref;
+    document.getElementById("feeChoose").style.display = "none";
+    const fp = document.getElementById("feePaid");
+    fp.style.display = "block";
+    fp.textContent = "\u2714 Admission fee paid for " + email + ". Enter your password and create your account.";
+    history.replaceState(null, "", "register.html");
+    updateButton();
+  } catch (err) {
+    showMessage(err.message, "error");
+  }
+})();
 
 form.addEventListener("submit", async function(event) {
 
@@ -454,6 +549,48 @@ form.addEventListener("submit", async function(event) {
   if (dateOfBirth) data.dateOfBirth = dateOfBirth;
   if (gender) data.gender = gender;
   if (levelId) data.levelId = levelId;
+
+  let usedBank = false;
+
+  if (feeRef) {
+    data.feeReference = feeRef;
+  } else if (feeMethod() === "bank") {
+    const file = document.getElementById("proofFile").files[0];
+    if (!file) {
+      showMessage("Please attach a photo of your bank transfer receipt.", "error");
+      return;
+    }
+    try {
+      data.feeProof = await shrinkImage(file);
+      usedBank = true;
+    } catch (err) {
+      showMessage(err.message, "error");
+      return;
+    }
+  } else {
+    button.disabled = true;
+    button.textContent = "Opening payment...";
+    try {
+      const saved = {};
+      ["firstName", "lastName", "email", "phone", "dateOfBirth", "gender", "levelId"].forEach(function (id) {
+        saved[id] = document.getElementById(id).value;
+      });
+      sessionStorage.setItem("reg_form", JSON.stringify(saved));
+      const pr = await fetch("/api/registration/pay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email })
+      });
+      const pd = await pr.json().catch(function () { return {}; });
+      if (!pr.ok) throw new Error(pd.message || "Unable to start the payment.");
+      window.location.href = pd.authorizationUrl || (pd.data && pd.data.authorizationUrl);
+    } catch (err) {
+      showMessage(err.message, "error");
+      button.disabled = false;
+      updateButton();
+    }
+    return;
+  }
 
   button.disabled = true;
   button.textContent = "Creating Account...";
@@ -508,8 +645,11 @@ form.addEventListener("submit", async function(event) {
 
     }
 
+    sessionStorage.removeItem("reg_form");
     showMessage(
-      "Registration successful. Please log in and pay the \u20a610,000 admission fee from your dashboard to complete your admission.",
+      usedBank
+        ? "Registration successful. The academy will confirm your bank transfer, then review your admission. Please log in."
+        : "Registration successful. Your admission fee was received. Please log in.",
       "success"
     );
 
@@ -534,7 +674,7 @@ form.addEventListener("submit", async function(event) {
   } finally {
 
     button.disabled = false;
-    button.textContent = "Create Student Account";
+    updateButton();
 
   }
 
