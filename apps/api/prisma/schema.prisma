@@ -71,6 +71,7 @@ enum PaymentStatus {
 enum PaymentProvider {
   PAYSTACK
   BANK_TRANSFER
+  CASH
 }
 
 enum LiveClassProvider {
@@ -138,6 +139,8 @@ model User {
 
 model StudentProfile {
   id String @id @default(cuid())
+
+  admissionFee AdmissionFee?
 
   userId String @unique
 
@@ -963,4 +966,33 @@ model PaymentProof {
   data Bytes
 
   createdAt DateTime @default(now())
+}
+
+
+model AdmissionFee {
+  id String @id @default(cuid())
+
+  studentId String @unique
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  amount Decimal @db.Decimal(12, 2)
+
+  currency String @default("NGN")
+
+  status PaymentStatus @default(PENDING)
+
+  provider PaymentProvider @default(BANK_TRANSFER)
+
+  reference String @unique
+
+  proofMime String?
+
+  proofData Bytes?
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 }
