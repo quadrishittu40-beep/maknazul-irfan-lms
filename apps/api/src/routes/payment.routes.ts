@@ -6,7 +6,8 @@ import {
   uploadProof,
   downloadProof,
   approveBankPayment,
-  rejectBankPayment
+  rejectBankPayment,
+  recordManualPayment
 } from "../controllers/bank-payment.controller";
 
 import {
@@ -82,6 +83,7 @@ router.post(
   uploadProof
 );
 router.get("/bank/:id/proof", requireRole("STUDENT", "ADMIN"), downloadProof);
+router.post("/admin/record", requireRole("ADMIN"), recordManualPayment);
 router.post("/admin/:id/approve", requireRole("ADMIN"), approveBankPayment);
 router.post("/admin/:id/reject", requireRole("ADMIN"), rejectBankPayment);
 

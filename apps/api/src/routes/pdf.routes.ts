@@ -5,6 +5,7 @@ import {
   profilePdf,
   resultsPdf,
   receiptPdf,
+  admissionReceiptPdf,
   idCardPdf,
   idCardJson
 } from "../controllers/pdf.controller";
@@ -18,6 +19,7 @@ router.use(requireAuth);
 router.get("/certificate/:id", certificatePdf);
 router.get("/profile", profilePdf);
 router.get("/results", resultsPdf);
+router.get("/receipt/admission/:id", admissionReceiptPdf);
 router.get("/receipt/:id", requireAuth, receiptPdf);
 router.get("/idcard", idCardPdf);
 router.get("/idcard-data", idCardJson);
