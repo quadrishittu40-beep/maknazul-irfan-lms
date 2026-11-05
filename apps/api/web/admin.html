@@ -1376,8 +1376,12 @@
               Pending
             </option>
 
-            <option value="SUCCESS">
-              Successful
+            <option value="PAID">
+              Paid
+            </option>
+
+            <option value="CANCELLED">
+              Cancelled
             </option>
 
             <option value="FAILED">
@@ -1395,6 +1399,14 @@
             id="refreshPayments"
           >
             Refresh
+          </button>
+
+          <button
+            class="action-btn primary"
+            type="button"
+            onclick="addPayment()"
+          >
+            + Add Payment
           </button>
 
         </div>
@@ -1432,6 +1444,20 @@
 
         </div>
 
+      </div>
+
+    
+      <div class="card" style="margin-top:18px">
+        <div class="toolbar">
+          <h3 style="margin:0;flex:1">Admission Fees (NGN 10,000)</h3>
+          <button class="action-btn primary" type="button" onclick="recordAdmission()">+ Record Admission Fee</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Method</th><th>Status</th><th>Reference</th><th>Action</th></tr></thead>
+            <tbody id="admissionTable"><tr><td colspan="5" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
       </div>
 
     </section>
@@ -3708,6 +3734,8 @@
 
       renderPayments();
 
+      loadAdmissionFees();
+
       updateDashboardStats();
 
     } catch (error) {
@@ -3722,6 +3750,126 @@
     }
   }
 
+
+  async function loadAdmissionFees() {
+    const t = document.getElementById("admissionTable");
+    try {
+      const d = await api("/admission/admin");
+      const fees = d.fees || (d.data && d.data.fees) || [];
+      if (!fees.length) {
+        t.innerHTML = '<tr><td colspan="5" class="empty">No admission fees yet.</td></tr>';
+        return;
+      }
+      t.innerHTML = fees.map(function (f) {
+        const who = escapeHtml(f.name) + '<div style="font-size:11px;color:#758178">' + escapeHtml(f.email || "") + "</div>";
+        let act = "—";
+        if (f.status === "PAID") {
+          act = '<a href="/api/pdf/receipt/admission/' + f.id + '" style="color:#064e3b;font-weight:bold">Receipt PDF</a>';
+        } else if (f.status === "PENDING") {
+          act = (f.hasProof ? '<a href="/api/admission/proof/' + f.id + '" target="_blank" style="color:#064e3b;font-weight:bold">View proof</a><br>' : "") +
+            '<a href="#" onclick="admissionDecide(\'' + f.id + '\',\'approve\');return false" style="color:#176b3a;font-weight:bold">Approve</a> · ' +
+            '<a href="#" onclick="admissionDecide(\'' + f.id + '\',\'reject\');return false" style="color:#b3261e;font-weight:bold">Reject</a>';
+        }
+        return "<tr><td>" + who + "</td><td>" + escapeHtml(String(f.provider).replace("_", " ")) + "</td><td>" + statusBadge(f.status) + "</td><td>" + escapeHtml(f.reference) + "</td><td>" + act + "</td></tr>";
+      }).join("");
+    } catch (e) {
+      t.innerHTML = '<tr><td colspan="5" class="empty">' + escapeHtml(e.message) + "</td></tr>";
+    }
+  }
+
+  async function admissionDecide(id, action) {
+    let body = {};
+    if (action === "reject") {
+      const reason = prompt("Reason for rejecting (optional):");
+      if (reason === null) return;
+      body = { reason };
+    } else if (!confirm("Confirm this admission fee as paid?")) {
+      return;
+    }
+    try {
+      await api("/admission/admin/" + id + "/" + action, { method: "POST", body: JSON.stringify(body) });
+      loadAdmissionFees();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function recordAdmission() {
+    let studs;
+    try {
+      studs = arrayFrom(await api("/admin/students"), "students");
+    } catch (e) {
+      showMessage("paymentMessage", e.message, "error");
+      return;
+    }
+    const stuSel = selectBox(studs.map(function (s) {
+      const p = getStudentProfile(s);
+      const u = s.user || p.user || {};
+      return { value: p.id || s.id, label: ((u.firstName || "") + " " + (u.lastName || "")).trim() + (u.email ? " (" + u.email + ")" : "") };
+    }), "");
+    const method = selectBox([
+      { value: "CASH", label: "Cash" },
+      { value: "BANK_TRANSFER", label: "Bank transfer (received directly)" },
+      { value: "WAIVED", label: "Waive the fee (no charge)" }
+    ], "CASH");
+    openModal(
+      "Record admission fee",
+      [field("Student", stuSel), field("Method", method)],
+      "Save",
+      async function () {
+        const waived = method.value === "WAIVED";
+        await api("/admission/admin/record", {
+          method: "POST",
+          body: JSON.stringify({ studentId: stuSel.value, method: waived ? "CASH" : method.value, waived: waived })
+        });
+        showMessage("paymentMessage", waived ? "Fee waived. The student can now be approved." : "Admission fee recorded. The student can now be approved.");
+        await loadAdmissionFees();
+      }
+    );
+  }
+
+  async function addPayment() {
+    let studs, crs;
+    try {
+      studs = arrayFrom(await api("/admin/students"), "students");
+      crs = arrayFrom(await api("/admin/courses"), "courses");
+    } catch (e) {
+      showMessage("paymentMessage", e.message, "error");
+      return;
+    }
+
+    const stuSel = selectBox(studs.map(function (s) {
+      const p = getStudentProfile(s);
+      const u = s.user || p.user || {};
+      return { value: p.id || s.id, label: ((u.firstName || "") + " " + (u.lastName || "")).trim() + (u.email ? " (" + u.email + ")" : "") };
+    }), "");
+    const courseSel = selectBox(crs.map(function (c) {
+      return { value: c.id, label: c.title + (c.price ? " - NGN " + Number(c.price).toLocaleString() : "") };
+    }), "");
+    const amount = el("input", { type: "number", min: "0", placeholder: "Leave empty to use the course price" });
+    const method = selectBox([
+      { value: "CASH", label: "Cash" },
+      { value: "BANK_TRANSFER", label: "Bank transfer (received directly)" }
+    ], "CASH");
+
+    openModal(
+      "Add payment",
+      [
+        field("Student", stuSel),
+        field("Course", courseSel),
+        field("Amount in NGN", amount),
+        field("Method", method)
+      ],
+      "Record payment",
+      async function () {
+        const body = { studentId: stuSel.value, courseId: courseSel.value, method: method.value };
+        if (amount.value) body.amount = Number(amount.value);
+        await api("/payments/admin/record", { method: "POST", body: JSON.stringify(body) });
+        showMessage("paymentMessage", "Payment recorded. The student is enrolled and can download a receipt.");
+        await loadPayments();
+      }
+    );
+  }
 
   async function bankDecide(id, action) {
     let body = {};

@@ -1961,5 +1961,25 @@ document.addEventListener(
 
 </script>
 
+<script>
+(function () {
+  fetch("/api/admission/me", { credentials: "include" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d) return;
+      var paid = d.fee && d.fee.status === "PAID";
+      if (paid || d.studentStatus !== "PENDING") return;
+      var waiting = d.fee && d.fee.status === "PENDING" && d.fee.hasProof;
+      var bar = document.createElement("div");
+      bar.style.cssText = "background:#fff4d6;border:1px solid #d4af37;color:#3a2f00;padding:12px 14px;margin:10px;border-radius:9px;font-size:14px";
+      bar.innerHTML = waiting
+        ? "Your admission fee proof was received and is waiting for confirmation."
+        : "Admission fee: pay NGN " + Number(d.amount).toLocaleString("en-NG") + " to complete your admission. <a href=\"admission.html\" style=\"color:#064e3b;font-weight:bold\">Pay now</a>";
+      var main = document.querySelector("main");
+      if (main) main.parentNode.insertBefore(bar, main);
+    })
+    .catch(function () {});
+})();
+</script>
 </body>
 </html>
