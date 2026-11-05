@@ -199,6 +199,12 @@
   Create your MAKNAZUL IRFAN student account.
 </p>
 
+<div style="background:#fff4d6;border:1px solid #d4af37;border-radius:9px;padding:12px 14px;margin:12px 0;font-size:14px;line-height:1.6;color:#3a2f00">
+  <strong>Admission fee: &#8358;10,000</strong><br>
+  A one-time admission fee of &#8358;10,000 is required before your admission is approved.
+  After creating your account, log in and pay it from your dashboard by card or bank transfer.
+</div>
+
 <div id="message" class="message"></div>
 
 <form id="registerForm">
@@ -503,8 +509,7 @@ form.addEventListener("submit", async function(event) {
     }
 
     showMessage(
-      result.message ||
-      "Registration successful. You can now log in.",
+      "Registration successful. Please log in and pay the \u20a610,000 admission fee from your dashboard to complete your admission.",
       "success"
     );
 
@@ -514,7 +519,7 @@ form.addEventListener("submit", async function(event) {
 
       window.location.href = "login.html";
 
-    }, 2000);
+    }, 4000);
 
   } catch (error) {
 
