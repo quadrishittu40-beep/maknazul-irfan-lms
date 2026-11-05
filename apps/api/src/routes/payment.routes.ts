@@ -1,4 +1,13 @@
-import { Router } from "express";
+import express, { Router } from "express";
+
+import {
+  bankInfo,
+  startBankPayment,
+  uploadProof,
+  downloadProof,
+  approveBankPayment,
+  rejectBankPayment
+} from "../controllers/bank-payment.controller";
 
 import {
   initializePayment,
@@ -60,6 +69,21 @@ router.get(
   requireRole("STUDENT"),
   getMyPayment
 );
+
+/*
+ * Bank transfer
+ */
+router.get("/bank/info", requireRole("STUDENT"), bankInfo);
+router.post("/bank/start", requireRole("STUDENT"), startBankPayment);
+router.post(
+  "/bank/:id/proof",
+  requireRole("STUDENT"),
+  express.raw({ type: () => true, limit: "6mb" }),
+  uploadProof
+);
+router.get("/bank/:id/proof", requireRole("STUDENT", "ADMIN"), downloadProof);
+router.post("/admin/:id/approve", requireRole("ADMIN"), approveBankPayment);
+router.post("/admin/:id/reject", requireRole("ADMIN"), rejectBankPayment);
 
 /*
  * Administrator payment management
