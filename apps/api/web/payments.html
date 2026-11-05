@@ -382,6 +382,7 @@
   </div>
 
   <div class="header-actions">
+    <a href="bank-transfer.html" class="btn dashboard-btn">Pay by Bank Transfer</a>
     <a href="student.html" class="btn dashboard-btn">Dashboard</a>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
@@ -777,6 +778,26 @@
         </span>
       </div>
     `;
+
+    if (String(status).toUpperCase() === "PENDING" && payment.provider === "BANK_TRANSFER" && payment.id) {
+      details.innerHTML += `
+        <div style="margin-top:14px">
+          <a href="bank-transfer.html?pay=${encodeURIComponent(payment.id)}"
+             style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:11px 16px;border-radius:8px;font-size:14px">
+            Upload / Replace Proof of Payment
+          </a>
+        </div>`;
+    }
+
+    if (String(status).toUpperCase() === "PAID" && payment.id) {
+      details.innerHTML += `
+        <div style="margin-top:14px">
+          <a href="/api/pdf/receipt/${encodeURIComponent(payment.id)}"
+             style="display:inline-block;background:#064e3b;color:#fff;text-decoration:none;font-weight:bold;padding:11px 16px;border-radius:8px;font-size:14px">
+            Download Receipt (PDF)
+          </a>
+        </div>`;
+    }
 
     document
       .getElementById("paymentModal")

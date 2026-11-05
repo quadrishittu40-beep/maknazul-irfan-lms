@@ -1413,6 +1413,7 @@
                 <th>Reference</th>
                 <th>Status</th>
                 <th>Date</th>
+                <th>Receipt</th>
               </tr>
 
             </thead>
@@ -3722,6 +3723,31 @@
   }
 
 
+  async function bankDecide(id, action) {
+    let body = {};
+    if (action === "reject") {
+      const reason = prompt("Reason for rejecting (optional):");
+      if (reason === null) return;
+      body = { reason };
+    } else if (!confirm("Confirm this payment and enrol the student?")) {
+      return;
+    }
+    try {
+      const r = await fetch("/api/payments/admin/" + id + "/" + action, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.message || "Request failed.");
+      alert(action === "approve" ? "Payment approved. Student enrolled." : "Payment rejected.");
+      loadPayments();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
   function renderPayments() {
 
     const table =
@@ -3799,7 +3825,7 @@
 
       table.innerHTML = `
         <tr>
-          <td colspan="6" class="empty">
+          <td colspan="7" class="empty">
             No payments found.
           </td>
         </tr>
@@ -3875,6 +3901,16 @@
                   payment.paidAt
                 )
               )}
+            </td>
+
+            <td>
+              ${String(payment.status).toUpperCase() === "PAID" && payment.id
+                ? `<a href="/api/pdf/receipt/${encodeURIComponent(payment.id)}" style="color:#064e3b;font-weight:bold;text-decoration:none">Receipt PDF</a>`
+                : (String(payment.status).toUpperCase() === "PENDING" && payment.provider === "BANK_TRANSFER"
+                  ? `<a href="/api/payments/bank/${encodeURIComponent(payment.id)}/proof" target="_blank" style="color:#064e3b;font-weight:bold">View proof</a><br>
+                     <a href="#" onclick="bankDecide('${payment.id}','approve');return false" style="color:#176b3a;font-weight:bold">Approve</a> ·
+                     <a href="#" onclick="bankDecide('${payment.id}','reject');return false" style="color:#b3261e;font-weight:bold">Reject</a>`
+                  : "—")}
             </td>
 
           </tr>
