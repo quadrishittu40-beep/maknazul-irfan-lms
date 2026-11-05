@@ -26,6 +26,8 @@ import teacherRoutes from "./routes/teacher.routes";
 import pdfRoutes from "./routes/pdf.routes";
 import avatarRoutes from "./routes/avatar.routes";
 import verifyRoutes from "./routes/verify.routes";
+import admissionRoutes from "./routes/admission.routes";
+import registrationRoutes from "./routes/registration.routes";
 
 import { notFoundHandler as notFound } from "./middleware/error";
 
@@ -240,6 +242,18 @@ app.use(
 app.use(
   "/api/live-classes",
   liveClassRoutes
+);
+
+/* Admission fee paid before registration (public) */
+app.use(
+  "/api/registration",
+  registrationRoutes
+);
+
+/* Admission fee */
+app.use(
+  "/api/admission",
+  admissionRoutes
 );
 
 /* Payments and Paystack */
