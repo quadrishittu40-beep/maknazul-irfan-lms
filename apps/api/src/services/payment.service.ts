@@ -37,7 +37,16 @@ function getPaystackSecretKey(): string {
     );
   }
 
-  return key;
+  /* Remove hidden characters (spaces, direction marks) that get copied along with the key on phones. */
+  const clean = key.replace(/[^\x21-\x7E]/g, "");
+
+  if (!clean) {
+    throw new Error(
+      "PAYSTACK_SECRET_KEY is not configured."
+    );
+  }
+
+  return clean;
 }
 
 function generateReference(): string {
