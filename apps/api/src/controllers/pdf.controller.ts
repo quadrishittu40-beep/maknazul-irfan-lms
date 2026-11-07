@@ -666,18 +666,37 @@ type ReceiptData = {
   method: string;
   amount: number;
   currency: string;
-  paidOn: string;
+  paidAt: Date;
 };
 
 function renderReceipt(res: Response, d: ReceiptData) {
   const money = `${d.currency === "NGN" ? "NGN " : d.currency + " "}${d.amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const when = new Date(d.paidAt);
+  const dateStr = when.toLocaleDateString("en-GB", { timeZone: "Africa/Lagos", day: "2-digit", month: "long", year: "numeric" });
+  const timeStr = when.toLocaleTimeString("en-GB", { timeZone: "Africa/Lagos", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
   const doc = startPdf(res, `Receipt_${d.reference}`);
+  const w = doc.page.width;
+
+  // faint logo watermark
+  try {
+    if (fs.existsSync(LOGO_PATH)) {
+      doc.save();
+      doc.opacity(0.07);
+      doc.image(LOGO_PATH, w / 2 - 150, 250, { fit: [300, 300] });
+      doc.restore();
+    }
+  } catch {
+    /* optional */
+  }
+
   letterhead(doc, "Official Payment Receipt");
 
-  doc.font("Body").fontSize(10).fillColor(GREY).text("RECEIPT NO.", 50, 130);
-  doc.font("Body-Bold").fontSize(14).fillColor("#111111").text(d.reference, 50, 144);
-  doc.font("Body").fontSize(10).fillColor(GREY).text("DATE PAID", 350, 130);
-  doc.font("Body-Bold").fontSize(14).fillColor("#111111").text(d.paidOn, 350, 144);
+  doc.font("Body").fontSize(9).fillColor(GREY).text("RECEIPT NO.", 50, 124);
+  doc.font("Body-Bold").fontSize(12).fillColor("#111111").text(d.reference, 50, 137, { width: 230 });
+  doc.font("Body").fontSize(9).fillColor(GREY).text("DATE", 300, 124);
+  doc.font("Body-Bold").fontSize(12).fillColor("#111111").text(dateStr, 300, 137, { width: 150 });
+  doc.font("Body").fontSize(9).fillColor(GREY).text("TIME (WAT)", 460, 124);
+  doc.font("Body-Bold").fontSize(12).fillColor("#111111").text(timeStr, 460, 137, { width: 100 });
 
   const rows: Array<[string, string]> = [
     ["Received from", d.name],
@@ -686,7 +705,7 @@ function renderReceipt(res: Response, d: ReceiptData) {
     ["Payment method", d.method],
     ["Status", "PAID"]
   ];
-  let y = 190;
+  let y = 180;
   rows.forEach(([k, v], i) => {
     if (i % 2 === 0) doc.rect(50, y - 5, 500, 26).fill("#f3f7f5");
     doc.font("Body").fontSize(10).fillColor(GREY).text(k, 60, y, { width: 150 });
@@ -699,7 +718,7 @@ function renderReceipt(res: Response, d: ReceiptData) {
   doc.font("Body-Bold").fontSize(20).fillColor("#ffffff")
     .text(money, 250, y + 20, { width: 290, align: "right" });
 
-  const qy = y + 100;
+  const qy = y + 85;
   drawQr(
     doc,
     [
@@ -709,18 +728,44 @@ function renderReceipt(res: Response, d: ReceiptData) {
       `Name: ${d.name}`,
       `For: ${d.purpose}`,
       `Amount: ${money}`,
-      `Paid: ${d.paidOn}`
+      `Date: ${dateStr}`,
+      `Time: ${timeStr} (WAT)`
     ].join("\n"),
     50,
     qy,
-    90
+    92
   );
-  drawBarcode(doc, d.reference, 160, qy + 20, 220, 30);
-  drawStamp(doc, 470, qy + 50, 52);
+  doc.font("Body").fontSize(7.5).fillColor(GREY).text("Scan for payment details", 50, qy + 95, { width: 92, align: "center" });
 
-  doc.font("Body").fontSize(9).fillColor(GREY)
-    .text("This receipt was generated electronically and is valid without a signature. Scan the QR code to see the payment details.",
-      50, qy + 120, { width: 500, align: "center" });
+  drawBarcode(doc, d.reference, 165, qy, 230, 34);
+  doc.font("Body").fontSize(7.5).fillColor(GREY).text(d.reference, 165, qy + 38, { width: 230, align: "center" });
+
+  // signature: handwritten-style scribble above a line
+  const sy = qy + 118;
+  doc.save();
+  doc.lineWidth(1.6).strokeColor("#1d3b8a").lineCap("round").lineJoin("round");
+  doc.translate(165, sy - 34);
+  doc.moveTo(0, 22)
+    .bezierCurveTo(8, -4, 16, 4, 14, 20)
+    .bezierCurveTo(12, 34, 26, 4, 34, 14)
+    .bezierCurveTo(40, 22, 44, 10, 52, 12)
+    .bezierCurveTo(62, 14, 66, 28, 78, 14)
+    .bezierCurveTo(88, 4, 96, 22, 110, 12)
+    .bezierCurveTo(122, 4, 128, 20, 140, 16)
+    .stroke();
+  doc.moveTo(6, 30).bezierCurveTo(50, 36, 100, 34, 150, 26).stroke();
+  doc.restore();
+  doc.lineWidth(0.8).strokeColor(GREEN).moveTo(160, sy).lineTo(340, sy).stroke();
+  doc.font("Body-Bold").fontSize(9).fillColor(GREY)
+    .text("AUTHORISED SIGNATURE", 160, sy + 4, { width: 180, align: "center" });
+  doc.font("Body").fontSize(8).fillColor(GREY)
+    .text("Bursar / Accounts Office", 160, sy + 16, { width: 180, align: "center" });
+
+  drawStamp(doc, 470, qy + 52, 56);
+
+  doc.font("Body").fontSize(8.5).fillColor(GREY)
+    .text(`Issued on ${dateStr} at ${timeStr} (WAT). This receipt was generated electronically. Scan the QR code to see the payment details.`,
+      50, sy + 52, { width: 500, align: "center" });
   doc.end();
 }
 
@@ -750,7 +795,7 @@ export async function receiptPdf(req: AuthenticatedRequest, res: Response) {
       method: String(payment.provider).replace("_", " "),
       amount: Number(payment.amount),
       currency: payment.currency,
-      paidOn: fmtDate(payment.updatedAt)
+      paidAt: payment.updatedAt
     });
   } catch (error) {
     console.error("receiptPdf error:", error);
@@ -777,7 +822,7 @@ export async function admissionReceiptPdf(req: AuthenticatedRequest, res: Respon
       method: String(fee.provider).replace("_", " "),
       amount: Number(fee.amount),
       currency: fee.currency,
-      paidOn: fmtDate(fee.paidAt || fee.updatedAt)
+      paidAt: fee.paidAt || fee.updatedAt
     });
   } catch (error) {
     console.error("admissionReceiptPdf error:", error);
