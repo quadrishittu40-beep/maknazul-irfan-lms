@@ -18,6 +18,7 @@ const ACADEMY_PHONE = "0808 492 9862";
 const GREY = "#555555";
 
 const FONT_DIR = path.resolve(__dirname, "../../fonts");
+const SIGNATURE_PATH = path.resolve(__dirname, "../../web/assets/signature.png");
 const LOGO_PATH = path.resolve(__dirname, "../../web/assets/logo.png");
 
 function fmtDate(d: Date | null | undefined) {
@@ -64,22 +65,23 @@ function drawQr(doc: any, text: string, x: number, y: number, size: number) {
 /* Red round "official seal" with curved lettering, drawn as vector shapes. */
 function drawStamp(doc: any, cx: number, cy: number, r: number) {
   const RED = "#c1121f";
+  const k = r / 70; // every measurement scales with the radius so the text never overlaps
   doc.save();
   doc.translate(cx, cy);
   doc.rotate(-12);
   doc.opacity(0.95);
 
-  doc.lineWidth(3.4).strokeColor(RED).circle(0, 0, r).stroke();
-  doc.lineWidth(1.2).strokeColor(RED).circle(0, 0, r - 6).stroke();
-  doc.lineWidth(1.2).strokeColor(RED).circle(0, 0, r - 31).stroke();
+  doc.lineWidth(3.4 * k).strokeColor(RED).circle(0, 0, r).stroke();
+  doc.lineWidth(1.2 * k).strokeColor(RED).circle(0, 0, r - 6 * k).stroke();
+  doc.lineWidth(1.2 * k).strokeColor(RED).circle(0, 0, r - 31 * k).stroke();
 
-  const fs = 8.8;
-  const rt = r - 18.5;
-  doc.font("Body-Bold").fontSize(fs).fillColor(RED).lineWidth(0.45).strokeColor(RED);
+  const fs = 8.8 * k;
+  const rt = r - 18.5 * k;
+  doc.font("Body-Bold").fontSize(fs).fillColor(RED).lineWidth(0.45 * k).strokeColor(RED);
 
   function arc(text: string, top: boolean) {
     const chars = Array.from(text);
-    const widths = chars.map((c) => doc.widthOfString(c) + 0.7);
+    const widths = chars.map((c) => doc.widthOfString(c) + 0.7 * k);
     const total = widths.reduce((a, b) => a + b, 0);
     const span = (total / rt) * (180 / Math.PI);
     let angle = top ? -span / 2 : span / 2;
@@ -98,13 +100,12 @@ function drawStamp(doc: any, cx: number, cy: number, r: number) {
   arc("MAKNAZUL 'IRFAN ACADEMY", true);
   arc("ISLAMIC & ARABIC INSTITUTE", false);
 
-  // centre
-  doc.font("Body-Bold").fontSize(16).fillColor(RED).lineWidth(0.4).strokeColor(RED)
-    .text("\u2605", -9, -r + 38, { lineBreak: false, fill: true, stroke: true });
-  doc.font("Body-Bold").fontSize(11.5).fillColor(RED)
-    .text("OFFICIAL", -r + 20, -6, { width: 2 * (r - 20), align: "center", lineBreak: false, fill: true, stroke: true });
-  doc.font("Body-Bold").fontSize(11.5).fillColor(RED)
-    .text("SEAL", -r + 20, 8, { width: 2 * (r - 20), align: "center", lineBreak: false, fill: true, stroke: true });
+  doc.font("Body-Bold").fontSize(16 * k).fillColor(RED).lineWidth(0.4 * k).strokeColor(RED)
+    .text("\u2605", -9 * k, -r + 38 * k, { lineBreak: false, fill: true, stroke: true });
+  doc.font("Body-Bold").fontSize(11.5 * k).fillColor(RED)
+    .text("OFFICIAL", -r + 20 * k, -6 * k, { width: 2 * (r - 20 * k), align: "center", lineBreak: false, fill: true, stroke: true });
+  doc.font("Body-Bold").fontSize(11.5 * k).fillColor(RED)
+    .text("SEAL", -r + 20 * k, 8 * k, { width: 2 * (r - 20 * k), align: "center", lineBreak: false, fill: true, stroke: true });
 
   doc.restore();
 }
@@ -735,26 +736,21 @@ function renderReceipt(res: Response, d: ReceiptData) {
     qy,
     92
   );
-  doc.font("Body").fontSize(7.5).fillColor(GREY).text("Scan for payment details", 50, qy + 95, { width: 92, align: "center" });
 
   drawBarcode(doc, d.reference, 165, qy, 230, 34);
-  doc.font("Body").fontSize(7.5).fillColor(GREY).text(d.reference, 165, qy + 38, { width: 230, align: "center" });
 
-  // signature: handwritten-style scribble above a line
-  const sy = qy + 118;
-  doc.save();
-  doc.lineWidth(1.6).strokeColor("#1d3b8a").lineCap("round").lineJoin("round");
-  doc.translate(165, sy - 34);
-  doc.moveTo(0, 22)
-    .bezierCurveTo(8, -4, 16, 4, 14, 20)
-    .bezierCurveTo(12, 34, 26, 4, 34, 14)
-    .bezierCurveTo(40, 22, 44, 10, 52, 12)
-    .bezierCurveTo(62, 14, 66, 28, 78, 14)
-    .bezierCurveTo(88, 4, 96, 22, 110, 12)
-    .bezierCurveTo(122, 4, 128, 20, 140, 16)
-    .stroke();
-  doc.moveTo(6, 30).bezierCurveTo(50, 36, 100, 34, 150, 26).stroke();
-  doc.restore();
+  // signature: the academy's real signature, above the line
+  const sy = qy + 128;
+  let signed = false;
+  try {
+    if (fs.existsSync(SIGNATURE_PATH)) {
+      doc.image(SIGNATURE_PATH, 190, sy - 62, { fit: [120, 60], align: "center", valign: "bottom" });
+      signed = true;
+    }
+  } catch {
+    /* fall back to the line only */
+  }
+  void signed;
   doc.lineWidth(0.8).strokeColor(GREEN).moveTo(160, sy).lineTo(340, sy).stroke();
   doc.font("Body-Bold").fontSize(9).fillColor(GREY)
     .text("AUTHORISED SIGNATURE", 160, sy + 4, { width: 180, align: "center" });
