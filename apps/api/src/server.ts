@@ -28,6 +28,7 @@ import avatarRoutes from "./routes/avatar.routes";
 import verifyRoutes from "./routes/verify.routes";
 import admissionRoutes from "./routes/admission.routes";
 import registrationRoutes from "./routes/registration.routes";
+import passwordRoutes from "./routes/password.routes";
 
 import { notFoundHandler as notFound } from "./middleware/error";
 
@@ -242,6 +243,12 @@ app.use(
 app.use(
   "/api/live-classes",
   liveClassRoutes
+);
+
+/* Forgot / reset password */
+app.use(
+  "/api/password",
+  passwordRoutes
 );
 
 /* Admission fee paid before registration (public) */
