@@ -150,6 +150,8 @@ model StudentProfile {
 
   gender String?
 
+  bloodGroup String?
+
   guardianName String?
 
   guardianPhone String?
