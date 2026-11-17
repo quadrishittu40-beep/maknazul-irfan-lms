@@ -98,6 +98,9 @@ export async function register(
               : undefined,
 
             gender: data.gender,
+            bloodGroup: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].includes(String(req.body?.bloodGroup || ""))
+              ? String(req.body.bloodGroup)
+              : undefined,
             guardianName: data.guardianName,
             guardianPhone: data.guardianPhone,
             levelId: data.levelId,

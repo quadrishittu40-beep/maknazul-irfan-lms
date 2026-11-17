@@ -365,7 +365,14 @@ export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
     // date and signatures
     const lineY = h - 124;
     doc.fillColor("#222222").font("Body-Bold").fontSize(10)
-      .text(`DATE: ${issued}`, 80, lineY - 30, { width: 300 });
+      .text(`DATE: ${issued}`, 255, lineY - 18, { width: 200, align: "center" });
+    try {
+      if (fs.existsSync(SIGNATURE_PATH)) {
+        doc.image(SIGNATURE_PATH, 112, lineY - 46, { fit: [100, 44], align: "center", valign: "bottom" });
+      }
+    } catch {
+      /* signature is optional */
+    }
     doc.lineWidth(0.8).strokeColor(GREEN);
     doc.moveTo(80, lineY).lineTo(245, lineY).stroke();
     doc.moveTo(275, lineY).lineTo(440, lineY).stroke();
@@ -862,18 +869,27 @@ async function loadIdCard(req: AuthenticatedRequest) {
       ? "STAFF IDENTITY CARD"
       : "STUDENT IDENTITY CARD";
 
+  const shortDate = (d: Date | null | undefined) =>
+    d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "-";
+  const now = new Date();
+  const validYear = now.getMonth() > 5 || (now.getMonth() === 5 && now.getDate() > 30) ? now.getFullYear() + 1 : now.getFullYear();
+  const validUntil = `30 Jun ${validYear}`;
+
   const details: Array<[string, string]> = [];
   if (user.role === "STUDENT") {
     details.push(["LEVEL", sp?.level?.name || "-"]);
-    details.push(["CLASS", sp?.class?.name || "-"]);
-    details.push(["STATUS", sp?.status ? String(sp.status) : "-"]);
+    details.push(["PROGRAM", sp?.class?.name || "General Islamic & Arabic Studies"]);
+    details.push(["DOB", shortDate(sp?.dateOfBirth)]);
+    details.push(["BLOOD GP", sp?.bloodGroup || "-"]);
   } else if (user.role === "TEACHER") {
     details.push(["SPECIALIZATION", tp?.specialization || "-"]);
     details.push(["QUALIFICATION", tp?.qualification || "-"]);
+    details.push(["EMAIL", user.email]);
   } else {
     details.push(["POSITION", "Administrator"]);
+    details.push(["EMAIL", user.email]);
   }
-  details.push(["EMAIL", user.email]);
+  details.push(["VALID UNTIL", validUntil]);
 
   return {
     user,
@@ -882,6 +898,7 @@ async function loadIdCard(req: AuthenticatedRequest) {
       name: `${user.firstName} ${user.lastName}`,
       role: user.role,
       title,
+      idLabel: user.role === "STUDENT" ? "STUDENT ID" : "STAFF ID",
       idNumber: `MIA-${prefix}-${year}-${serial}`,
       details,
       issued: fmtDate(user.createdAt)
@@ -908,106 +925,168 @@ export async function idCardPdf(req: AuthenticatedRequest, res: Response) {
 
     const doc = startPdf(res, `ID_Card_${card.name}`);
     const pw = doc.page.width;
-    const CW = 340;
-    const CH = 214;
+    const CW = 480;
+    const CH = 300;
     const x = (pw - CW) / 2;
+    const DARK = "#0c4a2e";
 
     doc.font("Body").fontSize(8).fillColor(GREY)
-      .text("Identity card - print and cut along the outline. Front on top, back below.", 50, 36, {
+      .text("Identity card - print and cut along the outline. Front on top, back below.", 50, 34, {
         width: pw - 100,
         align: "center"
       });
 
+    function frame(cy: number) {
+      doc.roundedRect(x, cy, CW, CH, 12).fill(CREAM);
+    }
+    function borders(cy: number) {
+      doc.lineWidth(2).strokeColor(DARK).roundedRect(x, cy, CW, CH, 12).stroke();
+      doc.lineWidth(0.8).strokeColor(GOLD).roundedRect(x + 5, cy + 5, CW - 10, CH - 10, 9).stroke();
+    }
+    function watermark(cy: number) {
+      try {
+        if (fs.existsSync(LOGO_PATH)) {
+          doc.save();
+          doc.opacity(0.08);
+          doc.image(LOGO_PATH, x + CW / 2 - 90, cy + 80, { fit: [180, 180] });
+          doc.restore();
+        }
+      } catch {
+        /* optional */
+      }
+    }
+    function hologram(hx: number, hy: number, hw: number, text: string) {
+      const g = doc.linearGradient(hx, hy, hx + hw, hy + 24);
+      g.stop(0, "#dfe8f1").stop(0.3, "#c9f1e1").stop(0.55, "#f2dcf6").stop(0.8, "#fbefc4").stop(1, "#d3e4f4");
+      doc.roundedRect(hx, hy, hw, 24, 4).fill(g);
+      doc.lineWidth(0.5).strokeColor("#9aa7b3").roundedRect(hx, hy, hw, 24, 4).stroke();
+      doc.fillColor("#4b5563").font("Body-Bold").fontSize(5.2)
+        .text(text, hx + 2, hy + 9, { width: hw - 4, align: "center", lineBreak: false });
+    }
+
     /* ---------------- FRONT ---------------- */
     const fy = 62;
-    doc.roundedRect(x, fy, CW, CH, 10).fill(CREAM);
+    frame(fy);
     doc.save();
-    doc.roundedRect(x, fy, CW, CH, 10).clip();
-    doc.rect(x, fy, CW, 56).fill(GREEN);
-    doc.rect(x, fy + CH - 22, CW, 22).fill(GREEN);
+    doc.roundedRect(x, fy, CW, CH, 12).clip();
+    doc.rect(x, fy, CW, 80).fill(DARK);
     doc.restore();
-    doc.lineWidth(1.4).strokeColor(GREEN).roundedRect(x, fy, CW, CH, 10).stroke();
-    doc.lineWidth(0.6).strokeColor(GOLD).roundedRect(x + 4, fy + 4, CW - 8, CH - 8, 7).stroke();
+    watermark(fy);
+    borders(fy);
 
-    try {
-      if (fs.existsSync(LOGO_PATH)) {
-        doc.save();
-        doc.circle(x + 30, fy + 28, 20).fill("#ffffff");
-        doc.restore();
-        doc.image(LOGO_PATH, x + 12, fy + 10, { fit: [36, 36] });
-      }
-    } catch {
-      /* optional */
-    }
-    doc.fillColor("#ffffff").font("Serif-Bold").fontSize(13.5)
-      .text("MAKNAZUL IRFAN ACADEMY", x + 56, fy + 14, { width: CW - 66 });
-    doc.fillColor("#e6c85a").font("Body-Bold").fontSize(8.5)
-      .text(card.title, x + 56, fy + 34, { width: CW - 66 });
+    doc.fillColor("#ffffff").font("Serif-Bold").fontSize(21)
+      .text("MAKNAZUL IRFAN ACADEMY", x, fy + 17, { width: CW, align: "center", lineBreak: false });
+    doc.fillColor("#e6c85a").font("Serif-Bold").fontSize(13)
+      .text(card.title, x, fy + 48, { width: CW, align: "center", lineBreak: false });
 
     // photo
-    const px = x + 14;
-    const py = fy + 68;
+    const px = x + 22;
+    const py = fy + 94;
+    const PW = 104;
+    const PH = 124;
     const photo = photoBuffer(user.avatar);
-    doc.rect(px, py, 80, 96).fill("#e8efe9");
+    doc.rect(px, py, PW, PH).fill("#ffffff");
     if (photo) {
       try {
-        doc.image(photo, px, py, { fit: [80, 96], align: "center", valign: "center" });
+        doc.image(photo, px, py, { fit: [PW, PH], align: "center", valign: "center" });
       } catch (e) {
         console.error("photo error:", e);
       }
     } else {
       const initials = `${user.firstName[0] || ""}${user.lastName[0] || ""}`.toUpperCase();
-      doc.fillColor(GREEN).font("Serif-Bold").fontSize(30)
-        .text(initials, px, py + 32, { width: 80, align: "center", lineBreak: false });
+      doc.fillColor(DARK).font("Serif-Bold").fontSize(36)
+        .text(initials, px, py + 40, { width: PW, align: "center", lineBreak: false });
     }
-    doc.lineWidth(1.2).strokeColor(GREEN).rect(px, py, 80, 96).stroke();
+    doc.lineWidth(2).strokeColor(GOLD).rect(px, py, PW, PH).stroke();
+    doc.lineWidth(0.6).strokeColor(GOLD).rect(px + 3, py + 3, PW - 6, PH - 6).stroke();
 
-    // details
-    const tx = x + 106;
-    let ty = fy + 66;
-    function field(label: string, value: string, big = false) {
-      doc.font("Body-Bold").fontSize(6.5).fillColor(GREY).text(label, tx, ty, { width: CW - 118, lineBreak: false });
-      doc.font(big ? "Serif-Bold" : "Body-Bold").fontSize(big ? 13 : 8.5).fillColor("#111111")
-        .text(value, tx, ty + 8, { width: CW - 118, height: big ? 18 : 12, ellipsis: true });
-      ty += big ? 30 : 21;
+    // fields
+    const lx = x + 146;
+    const vx = x + 232;
+    const vw = CW - 232 - 18;
+    let ty = fy + 92;
+    function row(label: string, value: string, big = false) {
+      doc.font("Body-Bold").fontSize(8.5).fillColor("#222222")
+        .text(`${label}:`, lx, ty + (big ? 4 : 1), { width: 84, lineBreak: false });
+      doc.font(big ? "Serif-Bold" : "Body-Bold").fontSize(big ? 16 : 10).fillColor("#0b0b0b")
+        .text(value, vx, ty, { width: vw, height: big ? 20 : 13, ellipsis: true, lineBreak: false });
+      ty += big ? 25 : 18;
     }
-    field("FULL NAME", card.name, true);
-    field("ID NUMBER", card.idNumber);
-    card.details.slice(0, 3).forEach(([l, v]) => field(l, v));
+    row("FULL NAME", card.name, true);
+    row(card.idLabel, card.idNumber);
+    card.details.slice(0, 5).forEach(([l, v]) => row(l, v));
 
-    doc.fillColor("#e6c85a").font("Body-Bold").fontSize(6.5)
-      .text("KNOWLEDGE  •  FAITH  •  EXCELLENCE", x, fy + CH - 15, { width: CW, align: "center", lineBreak: false });
+    // holograms
+    hologram(x + 22, fy + 238, 110, "KNOWLEDGE \u2022 FAITH \u2022 EXCELLENCE");
+    hologram(x + 140, fy + 238, 96, "FAITH \u2022 EXCELLENCE");
+    doc.fillColor("#222222").font("Body-Bold").fontSize(6.5)
+      .text("UNIQUE NUMBER", x + 22, fy + 266, { width: 110, align: "center", lineBreak: false });
+
+    // principal signature
+    try {
+      if (fs.existsSync(SIGNATURE_PATH)) {
+        doc.image(SIGNATURE_PATH, x + 276, fy + 222, { fit: [110, 38], align: "center", valign: "bottom" });
+      }
+    } catch {
+      /* optional */
+    }
+    doc.lineWidth(0.6).strokeColor("#555555").moveTo(x + 268, fy + 264).lineTo(x + 398, fy + 264).stroke();
+    doc.fillColor("#222222").font("Body-Bold").fontSize(6.5)
+      .text("PRINCIPAL'S SIGNATURE", x + 268, fy + 268, { width: 130, align: "center", lineBreak: false });
+
+    // gold shield
+    const sx = x + CW - 52;
+    const sy = fy + 236;
+    doc.save();
+    doc.moveTo(sx, sy).lineTo(sx + 28, sy).lineTo(sx + 28, sy + 18)
+      .bezierCurveTo(sx + 28, sy + 28, sx + 14, sy + 34, sx + 14, sy + 36)
+      .bezierCurveTo(sx + 14, sy + 34, sx, sy + 28, sx, sy + 18)
+      .closePath().fillAndStroke(GOLD, DARK);
+    doc.lineWidth(2).strokeColor("#ffffff").moveTo(sx + 8, sy + 16).lineTo(sx + 13, sy + 22).lineTo(sx + 21, sy + 10).stroke();
+    doc.restore();
 
     /* ---------------- BACK ---------------- */
-    const by = fy + CH + 40;
-    doc.roundedRect(x, by, CW, CH, 10).fill(CREAM);
+    const by = fy + CH + 46;
+    frame(by);
     doc.save();
-    doc.roundedRect(x, by, CW, CH, 10).clip();
-    doc.rect(x, by, CW, 44).fill(GREEN);
+    doc.roundedRect(x, by, CW, CH, 12).clip();
+    doc.rect(x, by, CW, 62).fill(DARK);
     doc.restore();
-    doc.lineWidth(1.4).strokeColor(GREEN).roundedRect(x, by, CW, CH, 10).stroke();
-    doc.lineWidth(0.6).strokeColor(GOLD).roundedRect(x + 4, by + 4, CW - 8, CH - 8, 7).stroke();
+    watermark(by);
+    borders(by);
 
-    doc.fillColor("#ffffff").font("Serif-Bold").fontSize(14)
-      .text("MAKNAZUL IRFAN ACADEMY", x, by + 16, { width: CW, align: "center" });
+    try {
+      if (fs.existsSync(LOGO_PATH)) {
+        doc.circle(x + CW / 2, by + 34, 27).fill("#ffffff");
+        doc.image(LOGO_PATH, x + CW / 2 - 23, by + 11, { fit: [46, 46] });
+      }
+    } catch {
+      /* optional */
+    }
+    doc.fillColor(DARK).font("Serif-Bold").fontSize(20)
+      .text("MAKNAZUL IRFAN ACADEMY", x, by + 74, { width: CW, align: "center", lineBreak: false });
 
     const site = baseUrl(req).replace(/^https?:\/\//, "");
-    doc.fillColor("#222222").font("Body").fontSize(7.5);
-    doc.text(`Web: ${site}`, x + 16, by + 54, { width: CW - 32 });
-    doc.text(`Email: ${ACADEMY_EMAIL}`, x + 16, by + 66, { width: CW - 32 });
-    doc.text("Address: Online Campus & Registered Offices", x + 16, by + 78, { width: CW - 32 });
-    doc.text(`Phone: ${ACADEMY_PHONE}`, x + 16, by + 90, { width: CW - 32 });
+    doc.fillColor("#222222").font("Body").fontSize(8.5);
+    doc.text(`Web: ${site}`, x + 22, by + 106, { width: 230, lineBreak: false });
+    doc.text("Address: Online Campus & Registered Offices", x + 22, by + 120, { width: 230, lineBreak: false });
+    doc.text(`Email: ${ACADEMY_EMAIL}`, x + 262, by + 106, { width: 200, lineBreak: false });
+    doc.text(`Phone: ${ACADEMY_PHONE}`, x + 262, by + 120, { width: 200, lineBreak: false });
 
-    doc.fillColor(GREY).font("Body").fontSize(6)
+    doc.fillColor("#444444").font("Body").fontSize(6.8)
       .text(
         "THIS CARD IS THE PROPERTY OF MAKNAZUL IRFAN ACADEMY. IT IS NON-TRANSFERABLE AND MUST BE " +
         "PRESENTED UPON REQUEST. IF FOUND, PLEASE RETURN IT TO THE ADDRESS ABOVE.",
-        x + 16, by + 108, { width: CW - 32, align: "left", lineGap: 1 }
+        x + 22, by + 142, { width: CW - 44, align: "center", lineGap: 1.5 }
       );
 
-    drawBarcode(doc, card.idNumber, x + 16, by + 150, 150, 26);
-    doc.fillColor(GREY).font("Body").fontSize(6)
-      .text("Library & Campus Access", x + 16, by + 192, { width: 150, align: "center", lineBreak: false });
+    doc.fillColor("#111111").font("Body-Bold").fontSize(9)
+      .text("Emergency Contacts:", x + 22, by + 180, { width: 100, lineBreak: false });
+    doc.lineWidth(0.6).strokeColor("#444444").moveTo(x + 124, by + 190).lineTo(x + 300, by + 190).stroke();
+
+    drawBarcode(doc, card.idNumber, x + 22, by + 206, 250, 36);
+    doc.fillColor(GREY).font("Body").fontSize(7)
+      .text("Library & Campus Access", x + 22, by + 268, { width: 250, align: "center", lineBreak: false });
 
     drawQr(
       doc,
@@ -1020,10 +1099,13 @@ export async function idCardPdf(req: AuthenticatedRequest, res: Response) {
         `Issued: ${card.issued}`,
         `Web: ${baseUrl(req)}`
       ].join("\n"),
-      x + CW - 16 - 58,
-      by + 112,
-      58
+      x + CW - 22 - 80,
+      by + 196,
+      80
     );
+
+    doc.fillColor(DARK).font("Serif-Bold").fontSize(9.5)
+      .text("EMBARK ON YOUR PATH TO ILLUMINATION & EXCELLENCE.", x - 20, by + CH + 14, { width: CW + 40, align: "center", lineBreak: false });
 
     doc.end();
   } catch (error) {
