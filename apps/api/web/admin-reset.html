@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reset a User Password | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e;min-height:100vh}
+header{background:#064e3b;color:#fff;padding:16px 6%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+.container{width:92%;max-width:440px;margin:50px auto}
+.card{background:#fff;padding:32px 26px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+h1{color:#064e3b;text-align:center;margin-bottom:8px;font-size:24px}
+.intro{text-align:center;color:#68756d;margin-bottom:22px;font-size:14px;line-height:1.5}
+label{display:block;margin:14px 0 6px;font-weight:bold;font-size:14px;color:#263b31}
+input{width:100%;padding:12px;border:1px solid #ccd8d1;border-radius:7px;font-size:15px}
+button{width:100%;padding:14px;border:0;border-radius:7px;background:#d4af37;color:#102018;font-size:16px;font-weight:bold;margin-top:18px;cursor:pointer}
+button:disabled{opacity:.6}
+.m{display:none;padding:12px;border-radius:7px;margin-bottom:14px;font-size:14px;line-height:1.5}
+.ok{display:block;background:#e8f7ed;color:#176b3a;border:1px solid #b8dfc5}
+.er{display:block;background:#fdecec;color:#a12626;border:1px solid #efb8b8}
+.alt{text-align:center;margin-top:20px;font-size:14px}.alt a{color:#064e3b;font-weight:bold;text-decoration:none}
+</style></head><body>
+<header><b>MAKNAZUL IRFAN</b><a href="login.html">&larr; Back to Login</a></header>
+<main class="container"><div class="card">
+<h1>Reset a Password</h1>
+<p class="intro">Admin only. Type the user's email and the new password, then tell them the password.</p>
+<div id="msg" class="m"></div>
+<form id="f"><label for="email">User's email</label>
+<input type="email" id="email" required>
+<label for="p1">New password (8+ characters)</label>
+<input type="text" id="p1" required minlength="8" autocomplete="off">
+<button type="submit" id="b">Set new password</button></form>
+<div class="alt"><a href="admin.html">Back to admin</a></div>
+</div></main>
+<script>
+function $(i){return document.getElementById(i);}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");}
+async function post(path,body){
+  var r=await fetch("/api/password"+path,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  var d=await r.json().catch(function(){return{};});
+  if(!r.ok)throw new Error(d.message||"Request failed.");return d;
+}
+
+$("f").addEventListener("submit",async function(e){
+  e.preventDefault();$("b").disabled=true;
+  try{
+    var d=await post("/admin/set",{email:$("email").value.trim(),password:$("p1").value});
+    say(d.message,true);$("p1").value="";
+  }catch(x){say(x.message,false);}
+  $("b").disabled=false;
+});
+</script></body></html>

@@ -131,6 +131,14 @@
 
     .alt-link a { color: #064e3b; font-weight: bold; text-decoration: none; }
 
+    .forgot {
+      text-align: right;
+      margin: -8px 0 14px;
+      font-size: 13px;
+    }
+
+    .forgot a { color: #064e3b; font-weight: bold; text-decoration: none; }
+
     @media (max-width: 600px) {
       .card { padding: 25px 20px; }
       header { flex-direction: column; gap: 10px; text-align: center; }
@@ -166,6 +174,8 @@
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required autocomplete="current-password">
       </div>
+
+      <div class="forgot"><a href="forgot-password.html">Forgot password?</a></div>
 
       <button type="submit" id="loginButton">Login</button>
 
