@@ -52,8 +52,8 @@
       info.appendChild(f);
     }
     field("FULL NAME", card.name, true);
-    field("ID NUMBER", card.idNumber);
-    card.details.slice(0, 3).forEach(function (d) { field(d[0], d[1]); });
+    field(card.idLabel || "ID NUMBER", card.idNumber);
+    card.details.slice(0, 5).forEach(function (d) { field(d[0], d[1]); });
     body.appendChild(info);
     wrap.appendChild(body);
 

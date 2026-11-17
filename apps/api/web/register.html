@@ -311,6 +311,15 @@
   </div>
 
   <div class="form-group">
+    <label for="bloodGroup">Blood Group (optional, for your ID card)</label>
+    <select id="bloodGroup" name="bloodGroup">
+      <option value="">Select blood group</option>
+      <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+      <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+    </select>
+  </div>
+
+  <div class="form-group">
 
     <label for="levelId">
       Level
@@ -548,6 +557,8 @@ form.addEventListener("submit", async function(event) {
   if (phone) data.phone = phone;
   if (dateOfBirth) data.dateOfBirth = dateOfBirth;
   if (gender) data.gender = gender;
+  const bloodGroup = document.getElementById("bloodGroup").value;
+  if (bloodGroup) data.bloodGroup = bloodGroup;
   if (levelId) data.levelId = levelId;
 
   let usedBank = false;
@@ -572,7 +583,7 @@ form.addEventListener("submit", async function(event) {
     button.textContent = "Opening payment...";
     try {
       const saved = {};
-      ["firstName", "lastName", "email", "phone", "dateOfBirth", "gender", "levelId"].forEach(function (id) {
+      ["firstName", "lastName", "email", "phone", "dateOfBirth", "gender", "bloodGroup", "levelId"].forEach(function (id) {
         saved[id] = document.getElementById(id).value;
       });
       sessionStorage.setItem("reg_form", JSON.stringify(saved));
