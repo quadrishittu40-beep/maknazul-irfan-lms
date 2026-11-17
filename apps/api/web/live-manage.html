@@ -57,12 +57,16 @@ async function init(){
   }catch(e){$("list").textContent=e.message;}
 }
 $("prov").onchange=function(){$("urlbox").style.display=this.value==="JITSI"?"none":"block";};
+function wa(i){
+  var t="*Live Class - MAKNAZUL IRFAN ACADEMY*\n"+i.title+"\n"+new Date(i.scheduledStart).toLocaleString()+"\nJoin here: "+(i.provider==="JITSI"?location.origin+"/live-room.html?id="+i.id:i.meetingUrl)+"\n(Log in to the portal first if asked.)";
+  return "https://wa.me/?text="+encodeURIComponent(t);
+}
 async function load(){
   try{
     var items=arr(await call("/live-classes"));
     $("list").innerHTML=items.length?items.map(function(i){
       return '<div class="row"><div><b>'+String(i.title).replace(/</g,"&lt;")+'</b><br><small>'+new Date(i.scheduledStart).toLocaleString()+' · '+i.provider+(i.published?'':' · hidden')+'</small></div>'+
-      '<div><a href="'+(i.provider==="JITSI"?"live-room.html?id="+i.id:i.meetingUrl)+'" target="_blank" style="margin-right:8px;font-size:13px">Open</a><button class="d" style="background:#0b5c3b;margin-right:6px" onclick="att(\''+i.id+'\')">Attendance</button><button class="d" onclick="del(\''+i.id+'\')">Delete</button></div></div>';
+      '<div><a href="'+(i.provider==="JITSI"?"live-room.html?id="+i.id:i.meetingUrl)+'" target="_blank" style="margin-right:8px;font-size:13px">Open</a><a href="'+wa(i)+'" target="_blank" style="margin-right:8px;font-size:13px;color:#128c7e;font-weight:bold">WhatsApp</a><button class="d" style="background:#0b5c3b;margin-right:6px" onclick="att(\''+i.id+'\')">Attendance</button><button class="d" onclick="del(\''+i.id+'\')">Delete</button></div></div>';
     }).join(""):"No classes scheduled yet.";
   }catch(e){$("list").textContent=e.message;}
 }
