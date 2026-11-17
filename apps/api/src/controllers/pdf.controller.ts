@@ -834,6 +834,253 @@ export async function admissionReceiptPdf(req: AuthenticatedRequest, res: Respon
 }
 
 /* =========================================================
+   REPORT CARD
+========================================================= */
+
+function gradeFor(pct: number): string {
+  if (pct >= 70) return "A";
+  if (pct >= 60) return "B";
+  if (pct >= 50) return "C";
+  if (pct >= 40) return "D";
+  if (pct >= 30) return "E";
+  return "F";
+}
+
+function remarkFor(pct: number, hasData: boolean): string {
+  if (!hasData) return "No examination has been taken yet. Please take the available tests to receive a report.";
+  if (pct >= 70) return "Excellent performance. Keep up the dedication and continue striving for excellence.";
+  if (pct >= 60) return "Very good performance. A little more effort will lead to excellent results.";
+  if (pct >= 50) return "Good effort. Regular revision and attending lectures will improve the results.";
+  if (pct >= 40) return "Fair performance. More study time and class participation are needed.";
+  return "Performance is below the expected level. Please seek help from your teachers and revise regularly.";
+}
+
+export async function reportCardPdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const me = req.user!;
+    const targetId = await resolveTargetUserId(req);
+    if (!(await canViewStudent(req, targetId))) return failure(res, "Access denied.", 403);
+
+    const loaded = await loadIdCard(req);
+    if ("error" in loaded) return failure(res, loaded.error, loaded.code);
+    const { user, card } = loaded;
+    if (user.role !== "STUDENT") return failure(res, "Report cards are for students only.", 400);
+    const sp: any = user.studentProfile;
+
+    const attempts = await prisma.testAttempt.findMany({
+      where: {
+        studentId: targetId,
+        status: "SUBMITTED",
+        ...(me.role === "TEACHER" && me.id !== targetId ? { test: { course: { teacherId: me.id } } } : {})
+      },
+      include: { test: { select: { courseId: true, course: { select: { title: true } } } } }
+    });
+
+    const byCourse = new Map<string, { title: string; pcts: number[]; passed: number }>();
+    attempts.forEach((a) => {
+      const key = a.test.courseId || "none";
+      const entry = byCourse.get(key) || { title: a.test.course?.title || "General", pcts: [], passed: 0 };
+      entry.pcts.push(a.percentage !== null ? Number(a.percentage) : 0);
+      if (a.passed) entry.passed++;
+      byCourse.set(key, entry);
+    });
+    const rows = Array.from(byCourse.values()).map((c) => {
+      const avg = c.pcts.reduce((t, n) => t + n, 0) / c.pcts.length;
+      return { title: c.title, taken: c.pcts.length, avg, best: Math.max(...c.pcts), passed: c.passed, grade: gradeFor(avg) };
+    });
+    const overall = attempts.length
+      ? attempts.reduce((t, a) => t + (a.percentage !== null ? Number(a.percentage) : 0), 0) / attempts.length
+      : 0;
+
+    // live class attendance for the student's enrolled courses
+    let attendedCount = 0;
+    let heldCount = 0;
+    if (sp?.id) {
+      const enrolled = await prisma.courseEnrollment.findMany({ where: { studentId: sp.id }, select: { courseId: true } });
+      const courseIds = enrolled.map((e) => e.courseId);
+      if (courseIds.length) {
+        const held = await prisma.liveClass.findMany({
+          where: { courseId: { in: courseIds }, published: true, scheduledStart: { lt: new Date() } },
+          select: { id: true }
+        });
+        heldCount = held.length;
+        if (heldCount) {
+          attendedCount = await prisma.liveAttendance.count({
+            where: { userId: targetId, liveClassId: { in: held.map((h) => h.id) } }
+          });
+        }
+      }
+    }
+    const attendPct = heldCount ? (attendedCount / heldCount) * 100 : null;
+
+    const doc = startPdf(res, `Report_Card_${card.name}`);
+    const w = doc.page.width;
+    const h = doc.page.height;
+    letterhead(doc, "Student Report Card");
+
+    // faint watermark
+    try {
+      if (fs.existsSync(LOGO_PATH)) {
+        doc.save();
+        doc.opacity(0.06);
+        doc.image(LOGO_PATH, w / 2 - 150, 280, { fit: [300, 300] });
+        doc.restore();
+      }
+    } catch {
+      /* optional */
+    }
+
+    // student block
+    const photo = photoBuffer(user.avatar);
+    const px = w - 50 - 78;
+    const py = 122;
+    doc.rect(px, py, 78, 94).fill("#e8efe9");
+    if (photo) {
+      try {
+        doc.image(photo, px, py, { fit: [78, 94], align: "center", valign: "center" });
+      } catch {
+        /* ignore */
+      }
+    } else {
+      const ini = `${user.firstName[0] || ""}${user.lastName[0] || ""}`.toUpperCase();
+      doc.fillColor(GREEN).font("Serif-Bold").fontSize(28).text(ini, px, py + 30, { width: 78, align: "center", lineBreak: false });
+    }
+    doc.lineWidth(1.2).strokeColor(GREEN).rect(px, py, 78, 94).stroke();
+
+    doc.font("Serif-Bold").fontSize(20).fillColor("#111111").text(card.name, 50, 124, { width: 400 });
+    let iy = 154;
+    const info: Array<[string, string]> = [
+      ["Student ID", card.idNumber],
+      ["Level", sp?.level?.name || "-"],
+      ["Class", sp?.class?.name || "-"],
+      ["Status", sp?.status ? String(sp.status) : "-"],
+      ["Date issued", fmtDate(new Date())]
+    ];
+    info.forEach(([k, v]) => {
+      doc.font("Body").fontSize(9.5).fillColor(GREY).text(k, 50, iy, { width: 90, lineBreak: false });
+      doc.font("Body-Bold").fontSize(10.5).fillColor("#111111").text(v, 145, iy, { width: 300, lineBreak: false });
+      iy += 15;
+    });
+
+    // summary boxes
+    const by = 236;
+    const boxes: Array<[string, string]> = [
+      ["COURSES", String(rows.length)],
+      ["TESTS TAKEN", String(attempts.length)],
+      ["AVERAGE", attempts.length ? `${overall.toFixed(1)}%` : "-"],
+      ["OVERALL GRADE", attempts.length ? gradeFor(overall) : "-"],
+      ["ATTENDANCE", attendPct === null ? "-" : `${attendPct.toFixed(0)}%`]
+    ];
+    const bw = (w - 100 - 4 * 8) / 5;
+    boxes.forEach(([k, v], i) => {
+      const bx = 50 + i * (bw + 8);
+      doc.roundedRect(bx, by, bw, 50, 6).fill(i === 3 ? GREEN : "#f3f7f5");
+      doc.fillColor(i === 3 ? "#e6c85a" : GREY).font("Body-Bold").fontSize(7.5).text(k, bx, by + 9, { width: bw, align: "center", lineBreak: false });
+      doc.fillColor(i === 3 ? "#ffffff" : GREEN).font("Serif-Bold").fontSize(19).text(v, bx, by + 22, { width: bw, align: "center", lineBreak: false });
+    });
+
+    // course results table
+    let y = by + 72;
+    doc.font("Body-Bold").fontSize(11).fillColor(GREEN).text("ACADEMIC RESULTS BY COURSE", 50, y);
+    y += 20;
+    const cols = [
+      { t: "Course", x: 50, w: 210 },
+      { t: "Tests", x: 262, w: 40 },
+      { t: "Average", x: 304, w: 60 },
+      { t: "Best", x: 366, w: 55 },
+      { t: "Passed", x: 423, w: 55 },
+      { t: "Grade", x: 480, w: 70 }
+    ];
+    doc.rect(50, y - 3, 500, 18).fill(GREEN);
+    doc.fillColor("#ffffff").font("Body-Bold").fontSize(9);
+    cols.forEach((c) => doc.text(c.t, c.x + 3, y, { width: c.w, lineBreak: false }));
+    y += 22;
+    if (!rows.length) {
+      doc.font("Body").fontSize(10).fillColor(GREY).text("No submitted tests yet.", 53, y);
+      y += 20;
+    }
+    rows.slice(0, 8).forEach((r, i) => {
+      if (i % 2 === 0) doc.rect(50, y - 3, 500, 18).fill("#f3f7f5");
+      doc.fillColor("#111111").font("Body").fontSize(9);
+      doc.text(r.title, cols[0].x + 3, y, { width: cols[0].w - 6, height: 12, ellipsis: true, lineBreak: false });
+      doc.text(String(r.taken), cols[1].x + 3, y, { width: cols[1].w, lineBreak: false });
+      doc.text(`${r.avg.toFixed(1)}%`, cols[2].x + 3, y, { width: cols[2].w, lineBreak: false });
+      doc.text(`${r.best.toFixed(0)}%`, cols[3].x + 3, y, { width: cols[3].w, lineBreak: false });
+      doc.text(`${r.passed}/${r.taken}`, cols[4].x + 3, y, { width: cols[4].w, lineBreak: false });
+      doc.font("Body-Bold").fillColor(r.grade === "F" || r.grade === "E" ? "#a12626" : "#176b3a")
+        .text(r.grade, cols[5].x + 3, y, { width: cols[5].w, lineBreak: false });
+      y += 20;
+    });
+
+    // attendance line
+    y += 10;
+    doc.font("Body-Bold").fontSize(11).fillColor(GREEN).text("LIVE CLASS ATTENDANCE", 50, y);
+    doc.font("Body").fontSize(10).fillColor("#111111").text(
+      heldCount
+        ? `Attended ${attendedCount} of ${heldCount} live classes held (${attendPct!.toFixed(0)}%).`
+        : "No live classes have been held for the courses this student is enrolled in.",
+      50, y + 16, { width: 500 }
+    );
+    y += 44;
+
+    // remark box
+    doc.font("Body-Bold").fontSize(11).fillColor(GREEN).text("REMARK", 50, y);
+    doc.roundedRect(50, y + 16, 500, 44, 6).lineWidth(0.8).strokeColor(GOLD).stroke();
+    doc.font("Body").fontSize(10).fillColor("#111111")
+      .text(remarkFor(overall, attempts.length > 0), 60, y + 26, { width: 480 });
+
+    // footer: QR, barcode, signatures, seal
+    const fy = h - 212;
+    doc.lineWidth(0.8).strokeColor(GREEN).moveTo(50, fy - 6).lineTo(w - 50, fy - 6).stroke();
+
+    drawQr(
+      doc,
+      [
+        "MAKNAZUL IRFAN ACADEMY",
+        "STUDENT REPORT CARD",
+        `ID: ${card.idNumber}`,
+        `Name: ${card.name}`,
+        `Level: ${sp?.level?.name || "-"}`,
+        `Tests: ${attempts.length}   Average: ${attempts.length ? overall.toFixed(1) + "%" : "-"}`,
+        `Attendance: ${attendPct === null ? "-" : attendPct.toFixed(0) + "%"}`,
+        `Issued: ${fmtDate(new Date())}`
+      ].join("\n"),
+      50,
+      fy + 4,
+      84
+    );
+    drawBarcode(doc, card.idNumber, 50, fy + 118, 160, 26);
+
+    // class teacher line
+    doc.lineWidth(0.8).strokeColor(GREEN);
+    doc.moveTo(215, fy + 72).lineTo(335, fy + 72).stroke();
+    doc.fillColor(GREY).font("Body-Bold").fontSize(8.5).text("CLASS TEACHER", 215, fy + 76, { width: 120, align: "center", lineBreak: false });
+
+    // principal signature
+    try {
+      if (fs.existsSync(SIGNATURE_PATH)) {
+        doc.image(SIGNATURE_PATH, 235, fy + 128 - 4, { fit: [90, 34], align: "center", valign: "bottom" });
+      }
+    } catch {
+      /* optional */
+    }
+    doc.moveTo(215, fy + 166).lineTo(335, fy + 166).stroke();
+    doc.fillColor(GREY).font("Body-Bold").fontSize(8.5).text("PRINCIPAL", 215, fy + 170, { width: 120, align: "center", lineBreak: false });
+
+    drawStamp(doc, w - 120, fy + 92, 56);
+
+    doc.font("Body").fontSize(7.5).fillColor(GREY).text(
+      "Grade scale: A 70-100   B 60-69   C 50-59   D 40-49   E 30-39   F below 30.  Attendance counts live classes joined through the portal.",
+      50, h - 40, { width: w - 100, align: "center" }
+    );
+    doc.end();
+  } catch (error) {
+    console.error("reportCardPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the report card.", 500);
+  }
+}
+
+/* =========================================================
    ID CARD
 ========================================================= */
 

@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { prisma } from "../config/prisma";
 import { AuthenticatedRequest } from "../middleware/auth";
 import { success, failure } from "../utils/http";
+import { emailUsers } from "../services/notify.service";
 
 function me(req: Request) {
   return (req as AuthenticatedRequest).user!;
@@ -158,6 +159,7 @@ export async function approveBankPayment(req: Request, res: Response, next: Next
         }
       });
     });
+    emailUsers([payment.student.userId], "Payment approved", `Your bank transfer for "${payment.course.title}" was confirmed and you are now enrolled.`);
     return success(res, { approved: true });
   } catch (e) { next(e); }
 }
@@ -182,6 +184,7 @@ export async function rejectBankPayment(req: Request, res: Response, next: NextF
         }
       })
     ]);
+    emailUsers([payment.student.userId], "Payment not confirmed", `We could not confirm your bank transfer for "${payment.course.title}".${reason ? " Reason: " + reason : ""} Please contact the academy or try again.`);
     return success(res, { rejected: true });
   } catch (e) { next(e); }
 }
@@ -232,6 +235,7 @@ export async function recordManualPayment(req: Request, res: Response, next: Nex
       });
       return p;
     });
+    emailUsers([student.userId], "Payment recorded", `Your payment of NGN ${amount.toLocaleString("en-NG")} for "${course.title}" was recorded and you are enrolled.`);
     return success(res, { payment }, 201);
   } catch (e) { next(e); }
 }

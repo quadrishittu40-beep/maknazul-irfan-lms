@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { prisma } from "../config/prisma";
 import { AuthenticatedRequest } from "../middleware/auth";
 import { success, failure } from "../utils/http";
+import { emailUsers } from "../services/notify.service";
 import {
   ADMISSION_FEE_AMOUNT,
   initializeAdmissionPayment,
@@ -177,6 +178,7 @@ async function markPaid(studentId: string, provider: "CASH" | "BANK_TRANSFER", a
       message: "Your admission fee was confirmed. The academy will now review and approve your admission."
     }
   });
+  emailUsers([student.userId], "Admission fee confirmed", "Your admission fee was confirmed. The academy will now review and approve your admission.");
   return fee;
 }
 
@@ -210,6 +212,7 @@ export async function rejectAdmissionFee(req: Request, res: Response, next: Next
         }
       })
     ]);
+    emailUsers([f.student.userId], "Admission fee not confirmed", `We could not confirm your admission fee payment.${reason ? " Reason: " + reason : ""} Please try again or contact the academy.`);
     return success(res, { rejected: true });
   } catch (e) { next(e); }
 }
