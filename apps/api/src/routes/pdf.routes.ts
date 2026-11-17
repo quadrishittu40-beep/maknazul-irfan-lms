@@ -4,6 +4,7 @@ import {
   certificatePdf,
   profilePdf,
   resultsPdf,
+  reportCardPdf,
   receiptPdf,
   admissionReceiptPdf,
   idCardPdf,
@@ -19,6 +20,7 @@ router.use(requireAuth);
 router.get("/certificate/:id", certificatePdf);
 router.get("/profile", profilePdf);
 router.get("/results", resultsPdf);
+router.get("/reportcard", reportCardPdf);
 router.get("/receipt/admission/:id", admissionReceiptPdf);
 router.get("/receipt/:id", requireAuth, receiptPdf);
 router.get("/idcard", idCardPdf);
