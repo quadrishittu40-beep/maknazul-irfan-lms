@@ -450,12 +450,14 @@ export async function verifyPaystackWebhook(
       .update(rawBody)
       .digest("hex");
 
-  return crypto.timingSafeEqual(
-    Buffer.from(
-      expectedSignature
-    ),
-    Buffer.from(signature)
-  );
+  const expected = Buffer.from(expectedSignature);
+  const received = Buffer.from(signature);
+
+  if (expected.length !== received.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expected, received);
 }
 
 export async function processPaystackWebhook(
@@ -477,6 +479,50 @@ export async function processPaystackWebhook(
     throw new Error(
       "Webhook payment reference is missing."
     );
+  }
+
+  /* Admission fee paid before registration */
+  if (String(reference).startsWith("REG-")) {
+    const rp = await prisma.registrationPayment.findUnique({ where: { reference } });
+    if (!rp) return { processed: false };
+    if (rp.status === "PAID") return { processed: true, alreadyProcessed: true };
+    if (
+      payload.data.amount !== Math.round(Number(rp.amount) * 100) ||
+      payload.data.currency !== "NGN"
+    ) {
+      throw new Error("Webhook payment amount or currency mismatch.");
+    }
+    await prisma.registrationPayment.update({ where: { id: rp.id }, data: { status: "PAID" } });
+    return { processed: true };
+  }
+
+  /* Admission fee paid from the student dashboard */
+  if (String(reference).startsWith("ADM-")) {
+    const fee = await prisma.admissionFee.findUnique({
+      where: { reference },
+      include: { student: { select: { userId: true } } }
+    });
+    if (!fee) return { processed: false };
+    if (fee.status === "PAID") return { processed: true, alreadyProcessed: true };
+    if (
+      payload.data.amount !== Math.round(Number(fee.amount) * 100) ||
+      payload.data.currency !== fee.currency
+    ) {
+      throw new Error("Webhook payment amount or currency mismatch.");
+    }
+    await prisma.admissionFee.update({
+      where: { id: fee.id },
+      data: { status: "PAID", paidAt: new Date() }
+    });
+    await prisma.notification.create({
+      data: {
+        userId: fee.student.userId,
+        type: "PAYMENT",
+        title: "Admission fee received",
+        message: "Your admission fee was received. The academy will now review and approve your admission."
+      }
+    });
+    return { processed: true };
   }
 
   const payment =
