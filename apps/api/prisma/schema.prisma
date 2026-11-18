@@ -15,6 +15,7 @@ enum Role {
   ADMIN
   TEACHER
   STUDENT
+  PARENT
 }
 
 enum StudentStatus {
@@ -131,6 +132,10 @@ model User {
   auditLogs AuditLog[]
 
   testAttempts TestAttempt[]
+
+  parentLinks ParentLink[] @relation("ParentOf")
+
+  childLinks ParentLink[] @relation("ChildOf")
 }
 
 // ============================================================
@@ -1035,4 +1040,26 @@ model PasswordReset {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+
+// ============================================================
+// PARENT ACCESS
+// ============================================================
+
+model ParentLink {
+  id String @id @default(cuid())
+
+  parentId String
+
+  studentUserId String
+
+  parent User @relation("ParentOf", fields: [parentId], references: [id], onDelete: Cascade)
+
+  student User @relation("ChildOf", fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([parentId, studentUserId])
+  @@index([studentUserId])
 }
