@@ -29,6 +29,7 @@ import verifyRoutes from "./routes/verify.routes";
 import admissionRoutes from "./routes/admission.routes";
 import registrationRoutes from "./routes/registration.routes";
 import passwordRoutes from "./routes/password.routes";
+import parentRoutes from "./routes/parent.routes";
 
 import { notFoundHandler as notFound } from "./middleware/error";
 
@@ -244,6 +245,9 @@ app.use(
   "/api/live-classes",
   liveClassRoutes
 );
+
+/* Parent access */
+app.use("/api/parent", parentRoutes);
 
 /* Forgot / reset password */
 app.use(
