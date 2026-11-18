@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parent Portal | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header button{background:#d4af37;border:0;border-radius:6px;padding:8px 14px;font-weight:bold;cursor:pointer}
+main{width:94%;max-width:900px;margin:22px auto}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h1{font-size:22px;color:#064e3b;margin-bottom:4px}h2{font-size:17px;color:#064e3b;margin:16px 0 8px}
+.sub{color:#68756d;font-size:14px}
+.boxes{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.box{flex:1;min-width:130px;background:#f3f7f5;border-radius:8px;padding:12px;text-align:center}
+.box b{display:block;font-size:20px;color:#064e3b}.box span{font-size:12px;color:#68756d}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #e3ebe6}th{color:#064e3b}
+.tablewrap{overflow-x:auto}
+a.btn{display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:9px 14px;border-radius:7px;font-size:14px;margin:4px 6px 0 0}
+.ok{color:#176b3a;font-weight:bold}.bad{color:#a12626;font-weight:bold}
+.empty{color:#68756d;font-size:14px;padding:6px 0}
+</style></head><body>
+<header><b>MAKNAZUL IRFAN &middot; Parent Portal</b><button onclick="logout()">Logout</button></header>
+<main id="root"><div class="card"><p class="empty">Loading...</p></div></main>
+<script>
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function naira(n){return "₦"+Number(n||0).toLocaleString("en-NG");}
+function dt(d){try{return new Date(d).toLocaleDateString("en-GB");}catch(e){return "";}}
+async function logout(){try{await fetch("/api/auth/logout",{method:"POST",credentials:"include"});}catch(e){}location.href="login.html";}
+function render(children){
+  var root=document.getElementById("root");
+  if(!children.length){root.innerHTML='<div class="card"><h1>Welcome</h1><p class="empty">No child is linked to your account yet. Please contact the academy.</p></div>';return;}
+  root.innerHTML=children.map(function(c){
+    var att=c.attendance.held?Math.round(c.attendance.attended/c.attendance.held*100)+"%":"-";
+    var h='<div class="card"><h1>'+esc(c.name)+'</h1><p class="sub">'+esc(c.email)+' &middot; Status: '+esc(c.status)+'</p>';
+    h+='<div class="boxes"><div class="box"><b>'+(c.overallAverage===null?"-":c.overallAverage+"%")+'</b><span>Overall average</span></div>'
+      +'<div class="box"><b>'+att+'</b><span>Live class attendance ('+c.attendance.attended+'/'+c.attendance.held+')</span></div>'
+      +'<div class="box"><b>'+naira(c.totalPaid)+'</b><span>Fees paid</span></div>'
+      +'<div class="box"><b>'+naira(c.totalPending)+'</b><span>Fees pending</span></div></div>';
+    if(c.admissionFee)h+='<p class="sub">Admission fee: <span class="'+(c.admissionFee.status==="PAID"?"ok":"bad")+'">'+esc(c.admissionFee.status)+'</span> ('+naira(c.admissionFee.amount)+')</p>';
+    h+='<p style="margin-top:10px"><a class="btn" href="/api/pdf/reportcard?userId='+encodeURIComponent(c.userId)+'">Report Card (PDF)</a></p>';
+    h+='<h2>Courses</h2>';
+    h+=c.courses.length?'<div class="tablewrap"><table><tr><th>Course</th><th>Tests</th><th>Average</th></tr>'+c.courses.map(function(x){return'<tr><td>'+esc(x.title)+'</td><td>'+x.tests+'</td><td>'+x.average+'%</td></tr>';}).join("")+'</table></div>':'<p class="empty">'+(c.enrolled.length?'Enrolled in: '+esc(c.enrolled.join(", "))+'. No test results yet.':'No courses yet.')+'</p>';
+    h+='<h2>Recent test results</h2>';
+    h+=c.recentResults.length?'<div class="tablewrap"><table><tr><th>Test</th><th>Course</th><th>Score</th><th>Result</th><th>Date</th></tr>'+c.recentResults.map(function(r){return'<tr><td>'+esc(r.test)+'</td><td>'+esc(r.course)+'</td><td>'+r.percentage+'%</td><td class="'+(r.passed?"ok":"bad")+'">'+(r.passed?"Passed":"Failed")+'</td><td>'+dt(r.date)+'</td></tr>';}).join("")+'</table></div>':'<p class="empty">No results yet.</p>';
+    h+='<h2>Fee payments</h2>';
+    h+=c.payments.length?'<div class="tablewrap"><table><tr><th>Course</th><th>Amount</th><th>Status</th><th>Date</th></tr>'+c.payments.map(function(p){return'<tr><td>'+esc(p.course)+'</td><td>'+naira(p.amount)+'</td><td class="'+(p.status==="PAID"?"ok":"")+'">'+esc(p.status)+'</td><td>'+dt(p.date)+'</td></tr>';}).join("")+'</table></div>':'<p class="empty">No payments yet.</p>';
+    return h+'</div>';
+  }).join("");
+}
+(async function(){
+  try{
+    var r=await fetch("/api/parent/children",{credentials:"include"});
+    if(r.status===401||r.status===403){location.href="login.html";return;}
+    var d=await r.json();
+    render((d.children)||(d.data&&d.data.children)||[]);
+  }catch(e){document.getElementById("root").innerHTML='<div class="card"><p class="bad">Unable to load. Please refresh.</p></div>';}
+})();
+</script></body></html>

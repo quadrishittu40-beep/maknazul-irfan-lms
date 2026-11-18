@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parent Accounts | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:94%;max-width:820px;margin:22px auto}
+.card{background:#fff;border-radius:12px;padding:22px;margin-bottom:18px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h2{color:#064e3b;font-size:18px;margin-bottom:6px}.sub{color:#68756d;font-size:13px;margin-bottom:10px;line-height:1.5}
+label{display:block;margin:12px 0 5px;font-weight:bold;font-size:14px}
+input{width:100%;padding:11px;border:1px solid #ccd8d1;border-radius:7px;font-size:15px}
+button{padding:12px 18px;border:0;border-radius:7px;background:#d4af37;font-weight:bold;font-size:15px;margin-top:16px;cursor:pointer}
+button.del{background:#fdecec;color:#a12626;margin:0;padding:6px 10px;font-size:13px}
+.m{display:none;padding:11px;border-radius:7px;margin-bottom:12px;font-size:14px}
+.ok{display:block;background:#e8f7ed;color:#176b3a;border:1px solid #b8dfc5}.er{display:block;background:#fdecec;color:#a12626;border:1px solid #efb8b8}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #e3ebe6}
+</style></head><body>
+<header><b>Parent Accounts</b><a href="admin.html">&larr; Back to admin</a></header>
+<main>
+<div class="card"><h2>Add a parent</h2>
+<p class="sub">Create a parent login and link it to a student. To link an existing parent to another child, use the same parent email (password can be left empty).</p>
+<div id="msg" class="m"></div>
+<form id="f">
+<label>Parent first name</label><input id="fn" required>
+<label>Parent last name</label><input id="ln" required>
+<label>Parent email (used to log in)</label><input id="em" type="email" required>
+<label>Parent phone (optional)</label><input id="ph">
+<label>Password for new parent (8+ characters)</label><input id="pw" type="text" autocomplete="off">
+<label>Student's email</label><input id="se" type="email" required>
+<button type="submit" id="b">Create / Link</button></form></div>
+<div class="card"><h2>Linked parents</h2><div class="tw" id="list"><p class="sub">Loading...</p></div></div>
+</main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");}
+async function api(p,o){o=o||{};o.credentials="include";if(o.body){o.headers={"Content-Type":"application/json"};}
+  var r=await fetch("/api/parent"+p,o);var d=await r.json().catch(function(){return{};});
+  if(!r.ok)throw new Error(d.message||"Request failed.");return d;}
+async function load(){try{var d=await api("/admin/list");var l=d.links||(d.data&&d.data.links)||[];
+  $("list").innerHTML=l.length?'<table><tr><th>Parent</th><th>Email</th><th>Child</th><th></th></tr>'+l.map(function(x){return'<tr><td>'+esc(x.parent)+'</td><td>'+esc(x.parentEmail)+'</td><td>'+esc(x.student)+'</td><td><button class="del" data-id="'+esc(x.id)+'">Remove</button></td></tr>';}).join("")+'</table>':'<p class="sub">No parents linked yet.</p>';
+  }catch(e){$("list").innerHTML='<p class="sub">'+esc(e.message)+'</p>';}}
+$("list").addEventListener("click",async function(e){var id=e.target.getAttribute&&e.target.getAttribute("data-id");if(!id||!confirm("Remove this link?"))return;
+  try{await api("/admin/"+encodeURIComponent(id),{method:"DELETE"});load();}catch(x){say(x.message,false);}});
+$("f").addEventListener("submit",async function(e){e.preventDefault();$("b").disabled=true;
+  try{var d=await api("/admin/create",{method:"POST",body:JSON.stringify({firstName:$("fn").value,lastName:$("ln").value,email:$("em").value,phone:$("ph").value,password:$("pw").value,studentEmail:$("se").value})});
+    say(d.message,true);$("f").reset();load();}catch(x){say(x.message,false);}$("b").disabled=false;});
+load();
+</script></body></html>
