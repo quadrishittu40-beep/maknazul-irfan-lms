@@ -257,6 +257,13 @@ async function canViewStudent(
     });
     return !!link;
   }
+  if (me.role === "PARENT") {
+    const link = await prisma.parentLink.findFirst({
+      where: { parentId: me.id, studentUserId },
+      select: { id: true }
+    });
+    return !!link;
+  }
   return false;
 }
 
@@ -884,9 +891,20 @@ export async function reportCardPdf(req: AuthenticatedRequest, res: Response) {
       if (a.passed) entry.passed++;
       byCourse.set(key, entry);
     });
-    const rows = Array.from(byCourse.values()).map((c) => {
+    const positions = new Map<string, string>();
+    for (const cid of Array.from(byCourse.keys()).slice(0, 8)) {
+      if (cid === "none") continue;
+      try {
+        const cs = await courseStats(cid);
+        const mine = cs.rows.find((r) => r.userId === targetId);
+        if (mine && mine.position) positions.set(cid, `${ordinal(mine.position)} of ${cs.withResults}`);
+      } catch {
+        /* position is optional */
+      }
+    }
+    const rows = Array.from(byCourse.entries()).map(([cid, c]) => {
       const avg = c.pcts.reduce((t, n) => t + n, 0) / c.pcts.length;
-      return { title: c.title, taken: c.pcts.length, avg, best: Math.max(...c.pcts), passed: c.passed, grade: gradeFor(avg) };
+      return { title: c.title, taken: c.pcts.length, avg, best: Math.max(...c.pcts), passed: c.passed, grade: gradeFor(avg), position: positions.get(cid) || "-" };
     });
     const overall = attempts.length
       ? attempts.reduce((t, a) => t + (a.percentage !== null ? Number(a.percentage) : 0), 0) / attempts.length
@@ -984,12 +1002,13 @@ export async function reportCardPdf(req: AuthenticatedRequest, res: Response) {
     doc.font("Body-Bold").fontSize(11).fillColor(GREEN).text("ACADEMIC RESULTS BY COURSE", 50, y);
     y += 20;
     const cols = [
-      { t: "Course", x: 50, w: 210 },
-      { t: "Tests", x: 262, w: 40 },
-      { t: "Average", x: 304, w: 60 },
-      { t: "Best", x: 366, w: 55 },
-      { t: "Passed", x: 423, w: 55 },
-      { t: "Grade", x: 480, w: 70 }
+      { t: "Course", x: 50, w: 170 },
+      { t: "Tests", x: 222, w: 38 },
+      { t: "Average", x: 262, w: 58 },
+      { t: "Best", x: 322, w: 46 },
+      { t: "Passed", x: 370, w: 50 },
+      { t: "Grade", x: 422, w: 44 },
+      { t: "Position", x: 468, w: 82 }
     ];
     doc.rect(50, y - 3, 500, 18).fill(GREEN);
     doc.fillColor("#ffffff").font("Body-Bold").fontSize(9);
@@ -1009,6 +1028,8 @@ export async function reportCardPdf(req: AuthenticatedRequest, res: Response) {
       doc.text(`${r.passed}/${r.taken}`, cols[4].x + 3, y, { width: cols[4].w, lineBreak: false });
       doc.font("Body-Bold").fillColor(r.grade === "F" || r.grade === "E" ? "#a12626" : "#176b3a")
         .text(r.grade, cols[5].x + 3, y, { width: cols[5].w, lineBreak: false });
+      doc.font("Body").fillColor("#111111")
+        .text(r.position, cols[6].x + 3, y, { width: cols[6].w, lineBreak: false });
       y += 20;
     });
 
@@ -1077,6 +1098,310 @@ export async function reportCardPdf(req: AuthenticatedRequest, res: Response) {
   } catch (error) {
     console.error("reportCardPdf error:", error);
     if (!res.headersSent) failure(res, "Unable to create the report card.", 500);
+  }
+}
+
+/* =========================================================
+   COURSE RESULT SHEET, PERFORMANCE SUMMARY, RANKING
+========================================================= */
+
+function ordinal(n: number): string {
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10 > 3 ? 0 : n % 10]}`;
+}
+
+async function courseStats(courseId: string) {
+  const [enrol, attempts] = await Promise.all([
+    prisma.courseEnrollment.findMany({
+      where: { courseId },
+      include: { student: { include: { user: { select: { id: true, firstName: true, lastName: true } } } } }
+    }),
+    prisma.testAttempt.findMany({
+      where: { status: "SUBMITTED", test: { courseId } },
+      select: { studentId: true, percentage: true, passed: true }
+    })
+  ]);
+  const per = new Map<string, { pcts: number[]; passed: number }>();
+  attempts.forEach((a) => {
+    const e = per.get(a.studentId) || { pcts: [], passed: 0 };
+    e.pcts.push(a.percentage !== null ? Number(a.percentage) : 0);
+    if (a.passed) e.passed++;
+    per.set(a.studentId, e);
+  });
+  const rows = enrol.map((en) => {
+    const u = en.student.user;
+    const p = per.get(u.id);
+    const avg = p ? p.pcts.reduce((t, n) => t + n, 0) / p.pcts.length : null;
+    return {
+      userId: u.id,
+      name: `${u.firstName} ${u.lastName}`.trim(),
+      taken: p ? p.pcts.length : 0,
+      avg,
+      best: p ? Math.max(...p.pcts) : null,
+      passed: p ? p.passed : 0,
+      grade: avg === null ? "-" : gradeFor(avg),
+      position: 0
+    };
+  });
+  const ranked = rows.filter((r) => r.avg !== null).sort((a, b) => (b.avg as number) - (a.avg as number));
+  ranked.forEach((r, i) => {
+    r.position = i > 0 && Math.abs((ranked[i - 1].avg as number) - (r.avg as number)) < 0.005 ? ranked[i - 1].position : i + 1;
+  });
+  const sorted = [...ranked, ...rows.filter((r) => r.avg === null).sort((a, b) => a.name.localeCompare(b.name))];
+  const totalAttempts = attempts.length;
+  const passedAttempts = attempts.filter((a) => a.passed).length;
+  return {
+    rows: sorted,
+    enrolled: rows.length,
+    withResults: ranked.length,
+    classAvg: ranked.length ? ranked.reduce((t, r) => t + (r.avg as number), 0) / ranked.length : null,
+    passRate: totalAttempts ? (passedAttempts / totalAttempts) * 100 : null,
+    highest: ranked.length ? (ranked[0].avg as number) : null,
+    lowest: ranked.length ? (ranked[ranked.length - 1].avg as number) : null,
+    totalAttempts
+  };
+}
+
+function summaryBoxes(doc: any, y: number, items: Array<[string, string]>) {
+  const w = doc.page.width;
+  const bw = (w - 100 - (items.length - 1) * 8) / items.length;
+  items.forEach(([k, v], i) => {
+    const bx = 50 + i * (bw + 8);
+    doc.roundedRect(bx, y, bw, 48, 6).fill("#f3f7f5");
+    doc.fillColor(GREY).font("Body-Bold").fontSize(7.5).text(k, bx, y + 9, { width: bw, align: "center", lineBreak: false });
+    doc.fillColor(GREEN).font("Serif-Bold").fontSize(17).text(v, bx, y + 22, { width: bw, align: "center", lineBreak: false });
+  });
+}
+
+function sheetSignatures(doc: any, leftLabel: string) {
+  const w = doc.page.width;
+  const h = doc.page.height;
+  if (doc.y > h - 190) {
+    doc.addPage();
+    doc.y = 60;
+  }
+  const y = Math.max(doc.y + 40, h - 170);
+  doc.lineWidth(0.8).strokeColor(GREEN);
+  doc.moveTo(60, y).lineTo(210, y).stroke();
+  doc.moveTo(w - 260, y).lineTo(w - 110, y).stroke();
+  doc.fillColor(GREY).font("Body-Bold").fontSize(9)
+    .text(leftLabel, 60, y + 4, { width: 150, align: "center", lineBreak: false })
+    .text("PRINCIPAL", w - 260, y + 4, { width: 150, align: "center", lineBreak: false });
+  try {
+    if (fs.existsSync(SIGNATURE_PATH)) {
+      doc.image(SIGNATURE_PATH, w - 240, y - 40, { fit: [110, 38], align: "center", valign: "bottom" });
+    }
+  } catch {
+    /* optional */
+  }
+  drawStamp(doc, w / 2, y - 6, 48);
+}
+
+export async function courseResultSheetPdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const me = req.user!;
+    const course = await prisma.course.findUnique({
+      where: { id: req.params.courseId },
+      include: { teacher: { select: { firstName: true, lastName: true } } }
+    });
+    if (!course) return failure(res, "Course not found.", 404);
+    if (me.role !== "ADMIN" && !(me.role === "TEACHER" && course.teacherId === me.id)) {
+      return failure(res, "Access denied.", 403);
+    }
+    const st = await courseStats(course.id);
+
+    const doc = startPdf(res, `Result_Sheet_${course.title}`);
+    const w = doc.page.width;
+    letterhead(doc, "Course Result Sheet");
+
+    doc.font("Serif-Bold").fontSize(18).fillColor("#111111").text(course.title, 50, 122, { width: w - 100 });
+    doc.font("Body").fontSize(10).fillColor(GREY).text(
+      `Teacher: ${course.teacher ? `${course.teacher.firstName} ${course.teacher.lastName}` : "-"}     Date: ${fmtDate(new Date())}`,
+      50, doc.y + 2, { width: w - 100 }
+    );
+
+    summaryBoxes(doc, doc.y + 12, [
+      ["ENROLLED", String(st.enrolled)],
+      ["TOOK TESTS", String(st.withResults)],
+      ["CLASS AVERAGE", st.classAvg === null ? "-" : `${st.classAvg.toFixed(1)}%`],
+      ["PASS RATE", st.passRate === null ? "-" : `${st.passRate.toFixed(0)}%`],
+      ["HIGHEST", st.highest === null ? "-" : `${st.highest.toFixed(0)}%`]
+    ]);
+    doc.y += 68;
+
+    const cols = [
+      { t: "Pos", x: 50, w: 36 },
+      { t: "Student", x: 88, w: 190 },
+      { t: "Tests", x: 280, w: 44 },
+      { t: "Average", x: 326, w: 62 },
+      { t: "Best", x: 390, w: 52 },
+      { t: "Passed", x: 444, w: 54 },
+      { t: "Grade", x: 500, w: 50 }
+    ];
+    function header() {
+      const y = doc.y;
+      doc.rect(50, y - 3, 500, 18).fill(GREEN);
+      doc.fillColor("#ffffff").font("Body-Bold").fontSize(9);
+      cols.forEach((c) => doc.text(c.t, c.x + 3, y, { width: c.w, lineBreak: false }));
+      doc.y = y + 22;
+    }
+    header();
+    if (!st.rows.length) {
+      doc.font("Body").fontSize(10).fillColor(GREY).text("No students are enrolled in this course.", 53, doc.y);
+    }
+    st.rows.forEach((r, i) => {
+      if (doc.y > doc.page.height - 120) {
+        doc.addPage();
+        doc.y = 60;
+        header();
+      }
+      const y = doc.y;
+      if (i % 2 === 0) doc.rect(50, y - 3, 500, 18).fill("#f3f7f5");
+      doc.fillColor("#111111").font("Body").fontSize(9);
+      doc.text(r.position ? ordinal(r.position) : "-", cols[0].x + 3, y, { width: cols[0].w, lineBreak: false });
+      doc.text(r.name, cols[1].x + 3, y, { width: cols[1].w - 6, height: 12, ellipsis: true, lineBreak: false });
+      doc.text(String(r.taken), cols[2].x + 3, y, { width: cols[2].w, lineBreak: false });
+      doc.text(r.avg === null ? "-" : `${r.avg.toFixed(1)}%`, cols[3].x + 3, y, { width: cols[3].w, lineBreak: false });
+      doc.text(r.best === null ? "-" : `${r.best.toFixed(0)}%`, cols[4].x + 3, y, { width: cols[4].w, lineBreak: false });
+      doc.text(r.taken ? `${r.passed}/${r.taken}` : "-", cols[5].x + 3, y, { width: cols[5].w, lineBreak: false });
+      doc.font("Body-Bold").fillColor(r.grade === "F" || r.grade === "E" ? "#a12626" : "#176b3a")
+        .text(r.grade, cols[6].x + 3, y, { width: cols[6].w, lineBreak: false });
+      doc.y = y + 20;
+    });
+
+    sheetSignatures(doc, "COURSE TEACHER");
+    doc.font("Body").fontSize(7.5).fillColor(GREY).text(
+      "Position is by average score across submitted tests. Grade scale: A 70-100  B 60-69  C 50-59  D 40-49  E 30-39  F below 30.",
+      50, doc.page.height - 40, { width: w - 100, align: "center" }
+    );
+    doc.end();
+  } catch (error) {
+    console.error("courseResultSheetPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the result sheet.", 500);
+  }
+}
+
+export async function performanceSummaryPdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    if (req.user!.role !== "ADMIN") return failure(res, "Access denied.", 403);
+    const courses = await prisma.course.findMany({
+      orderBy: { title: "asc" },
+      include: { teacher: { select: { firstName: true, lastName: true } } }
+    });
+    const stats = [] as Array<{ title: string; teacher: string; st: Awaited<ReturnType<typeof courseStats>> }>;
+    for (const c of courses) {
+      stats.push({
+        title: c.title,
+        teacher: c.teacher ? `${c.teacher.firstName} ${c.teacher.lastName}` : "-",
+        st: await courseStats(c.id)
+      });
+    }
+
+    // top students overall
+    const grouped = await prisma.testAttempt.groupBy({
+      by: ["studentId"],
+      where: { status: "SUBMITTED" },
+      _avg: { percentage: true },
+      _count: { _all: true }
+    });
+    const topRaw = grouped
+      .filter((g) => g._avg.percentage !== null)
+      .sort((a, b) => Number(b._avg.percentage) - Number(a._avg.percentage))
+      .slice(0, 10);
+    const names = await prisma.user.findMany({
+      where: { id: { in: topRaw.map((g) => g.studentId) } },
+      select: { id: true, firstName: true, lastName: true }
+    });
+    const nameOf = new Map(names.map((n) => [n.id, `${n.firstName} ${n.lastName}`.trim()]));
+
+    const totalStudents = await prisma.studentProfile.count();
+    const totalAttempts = stats.reduce((t, c) => t + c.st.totalAttempts, 0);
+    const avgs = stats.filter((c) => c.st.classAvg !== null);
+    const overallAvg = avgs.length ? avgs.reduce((t, c) => t + (c.st.classAvg as number), 0) / avgs.length : null;
+
+    const doc = startPdf(res, "Performance_Summary");
+    const w = doc.page.width;
+    letterhead(doc, "Academy Performance Summary");
+    doc.font("Body").fontSize(10).fillColor(GREY).text(`Date: ${fmtDate(new Date())}`, 50, 122);
+
+    summaryBoxes(doc, 142, [
+      ["STUDENTS", String(totalStudents)],
+      ["COURSES", String(courses.length)],
+      ["TESTS TAKEN", String(totalAttempts)],
+      ["AVERAGE SCORE", overallAvg === null ? "-" : `${overallAvg.toFixed(1)}%`]
+    ]);
+    doc.y = 208;
+
+    doc.font("Body-Bold").fontSize(11).fillColor(GREEN).text("PERFORMANCE BY COURSE", 50, doc.y);
+    doc.y += 8;
+    const cols = [
+      { t: "Course", x: 50, w: 170 },
+      { t: "Teacher", x: 222, w: 110 },
+      { t: "Enrolled", x: 334, w: 50 },
+      { t: "Tests", x: 386, w: 40 },
+      { t: "Average", x: 428, w: 58 },
+      { t: "Pass rate", x: 488, w: 62 }
+    ];
+    function header() {
+      const y = doc.y + 6;
+      doc.rect(50, y - 3, 500, 18).fill(GREEN);
+      doc.fillColor("#ffffff").font("Body-Bold").fontSize(9);
+      cols.forEach((c) => doc.text(c.t, c.x + 3, y, { width: c.w, lineBreak: false }));
+      doc.y = y + 22;
+    }
+    header();
+    stats.forEach((c, i) => {
+      if (doc.y > doc.page.height - 120) {
+        doc.addPage();
+        doc.y = 50;
+        header();
+      }
+      const y = doc.y;
+      if (i % 2 === 0) doc.rect(50, y - 3, 500, 18).fill("#f3f7f5");
+      doc.fillColor("#111111").font("Body").fontSize(9);
+      doc.text(c.title, cols[0].x + 3, y, { width: cols[0].w - 6, height: 12, ellipsis: true, lineBreak: false });
+      doc.text(c.teacher, cols[1].x + 3, y, { width: cols[1].w - 6, height: 12, ellipsis: true, lineBreak: false });
+      doc.text(String(c.st.enrolled), cols[2].x + 3, y, { width: cols[2].w, lineBreak: false });
+      doc.text(String(c.st.totalAttempts), cols[3].x + 3, y, { width: cols[3].w, lineBreak: false });
+      doc.text(c.st.classAvg === null ? "-" : `${c.st.classAvg.toFixed(1)}%`, cols[4].x + 3, y, { width: cols[4].w, lineBreak: false });
+      doc.text(c.st.passRate === null ? "-" : `${c.st.passRate.toFixed(0)}%`, cols[5].x + 3, y, { width: cols[5].w, lineBreak: false });
+      doc.y = y + 20;
+    });
+    if (!stats.length) doc.font("Body").fontSize(10).fillColor(GREY).text("No courses yet.", 53, doc.y);
+
+    if (doc.y > doc.page.height - 260) {
+      doc.addPage();
+      doc.y = 50;
+    }
+    doc.y += 14;
+    doc.font("Body-Bold").fontSize(11).fillColor(GREEN).text("TOP STUDENTS (OVERALL AVERAGE)", 50, doc.y);
+    doc.y += 8;
+    const y0 = doc.y + 6;
+    doc.rect(50, y0 - 3, 500, 18).fill(GREEN);
+    doc.fillColor("#ffffff").font("Body-Bold").fontSize(9)
+      .text("Pos", 53, y0, { width: 36, lineBreak: false })
+      .text("Student", 92, y0, { width: 260, lineBreak: false })
+      .text("Tests", 380, y0, { width: 50, lineBreak: false })
+      .text("Average", 450, y0, { width: 90, lineBreak: false });
+    doc.y = y0 + 22;
+    if (!topRaw.length) doc.font("Body").fontSize(10).fillColor(GREY).text("No submitted tests yet.", 53, doc.y);
+    topRaw.forEach((g, i) => {
+      const y = doc.y;
+      if (i % 2 === 0) doc.rect(50, y - 3, 500, 18).fill("#f3f7f5");
+      doc.fillColor("#111111").font("Body").fontSize(9)
+        .text(ordinal(i + 1), 53, y, { width: 36, lineBreak: false })
+        .text(nameOf.get(g.studentId) || "-", 92, y, { width: 260, lineBreak: false })
+        .text(String(g._count._all), 380, y, { width: 50, lineBreak: false })
+        .text(`${Number(g._avg.percentage).toFixed(1)}%`, 450, y, { width: 90, lineBreak: false });
+      doc.y = y + 20;
+    });
+
+    sheetSignatures(doc, "REGISTRAR");
+    doc.end();
+  } catch (error) {
+    console.error("performanceSummaryPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the performance summary.", 500);
   }
 }
 
