@@ -113,7 +113,7 @@ router.get("/children", requireRole("PARENT"), async (req: any, res) => {
         totalPending: payments.filter((p) => p.status === "PENDING").reduce((t, p) => t + p.amount, 0)
       });
     }
-    return success(res, "Children loaded.", { children });
+    return success(res, { children });
   } catch (error) {
     console.error("parent children error:", error);
     return failure(res, "Unable to load your children's records.", 500);
@@ -165,13 +165,12 @@ router.post("/admin/create", requireRole("ADMIN"), async (req: any, res) => {
       update: {},
       create: { parentId: parent.id, studentUserId: student.id }
     });
-    return success(
-      res,
-      created
+    return success(res, {
+      created,
+      message: created
         ? `Parent account created and linked to ${student.firstName} ${student.lastName}.`
-        : `Existing parent linked to ${student.firstName} ${student.lastName}.`,
-      { created }
-    );
+        : `Existing parent linked to ${student.firstName} ${student.lastName}.`
+    });
   } catch (error) {
     console.error("parent create error:", error);
     return failure(res, "Unable to create the parent account.", 500);
@@ -188,7 +187,7 @@ router.get("/admin/list", requireRole("ADMIN"), async (_req, res) => {
         student: { select: { firstName: true, lastName: true, email: true } }
       }
     });
-    return success(res, "Parents loaded.", {
+    return success(res, {
       links: links.map((l) => ({
         id: l.id,
         parent: `${l.parent.firstName} ${l.parent.lastName}`.trim(),
@@ -207,7 +206,7 @@ router.get("/admin/list", requireRole("ADMIN"), async (_req, res) => {
 router.delete("/admin/:id", requireRole("ADMIN"), async (req, res) => {
   try {
     await prisma.parentLink.delete({ where: { id: req.params.id } });
-    return success(res, "Link removed.", {});
+    return success(res, { message: "Link removed." });
   } catch {
     return failure(res, "Link not found.", 404);
   }
