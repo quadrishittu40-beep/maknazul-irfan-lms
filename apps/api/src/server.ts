@@ -30,6 +30,7 @@ import admissionRoutes from "./routes/admission.routes";
 import registrationRoutes from "./routes/registration.routes";
 import passwordRoutes from "./routes/password.routes";
 import parentRoutes from "./routes/parent.routes";
+import planRoutes from "./routes/plan.routes";
 
 import { notFoundHandler as notFound } from "./middleware/error";
 
@@ -245,6 +246,9 @@ app.use(
   "/api/live-classes",
   liveClassRoutes
 );
+
+/* Scheme of work and academic calendar */
+app.use("/api/plan", planRoutes);
 
 /* Parent access */
 app.use("/api/parent", parentRoutes);
