@@ -1406,6 +1406,231 @@ export async function performanceSummaryPdf(req: AuthenticatedRequest, res: Resp
 }
 
 /* =========================================================
+   ADMISSION LETTER, SCHEME OF WORK, ACADEMIC CALENDAR
+========================================================= */
+
+function longDate(d: Date): string {
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" });
+}
+
+export async function admissionLetterPdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const me = req.user!;
+    const targetId = await resolveTargetUserId(req);
+    if (!(await canViewStudent(req, targetId))) return failure(res, "Access denied.", 403);
+    const user = await prisma.user.findUnique({
+      where: { id: targetId },
+      include: {
+        studentProfile: { include: { level: true, class: true, admissionFee: { select: { status: true, paidAt: true } } } }
+      }
+    });
+    if (!user || !user.studentProfile) return failure(res, "Student not found.", 404);
+    const sp = user.studentProfile;
+    if (me.role !== "ADMIN" && !["APPROVED", "ENROLLED", "GRADUATED"].includes(sp.status)) {
+      return failure(res, "Your admission letter is available after your admission has been approved.", 403);
+    }
+
+    const now = new Date();
+    const events = await prisma.calendarEvent.findMany({ orderBy: { startDate: "asc" } });
+    const upcoming = events.filter((e) => e.startDate >= new Date(now.getTime() - 86400000));
+    const resumption = upcoming.find((e) => e.type === "RESUMPTION") || null;
+    const sessionName = resumption ? resumption.session : events.length ? events[events.length - 1].session : "";
+    const fullName = `${user.firstName} ${user.lastName}`.trim();
+    const ref = `MIA/ADM/${now.getFullYear()}/${sp.id.slice(-6).toUpperCase()}`;
+
+    const doc = startPdf(res, `Admission_Letter_${fullName}`);
+    const w = doc.page.width;
+    letterhead(doc, "Admission Letter");
+
+    try {
+      if (fs.existsSync(LOGO_PATH)) {
+        doc.save();
+        doc.opacity(0.06);
+        doc.image(LOGO_PATH, w / 2 - 150, 280, { fit: [300, 300] });
+        doc.restore();
+      }
+    } catch {
+      /* optional */
+    }
+
+    doc.font("Body").fontSize(10).fillColor(GREY)
+      .text(`Ref: ${ref}`, 50, 122, { width: 250 })
+      .text(`Date: ${longDate(now)}`, w - 300, 122, { width: 250, align: "right" });
+
+    doc.font("Body-Bold").fontSize(12).fillColor("#111111").text(`Dear ${fullName},`, 50, 160);
+    doc.moveDown(0.8);
+    doc.font("Serif-Bold").fontSize(14).fillColor(GREEN)
+      .text("OFFER OF ADMISSION", 50, doc.y, { width: w - 100, align: "center" });
+    doc.moveDown(0.8);
+
+    const body = (t: string) => {
+      doc.font("Body").fontSize(11).fillColor("#111111").text(t, 50, doc.y, { width: w - 100, align: "justify", lineGap: 3 });
+      doc.moveDown(0.7);
+    };
+    body(
+      `We are pleased to inform you that you have been offered admission into Maknazul Irfan Online Islamic & Arabic Institute${sessionName ? ` for the ${sessionName} academic session` : ""}.`
+    );
+
+    const yRows = doc.y;
+    const info: Array<[string, string]> = [
+      ["Student name", fullName],
+      ["Email", user.email],
+      ["Level / Class", [sp.level?.name, sp.class?.name].filter(Boolean).join(" / ") || "To be assigned"],
+      ["Admission status", sp.status === "APPROVED" ? "Approved" : sp.status.charAt(0) + sp.status.slice(1).toLowerCase()],
+      ["Admission fee", sp.admissionFee ? (sp.admissionFee.status === "PAID" ? "Paid" : sp.admissionFee.status) : "-"],
+      ["Resumption date", resumption ? longDate(resumption.startDate) : "As announced by the academy"]
+    ];
+    doc.y = yRows;
+    info.forEach(([k, v]) => row(doc, k, v));
+    doc.moveDown(0.4);
+
+    body("Please log in to your student portal to access your courses, live classes, lectures and tests. Kindly read and observe the following:");
+    const rules = [
+      "Attend live classes and complete your lectures and tests on time.",
+      "Pay all course fees through the official portal and keep your receipts.",
+      "Keep your login details private. Do not share your password.",
+      "Conduct yourself with good Islamic manners (adab) towards teachers and fellow students.",
+      "Check your notifications and the academic calendar regularly."
+    ];
+    rules.forEach((r, i) => {
+      doc.font("Body").fontSize(10.5).fillColor("#111111").text(`${i + 1}.  ${r}`, 62, doc.y, { width: w - 124, lineGap: 2 });
+      doc.moveDown(0.25);
+    });
+    doc.moveDown(0.6);
+    body("We congratulate you and pray that Allah grants you beneficial knowledge. Welcome to the Maknazul Irfan family.");
+
+    const h = doc.page.height;
+    const sy = Math.max(doc.y + 30, h - 200);
+    drawStamp(doc, w / 2, sy + 4, 54);
+    try {
+      if (fs.existsSync(SIGNATURE_PATH)) doc.image(SIGNATURE_PATH, 70, sy - 36, { fit: [120, 40] });
+    } catch {
+      /* optional */
+    }
+    doc.lineWidth(0.8).strokeColor(GREEN).moveTo(60, sy + 6).lineTo(220, sy + 6).stroke();
+    doc.font("Body-Bold").fontSize(9).fillColor(GREY).text("ADMISSIONS OFFICER / PRINCIPAL", 60, sy + 10, { width: 170, lineBreak: false });
+    drawQr(doc, `MAKNAZUL IRFAN ADMISSION|${ref}|${fullName}`, w - 130, sy - 28, 70);
+    doc.font("Body").fontSize(7.5).fillColor(GREY).text(ref, w - 150, sy + 46, { width: 110, align: "center", lineBreak: false });
+    doc.end();
+  } catch (error) {
+    console.error("admissionLetterPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the admission letter.", 500);
+  }
+}
+
+export async function schemePdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const course = await prisma.course.findUnique({
+      where: { id: req.params.courseId },
+      include: { teacher: { select: { firstName: true, lastName: true } } }
+    });
+    if (!course) return failure(res, "Course not found.", 404);
+    const items = await prisma.schemeItem.findMany({
+      where: { courseId: course.id },
+      orderBy: [{ week: "asc" }, { createdAt: "asc" }]
+    });
+    const doc = startPdf(res, `Scheme_of_Work_${course.title}`);
+    const w = doc.page.width;
+    letterhead(doc, "Scheme of Work");
+    doc.font("Serif-Bold").fontSize(17).fillColor("#111111").text(course.title, 50, 122, { width: w - 100 });
+    doc.font("Body").fontSize(10).fillColor(GREY).text(
+      `Teacher: ${course.teacher ? `${course.teacher.firstName} ${course.teacher.lastName}` : "-"}     Date: ${fmtDate(new Date())}`,
+      50, doc.y + 2, { width: w - 100 }
+    );
+    doc.y += 14;
+
+    const cols = [
+      { t: "Week", x: 50, w: 40 },
+      { t: "Topic", x: 92, w: 150 },
+      { t: "Objectives", x: 244, w: 160 },
+      { t: "Activities", x: 406, w: 144 }
+    ];
+    function header() {
+      const y = doc.y;
+      doc.rect(50, y - 3, 500, 18).fill(GREEN);
+      doc.fillColor("#ffffff").font("Body-Bold").fontSize(9);
+      cols.forEach((c) => doc.text(c.t, c.x + 3, y, { width: c.w, lineBreak: false }));
+      doc.y = y + 22;
+    }
+    header();
+    if (!items.length) doc.font("Body").fontSize(10).fillColor(GREY).text("No scheme of work has been entered yet.", 53, doc.y);
+    items.forEach((it, i) => {
+      doc.font("Body").fontSize(9);
+      const vals = [String(it.week), it.topic, it.objectives || "-", it.activities || "-"];
+      const hts = vals.map((v, k) => doc.heightOfString(v, { width: cols[k].w - 6 }));
+      const rh = Math.max(...hts) + 8;
+      if (doc.y + rh > doc.page.height - 70) {
+        doc.addPage();
+        doc.y = 50;
+        header();
+      }
+      const y = doc.y;
+      if (i % 2 === 0) doc.rect(50, y - 3, 500, rh).fill("#f3f7f5");
+      doc.fillColor("#111111");
+      vals.forEach((v, k) => doc.font(k === 0 ? "Body-Bold" : "Body").fontSize(9).text(v, cols[k].x + 3, y, { width: cols[k].w - 6 }));
+      doc.y = y + rh;
+    });
+    doc.end();
+  } catch (error) {
+    console.error("schemePdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the scheme of work.", 500);
+  }
+}
+
+export async function calendarPdf(_req: AuthenticatedRequest, res: Response) {
+  try {
+    const events = await prisma.calendarEvent.findMany({ orderBy: { startDate: "asc" } });
+    const doc = startPdf(res, "Academic_Calendar");
+    const w = doc.page.width;
+    letterhead(doc, "Academic Calendar");
+    const sessions = Array.from(new Set(events.map((e) => e.session)));
+    if (!sessions.length) doc.font("Body").fontSize(11).fillColor(GREY).text("No calendar events have been added yet.", 50, 130);
+    const cols = [
+      { t: "Date", x: 50, w: 150 },
+      { t: "Event", x: 202, w: 200 },
+      { t: "Type", x: 404, w: 146 }
+    ];
+    sessions.forEach((sess) => {
+      if (doc.y > doc.page.height - 140) {
+        doc.addPage();
+        doc.y = 50;
+      }
+      doc.font("Serif-Bold").fontSize(14).fillColor(GREEN).text(`${sess} Academic Session`, 50, doc.y + 4, { width: w - 100 });
+      doc.y += 6;
+      const hy = doc.y;
+      doc.rect(50, hy - 3, 500, 18).fill(GREEN);
+      doc.fillColor("#ffffff").font("Body-Bold").fontSize(9);
+      cols.forEach((c) => doc.text(c.t, c.x + 3, hy, { width: c.w, lineBreak: false }));
+      doc.y = hy + 22;
+      events.filter((e) => e.session === sess).forEach((e, i) => {
+        const date = e.endDate && e.endDate.getTime() !== e.startDate.getTime()
+          ? `${fmtDate(e.startDate)} - ${fmtDate(e.endDate)}`
+          : fmtDate(e.startDate);
+        const title = e.term ? `${e.title} (${e.term})` : e.title;
+        doc.font("Body").fontSize(9);
+        const rh = Math.max(doc.heightOfString(date, { width: cols[0].w - 6 }), doc.heightOfString(title, { width: cols[1].w - 6 })) + 8;
+        if (doc.y + rh > doc.page.height - 60) {
+          doc.addPage();
+          doc.y = 50;
+        }
+        const y = doc.y;
+        if (i % 2 === 0) doc.rect(50, y - 3, 500, rh).fill("#f3f7f5");
+        doc.fillColor("#111111").font("Body").fontSize(9)
+          .text(date, cols[0].x + 3, y, { width: cols[0].w - 6 })
+          .text(title, cols[1].x + 3, y, { width: cols[1].w - 6 });
+        doc.font("Body-Bold").fillColor(GREEN).text(e.type.charAt(0) + e.type.slice(1).toLowerCase(), cols[2].x + 3, y, { width: cols[2].w - 6 });
+        doc.y = y + rh;
+      });
+      doc.y += 10;
+    });
+    doc.end();
+  } catch (error) {
+    console.error("calendarPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the calendar.", 500);
+  }
+}
+
+/* =========================================================
    ID CARD
 ========================================================= */
 
