@@ -355,6 +355,8 @@ model Course {
 
   payments Payment[]
 
+  schemeItems SchemeItem[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1062,4 +1064,52 @@ model ParentLink {
 
   @@unique([parentId, studentUserId])
   @@index([studentUserId])
+}
+
+
+// ============================================================
+// SCHEME OF WORK AND ACADEMIC CALENDAR
+// ============================================================
+
+model SchemeItem {
+  id String @id @default(cuid())
+
+  courseId String
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  week Int
+
+  topic String
+
+  objectives String? @db.Text
+
+  activities String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([courseId])
+}
+
+model CalendarEvent {
+  id String @id @default(cuid())
+
+  session String
+
+  term String?
+
+  title String
+
+  description String?
+
+  type String @default("EVENT")
+
+  startDate DateTime
+
+  endDate DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([session])
+  @@index([startDate])
 }
