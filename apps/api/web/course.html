@@ -529,6 +529,8 @@
 
     <h3>Course Lectures</h3>
 
+    <p style="margin:6px 0 12px"><a id="schemeLink" href="#" style="display:inline-block;background:#064e3b;color:#fff;text-decoration:none;font-weight:bold;padding:8px 14px;border-radius:7px;font-size:14px">View Scheme of Work</a></p>
+
     <div
       id="lectureLoading"
       class="empty"
@@ -618,6 +620,7 @@
 
   const courseId =
     params.get("id");
+  (function(){var l=document.getElementById("schemeLink");if(l)l.href="scheme.html?id="+encodeURIComponent(courseId||"");})();
 
   let currentCourse = null;
   let loggedInUser = null;

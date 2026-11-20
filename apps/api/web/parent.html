@@ -37,7 +37,7 @@ function render(children){
       +'<div class="box"><b>'+naira(c.totalPaid)+'</b><span>Fees paid</span></div>'
       +'<div class="box"><b>'+naira(c.totalPending)+'</b><span>Fees pending</span></div></div>';
     if(c.admissionFee)h+='<p class="sub">Admission fee: <span class="'+(c.admissionFee.status==="PAID"?"ok":"bad")+'">'+esc(c.admissionFee.status)+'</span> ('+naira(c.admissionFee.amount)+')</p>';
-    h+='<p style="margin-top:10px"><a class="btn" href="/api/pdf/reportcard?userId='+encodeURIComponent(c.userId)+'">Report Card (PDF)</a></p>';
+    h+='<p style="margin-top:10px"><a class="btn" href="/api/pdf/reportcard?userId='+encodeURIComponent(c.userId)+'">Report Card (PDF)</a><a class="btn" href="/api/pdf/admission-letter?userId='+encodeURIComponent(c.userId)+'">Admission Letter (PDF)</a><a class="btn" href="calendar.html">Academic Calendar</a></p>';
     h+='<h2>Courses</h2>';
     h+=c.courses.length?'<div class="tablewrap"><table><tr><th>Course</th><th>Tests</th><th>Average</th></tr>'+c.courses.map(function(x){return'<tr><td>'+esc(x.title)+'</td><td>'+x.tests+'</td><td>'+x.average+'%</td></tr>';}).join("")+'</table></div>':'<p class="empty">'+(c.enrolled.length?'Enrolled in: '+esc(c.enrolled.join(", "))+'. No test results yet.':'No courses yet.')+'</p>';
     h+='<h2>Recent test results</h2>';

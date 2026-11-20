@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scheme of Work | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:94%;max-width:820px;margin:22px auto}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h1{color:#064e3b;font-size:21px;margin-bottom:4px}.sub{color:#68756d;font-size:13px;line-height:1.5}
+.item{border:1px solid #dfe9e3;border-radius:9px;padding:12px;margin-top:12px;background:#fafcfb}
+label{display:block;margin:8px 0 3px;font-weight:bold;font-size:13px}
+input,textarea{width:100%;padding:9px;border:1px solid #ccd8d1;border-radius:7px;font-size:14px;font-family:inherit}
+textarea{min-height:60px}
+button{padding:10px 16px;border:0;border-radius:7px;background:#d4af37;font-weight:bold;font-size:14px;margin:12px 8px 0 0;cursor:pointer}
+button.g{background:#064e3b;color:#fff}button.del{background:#fdecec;color:#a12626;margin:8px 0 0}
+a.btn{display:inline-block;background:#064e3b;color:#fff;text-decoration:none;font-weight:bold;padding:9px 14px;border-radius:7px;font-size:14px}
+.m{display:none;padding:10px;border-radius:7px;margin:10px 0;font-size:14px}.ok{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
+.wk{width:90px}.ro b{color:#064e3b}.ro p{margin-top:4px;font-size:14px;line-height:1.5;white-space:pre-wrap}
+</style></head><body>
+<header><b>Scheme of Work</b><a id="back" href="login.html">&larr; Back</a></header>
+<main><div class="card"><h1 id="title">Loading...</h1><p class="sub" id="teacher"></p>
+<p style="margin-top:10px"><a class="btn" id="pdf" href="#">Download Scheme (PDF)</a></p>
+<div id="msg" class="m"></div><div id="items"></div>
+<div id="tools" style="display:none"><button class="g" id="add">+ Add week</button><button id="save">Save scheme of work</button></div></div></main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");}
+var courseId=new URLSearchParams(location.search).get("id")||"";var canEdit=false;var rows=[];
+$("pdf").href="/api/pdf/scheme/"+encodeURIComponent(courseId);
+function sync(){var els=document.querySelectorAll(".item");rows=[];els.forEach(function(el){rows.push({week:parseInt(el.querySelector(".w").value,10)||0,topic:el.querySelector(".t").value,objectives:el.querySelector(".o").value,activities:el.querySelector(".a").value});});}
+function draw(){
+  if(!rows.length){$("items").innerHTML='<p class="sub" style="margin-top:12px">'+(canEdit?'No weeks yet. Tap "Add week" to start.':'The teacher has not entered the scheme of work yet.')+'</p>';return;}
+  $("items").innerHTML=rows.map(function(r,i){
+    if(!canEdit)return '<div class="item ro"><b>Week '+esc(r.week)+': '+esc(r.topic)+'</b>'+(r.objectives?'<p><b>Objectives:</b> '+esc(r.objectives)+'</p>':'')+(r.activities?'<p><b>Activities:</b> '+esc(r.activities)+'</p>':'')+'</div>';
+    return '<div class="item"><label>Week</label><input class="w wk" type="number" min="1" max="60" value="'+esc(r.week)+'"><label>Topic</label><input class="t" value="'+esc(r.topic)+'"><label>Objectives</label><textarea class="o">'+esc(r.objectives||"")+'</textarea><label>Activities / resources</label><textarea class="a">'+esc(r.activities||"")+'</textarea><button class="del" data-i="'+i+'">Remove week</button></div>';}).join("");
+}
+$("items").addEventListener("click",function(e){var i=e.target.getAttribute&&e.target.getAttribute("data-i");if(i===null||i===undefined)return;sync();rows.splice(parseInt(i,10),1);draw();});
+$("add").addEventListener("click",function(){sync();var n=rows.length?Math.max.apply(null,rows.map(function(r){return r.week;}))+1:1;rows.push({week:n,topic:"",objectives:"",activities:""});draw();});
+$("save").addEventListener("click",async function(){sync();
+  var items=rows.filter(function(r){return r.topic.trim();}).map(function(r){return{week:r.week||1,topic:r.topic,objectives:r.objectives,activities:r.activities};});
+  $("save").disabled=true;
+  try{var r=await fetch("/api/plan/scheme/"+encodeURIComponent(courseId),{method:"PUT",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:items})});
+    var d=await r.json().catch(function(){return{};});if(!r.ok)throw new Error(d.message||"Unable to save.");say("Scheme of work saved.",true);rows=items;draw();}
+  catch(x){say(x.message,false);}$("save").disabled=false;});
+(async function(){
+  try{var me=await fetch("/api/auth/me",{credentials:"include"}).then(function(r){return r.json();});var u=me.user||(me.data&&me.data.user)||me.data||me;var role=u&&u.role;
+    $("back").href=role==="ADMIN"?"admin.html":role==="TEACHER"?"teacher.html":role==="PARENT"?"parent.html":"student.html";}catch(e){}
+  try{var r=await fetch("/api/plan/scheme/"+encodeURIComponent(courseId),{credentials:"include"});
+    if(r.status===401){location.href="login.html";return;}var d=await r.json();if(!r.ok)throw new Error(d.message||"Unable to load.");
+    $("title").textContent=d.course.title;$("teacher").textContent=d.course.teacher?"Teacher: "+d.course.teacher:"";
+    canEdit=!!d.canEdit;rows=(d.items||[]).map(function(i){return{week:i.week,topic:i.topic,objectives:i.objectives||"",activities:i.activities||""};});
+    if(canEdit)$("tools").style.display="block";draw();
+  }catch(e){$("title").textContent="Scheme of Work";say(e.message,false);}
+})();
+</script></body></html>
