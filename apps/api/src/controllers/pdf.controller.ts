@@ -1642,6 +1642,127 @@ export async function calendarPdf(_req: AuthenticatedRequest, res: Response) {
 }
 
 /* =========================================================
+   EXAM DOCKET
+========================================================= */
+
+export async function examDocketPdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const targetId = await resolveTargetUserId(req);
+    if (!(await canViewStudent(req, targetId))) return failure(res, "Access denied.", 403);
+    const sessionId = String(req.query.sessionId || "");
+    const user = await prisma.user.findUnique({
+      where: { id: targetId },
+      include: { studentProfile: { include: { level: true, class: true } } }
+    });
+    if (!user || !user.studentProfile) return failure(res, "Student not found.", 404);
+    const sp = user.studentProfile;
+    const reg = await prisma.examRegistration.findFirst({
+      where: {
+        studentId: sp.id,
+        status: "PAID",
+        submittedAt: { not: null },
+        ...(sessionId ? { examSessionId: sessionId } : {})
+      },
+      orderBy: { submittedAt: "desc" },
+      include: {
+        examSession: true,
+        courses: { include: { course: { include: { teacher: { select: { firstName: true, lastName: true } } } } } }
+      }
+    });
+    if (!reg) return failure(res, "No completed exam registration was found. Pay the exam fee and register your subjects first.", 404);
+
+    const fullName = `${user.firstName} ${user.lastName}`.trim();
+    const doc = startPdf(res, `Exam_Docket_${fullName}`);
+    const w = doc.page.width;
+    letterhead(doc, "Examination Docket");
+
+    const photo = photoBuffer(user.avatar);
+    const px = w - 150;
+    doc.rect(px, 122, 100, 120).lineWidth(1).strokeColor(GREEN).stroke();
+    if (photo) {
+      try {
+        doc.image(photo, px + 2, 124, { fit: [96, 116], align: "center", valign: "center" });
+      } catch (e) {
+        console.error("docket photo error:", e);
+      }
+    } else {
+      doc.font("Body").fontSize(8).fillColor(GREY).text("PASTE PASSPORT PHOTO", px, 176, { width: 100, align: "center" });
+    }
+
+    doc.font("Serif-Bold").fontSize(16).fillColor("#111111").text(reg.examSession.title, 50, 124, { width: w - 220 });
+    doc.font("Body").fontSize(10).fillColor(GREY).text(
+      `${reg.examSession.session} session${reg.examSession.term ? ` - ${reg.examSession.term}` : ""}`,
+      50, doc.y + 2, { width: w - 220 }
+    );
+    doc.y += 12;
+    row(doc, "Name", fullName);
+    row(doc, "Matric number", sp.matricNumber || "-");
+    row(doc, "Exam number", reg.examNumber || "-");
+    row(doc, "Level / Class", [sp.level?.name, sp.class?.name].filter(Boolean).join(" / ") || "-");
+    row(doc, "Fee status", "Paid");
+    if (doc.y < 252) doc.y = 252;
+
+    doc.moveDown(0.6);
+    doc.font("Body-Bold").fontSize(11).fillColor(GREEN).text("REGISTERED SUBJECTS", 50, doc.y);
+    doc.y += 8;
+    const cols = [
+      { t: "No", x: 50, w: 36 },
+      { t: "Subject", x: 88, w: 280 },
+      { t: "Teacher", x: 370, w: 180 }
+    ];
+    let y0 = doc.y;
+    doc.rect(50, y0 - 3, 500, 18).fill(GREEN);
+    doc.fillColor("#ffffff").font("Body-Bold").fontSize(9);
+    cols.forEach((c) => doc.text(c.t, c.x + 3, y0, { width: c.w, lineBreak: false }));
+    doc.y = y0 + 22;
+    reg.courses.forEach((c, i) => {
+      if (doc.y > doc.page.height - 260) {
+        doc.addPage();
+        doc.y = 60;
+      }
+      const y = doc.y;
+      if (i % 2 === 0) doc.rect(50, y - 3, 500, 18).fill("#f3f7f5");
+      const t = c.course.teacher ? `${c.course.teacher.firstName} ${c.course.teacher.lastName}` : "-";
+      doc.fillColor("#111111").font("Body").fontSize(9.5)
+        .text(String(i + 1), cols[0].x + 3, y, { width: cols[0].w, lineBreak: false })
+        .text(c.course.title, cols[1].x + 3, y, { width: cols[1].w - 6, height: 13, ellipsis: true, lineBreak: false })
+        .text(t, cols[2].x + 3, y, { width: cols[2].w - 6, height: 13, ellipsis: true, lineBreak: false });
+      doc.y = y + 20;
+    });
+
+    doc.moveDown(0.8);
+    doc.font("Body-Bold").fontSize(10).fillColor(GREEN).text("INSTRUCTIONS", 50, doc.y);
+    doc.moveDown(0.3);
+    [
+      "You may attempt only the subjects listed on this docket.",
+      "Log in to your student portal and start each exam within its available time.",
+      "Keep your login private. Malpractice leads to disqualification.",
+      "Present this docket (printed or on your phone) whenever you are asked."
+    ].forEach((r, i) => {
+      doc.font("Body").fontSize(9.5).fillColor("#111111").text(`${i + 1}.  ${r}`, 60, doc.y, { width: w - 120, lineGap: 2 });
+      doc.moveDown(0.2);
+    });
+
+    const h = doc.page.height;
+    const sy = Math.max(doc.y + 40, h - 170);
+    drawStamp(doc, w / 2, sy, 48);
+    try {
+      if (fs.existsSync(SIGNATURE_PATH)) doc.image(SIGNATURE_PATH, 70, sy - 38, { fit: [110, 38] });
+    } catch {
+      /* optional */
+    }
+    doc.lineWidth(0.8).strokeColor(GREEN).moveTo(60, sy + 2).lineTo(210, sy + 2).stroke();
+    doc.font("Body-Bold").fontSize(9).fillColor(GREY).text("EXAMINATIONS OFFICER", 60, sy + 6, { width: 150, lineBreak: false });
+    drawQr(doc, `MAKNAZUL IRFAN EXAM DOCKET|${reg.examNumber}|${fullName}`, w - 130, sy - 34, 66);
+    drawBarcode(doc, reg.examNumber || "EXAM", 50, h - 82, 200, 28);
+    doc.end();
+  } catch (error) {
+    console.error("examDocketPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the exam docket.", 500);
+  }
+}
+
+/* =========================================================
    ID CARD
 ========================================================= */
 
