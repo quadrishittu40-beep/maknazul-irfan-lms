@@ -20,6 +20,8 @@ const GREY = "#555555";
 
 const FONT_DIR = path.resolve(__dirname, "../../fonts");
 const SIGNATURE_PATH = path.resolve(__dirname, "../../web/assets/signature.png");
+const LETTER_DIR = path.resolve(__dirname, "../../web/assets/letter");
+const SIGNATURE2_PATH = path.resolve(__dirname, "../../web/assets/signature2.png");
 const LOGO_PATH = path.resolve(__dirname, "../../web/assets/logo.png");
 
 function fmtDate(d: Date | null | undefined) {
@@ -373,10 +375,13 @@ export async function certificatePdf(req: AuthenticatedRequest, res: Response) {
     // date and signatures
     const lineY = h - 124;
     doc.fillColor("#222222").font("Body-Bold").fontSize(10)
-      .text(`DATE: ${issued}`, 255, lineY - 18, { width: 200, align: "center" });
+      .text(`DATE: ${issued}`, 255, lineY + 20, { width: 200, align: "center", lineBreak: false });
     try {
       if (fs.existsSync(SIGNATURE_PATH)) {
         doc.image(SIGNATURE_PATH, 112, lineY - 46, { fit: [100, 44], align: "center", valign: "bottom" });
+      }
+      if (fs.existsSync(SIGNATURE2_PATH)) {
+        doc.image(SIGNATURE2_PATH, 307, lineY - 46, { fit: [100, 44], align: "center", valign: "bottom" });
       }
     } catch {
       /* signature is optional */
@@ -1080,8 +1085,8 @@ export async function reportCardPdf(req: AuthenticatedRequest, res: Response) {
 
     // principal signature
     try {
-      if (fs.existsSync(SIGNATURE_PATH)) {
-        doc.image(SIGNATURE_PATH, 235, fy + 128 - 4, { fit: [90, 34], align: "center", valign: "bottom" });
+      if (fs.existsSync(SIGNATURE2_PATH)) {
+        doc.image(SIGNATURE2_PATH, 235, fy + 128 - 4, { fit: [90, 34], align: "center", valign: "bottom" });
       }
     } catch {
       /* optional */
@@ -1190,8 +1195,8 @@ function sheetSignatures(doc: any, leftLabel: string) {
     .text(leftLabel, 60, y + 4, { width: 150, align: "center", lineBreak: false })
     .text("PRINCIPAL", w - 260, y + 4, { width: 150, align: "center", lineBreak: false });
   try {
-    if (fs.existsSync(SIGNATURE_PATH)) {
-      doc.image(SIGNATURE_PATH, w - 240, y - 40, { fit: [110, 38], align: "center", valign: "bottom" });
+    if (fs.existsSync(SIGNATURE2_PATH)) {
+      doc.image(SIGNATURE2_PATH, w - 240, y - 40, { fit: [110, 38], align: "center", valign: "bottom" });
     }
   } catch {
     /* optional */
@@ -1450,78 +1455,105 @@ export async function admissionLetterPdf(req: AuthenticatedRequest, res: Respons
 
     const doc = startPdf(res, `Admission_Letter_${fullName}`);
     const w = doc.page.width;
-    letterhead(doc, "Admission Letter");
+    const H = doc.page.height;
+    const k = w / 1122; // scale of the designed artwork
+    const CREAM = "#FDF9EC";
+    const art = (name: string) => path.join(LETTER_DIR, name);
 
+    // paper
+    doc.rect(0, 0, w, H).fill(CREAM);
+    const headerH = 305 * k;
+    const titleH = 95 * k;
+    const footerH = 362 * k;
+    const footerY = H - footerH;
     try {
-      if (fs.existsSync(LOGO_PATH)) {
-        doc.save();
-        doc.opacity(0.06);
-        doc.image(LOGO_PATH, w / 2 - 150, 280, { fit: [300, 300] });
-        doc.restore();
+      doc.image(art("header.jpg"), 0, 0, { width: w });
+      doc.image(art("title.jpg"), 0, headerH, { width: w });
+      doc.image(art("footer.jpg"), 0, footerY, { width: w });
+    } catch (e) {
+      console.error("admission letter artwork missing:", e);
+    }
+
+    const L = 50;
+    const R = w - 50;
+    const W = R - L;
+    let y = headerH + titleH + 6;
+
+    // reference and date
+    doc.font("Serif").fontSize(10.5).fillColor("#111111")
+      .text(`Ref. No.: ${ref}`, L, y, { width: W / 2, lineBreak: false })
+      .text(`Date: ${longDate(now)}`, L + W / 2, y, { width: W / 2, align: "right", lineBreak: false });
+    y += 24;
+
+    doc.font("Serif-Bold").fontSize(13).fillColor("#111111")
+      .text(`Dear ${fullName},`, L, y, { width: W, lineBreak: false });
+    y += 24;
+
+    doc.font("Serif-Bold").fontSize(30).fillColor(GREEN)
+      .text("Congratulations!", L, y, { width: W, align: "center", lineBreak: false });
+    y += 38;
+    doc.lineWidth(2).strokeColor(GOLD).moveTo(w / 2 - 90, y).lineTo(w / 2 + 90, y).stroke();
+    y += 12;
+
+    doc.font("Serif").fontSize(11.5).fillColor("#111111")
+      .text("We are pleased to inform you that you have been officially admitted into", L, y, { width: W, align: "center", lineBreak: false });
+    y += 17;
+    const segs: Array<{ t: string; f: string; c: string }> = [
+      { t: "Maknazul \u2019Irfan Academy", f: "Serif-Bold", c: GREEN },
+      { t: sessionName ? " for the " : " for the new academic session.", f: "Serif", c: "#111111" }
+    ];
+    if (sessionName) segs.push({ t: `${sessionName} Academic Session.`, f: "Serif-Bold", c: "#111111" });
+    doc.fontSize(11.5);
+    const total = segs.reduce((t, g) => t + doc.font(g.f).widthOfString(g.t), 0);
+    let sx = (w - total) / 2;
+    segs.forEach((g) => {
+      doc.font(g.f).fontSize(11.5).fillColor(g.c).text(g.t, sx, y, { lineBreak: false });
+      sx += doc.widthOfString(g.t);
+    });
+    y += 30;
+
+    // details box
+    const boxH = 80;
+    doc.roundedRect(L, y, W, boxH, 12).lineWidth(1.5).fillAndStroke("#FBF6DF", GREEN);
+    doc.lineWidth(1).strokeColor(GREEN).moveTo(L + W * 0.52, y + 8).lineTo(L + W * 0.52, y + boxH - 8).stroke();
+    const colL = L + 14;
+    const colR = L + W * 0.52 + 14;
+    const field = (label: string, value: string, x: number, yy: number, labelW: number, valW: number) => {
+      doc.font("Serif-Bold").fontSize(9.5).fillColor("#111111").text(label, x, yy, { width: labelW, lineBreak: false });
+      doc.text(":", x + labelW, yy, { width: 8, lineBreak: false });
+      doc.font("Serif").fontSize(9.5).fillColor("#111111")
+        .text(value || "-", x + labelW + 12, yy, { width: valW, height: 12, ellipsis: true, lineBreak: false });
+    };
+    const lvl = [sp.level?.name, sp.class?.name].filter(Boolean).join(" / ") || "-";
+    field("Student’s Name", fullName, colL, y + 12, 82, 118);
+    field("Class / Level", lvl, colL, y + 33, 82, 118);
+    field("Admission No.", matric || "To be issued", colL, y + 54, 82, 118);
+    field("Programme", sp.class?.name || "Islamic & Arabic Studies", colR, y + 12, 62, 120);
+    field("Session", sessionName || "-", colR, y + 33, 62, 120);
+    field("Start Date", resumption ? longDate(resumption.startDate) : "Immediately", colR, y + 54, 62, 120);
+    y += boxH + 16;
+
+    const para = (t: string) => {
+      doc.font("Serif").fontSize(11).fillColor("#111111").text(t, L, y, { width: W, align: "justify", lineGap: 2 });
+      y = doc.y + 8;
+    };
+    para("You are warmly welcome to our esteemed academy, where we are committed to providing quality Islamic and Arabic education, alongside sound academic knowledge, moral values and character development.");
+    para("We look forward to your active participation and hope you will make the best use of the opportunities available in our academy. Please log in to your student portal to access your courses, live classes, lectures and tests.");
+    para("May Allah make your stay with us beneficial and successful. Amin.");
+
+    // principal's signature block (replaces the sample's name area)
+    try {
+      if (fs.existsSync(SIGNATURE2_PATH)) {
+        doc.image(SIGNATURE2_PATH, 40, footerY + 28, { fit: [130, 46], align: "center", valign: "bottom" });
       }
     } catch {
       /* optional */
     }
-
-    doc.font("Body").fontSize(10).fillColor(GREY)
-      .text(`Ref: ${ref}`, 50, 122, { width: 250 })
-      .text(`Date: ${longDate(now)}`, w - 300, 122, { width: 250, align: "right" });
-
-    doc.font("Body-Bold").fontSize(12).fillColor("#111111").text(`Dear ${fullName},`, 50, 160);
-    doc.moveDown(0.8);
-    doc.font("Serif-Bold").fontSize(14).fillColor(GREEN)
-      .text("OFFER OF ADMISSION", 50, doc.y, { width: w - 100, align: "center" });
-    doc.moveDown(0.8);
-
-    const body = (t: string) => {
-      doc.font("Body").fontSize(11).fillColor("#111111").text(t, 50, doc.y, { width: w - 100, align: "justify", lineGap: 3 });
-      doc.moveDown(0.7);
-    };
-    body(
-      `We are pleased to inform you that you have been offered admission into Maknazul Irfan Online Islamic & Arabic Institute${sessionName ? ` for the ${sessionName} academic session` : ""}.`
-    );
-
-    const yRows = doc.y;
-    const info: Array<[string, string]> = [
-      ["Student name", fullName],
-      ["Matric number", matric || "To be issued on approval"],
-      ["Email", user.email],
-      ["Level / Class", [sp.level?.name, sp.class?.name].filter(Boolean).join(" / ") || "To be assigned"],
-      ["Admission status", sp.status === "APPROVED" ? "Approved" : sp.status.charAt(0) + sp.status.slice(1).toLowerCase()],
-      ["Admission fee", sp.admissionFee ? (sp.admissionFee.status === "PAID" ? "Paid" : sp.admissionFee.status) : "-"],
-      ["Resumption date", resumption ? longDate(resumption.startDate) : "As announced by the academy"]
-    ];
-    doc.y = yRows;
-    info.forEach(([k, v]) => row(doc, k, v));
-    doc.moveDown(0.4);
-
-    body("Please log in to your student portal to access your courses, live classes, lectures and tests. Kindly read and observe the following:");
-    const rules = [
-      "Attend live classes and complete your lectures and tests on time.",
-      "Pay all course fees through the official portal and keep your receipts.",
-      "Keep your login details private. Do not share your password.",
-      "Conduct yourself with good Islamic manners (adab) towards teachers and fellow students.",
-      "Check your notifications and the academic calendar regularly."
-    ];
-    rules.forEach((r, i) => {
-      doc.font("Body").fontSize(10.5).fillColor("#111111").text(`${i + 1}.  ${r}`, 62, doc.y, { width: w - 124, lineGap: 2 });
-      doc.moveDown(0.25);
-    });
-    doc.moveDown(0.6);
-    body("We congratulate you and pray that Allah grants you beneficial knowledge. Welcome to the Maknazul Irfan family.");
-
-    const h = doc.page.height;
-    const sy = Math.max(doc.y + 30, h - 200);
-    drawStamp(doc, w / 2, sy + 4, 54);
-    try {
-      if (fs.existsSync(SIGNATURE_PATH)) doc.image(SIGNATURE_PATH, 70, sy - 36, { fit: [120, 40] });
-    } catch {
-      /* optional */
-    }
-    doc.lineWidth(0.8).strokeColor(GREEN).moveTo(60, sy + 6).lineTo(220, sy + 6).stroke();
-    doc.font("Body-Bold").fontSize(9).fillColor(GREY).text("ADMISSIONS OFFICER / PRINCIPAL", 60, sy + 10, { width: 170, lineBreak: false });
-    drawQr(doc, `MAKNAZUL IRFAN ADMISSION|${ref}|${fullName}`, w - 130, sy - 28, 70);
-    doc.font("Body").fontSize(7.5).fillColor(GREY).text(ref, w - 150, sy + 46, { width: 110, align: "center", lineBreak: false });
+    doc.lineWidth(1).strokeColor("#222222").moveTo(26, footerY + 76).lineTo(272, footerY + 76).stroke();
+    doc.font("Serif-Bold").fontSize(10.5).fillColor("#111111")
+      .text("Ustadh Abdul Qadir Hibatullah Shittu", 26, footerY + 81, { width: 262, lineBreak: false });
+    doc.font("Serif").fontSize(10).fillColor("#111111").text("Principal", 26, footerY + 96, { width: 262, lineBreak: false });
+    doc.font("Serif-Bold").fontSize(10).fillColor(GREEN).text("Maknazul ’Irfan Academy", 26, footerY + 109, { width: 262, lineBreak: false });
     doc.end();
   } catch (error) {
     console.error("admissionLetterPdf error:", error);
@@ -1961,8 +1993,8 @@ export async function idCardPdf(req: AuthenticatedRequest, res: Response) {
 
     // principal signature
     try {
-      if (fs.existsSync(SIGNATURE_PATH)) {
-        doc.image(SIGNATURE_PATH, x + 276, fy + 222, { fit: [110, 38], align: "center", valign: "bottom" });
+      if (fs.existsSync(SIGNATURE2_PATH)) {
+        doc.image(SIGNATURE2_PATH, x + 276, fy + 222, { fit: [110, 38], align: "center", valign: "bottom" });
       }
     } catch {
       /* optional */
