@@ -10,6 +10,7 @@ import {
   admissionLetterPdf,
   schemePdf,
   calendarPdf,
+  examDocketPdf,
   receiptPdf,
   admissionReceiptPdf,
   idCardPdf,
@@ -31,6 +32,7 @@ router.get("/performance", performanceSummaryPdf);
 router.get("/admission-letter", admissionLetterPdf);
 router.get("/scheme/:courseId", schemePdf);
 router.get("/calendar", calendarPdf);
+router.get("/exam-docket", examDocketPdf);
 router.get("/receipt/admission/:id", admissionReceiptPdf);
 router.get("/receipt/:id", requireAuth, receiptPdf);
 router.get("/idcard", idCardPdf);
