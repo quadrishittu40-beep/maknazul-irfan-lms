@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exam Registration | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:94%;max-width:760px;margin:22px auto}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h2{color:#064e3b;font-size:19px;margin-bottom:4px}.sub{color:#68756d;font-size:13px;line-height:1.5}
+.step{margin-top:14px;padding:12px;border-radius:9px;background:#f3f7f5}
+.step b{color:#064e3b}
+button,a.btn{display:inline-block;padding:11px 18px;border:0;border-radius:7px;background:#d4af37;color:#1a1a1a;font-weight:bold;font-size:15px;margin-top:10px;cursor:pointer;text-decoration:none}
+a.btn.g{background:#064e3b;color:#fff}
+button:disabled{opacity:.6}
+label.sj{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #dfe9e3;border-radius:8px;margin-top:8px;font-size:15px;background:#fff}
+label.sj input{width:auto}label.sj.off{opacity:.5}
+.m{display:none;padding:11px;border-radius:7px;margin-bottom:12px;font-size:14px;line-height:1.5}.ok{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
+.tag{display:inline-block;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:bold;background:#e8f7ed;color:#064e3b}
+.tag.w{background:#fff4d6;color:#8a6a00}
+</style></head><body>
+<header><b>Exam Registration</b><a href="student.html">&larr; Dashboard</a></header>
+<main><div id="msg" class="m"></div><div id="root"><div class="card"><p class="sub">Loading...</p></div></div></main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function naira(n){return "₦"+Number(n||0).toLocaleString("en-NG");}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");window.scrollTo(0,0);}
+async function api(p,o){o=o||{};o.credentials="include";if(o.body)o.headers={"Content-Type":"application/json"};
+  var r=await fetch("/api/exam-reg"+p,o);if(r.status===401){location.href="login.html";throw new Error("Please log in.");}
+  var d=await r.json().catch(function(){return{};});if(!r.ok)throw new Error(d.message||"Request failed.");return d;}
+function card(s){
+  var r=s.registration;var h='<div class="card"><h2>'+esc(s.title)+'</h2><p class="sub">'+esc(s.session)+' session'+(s.term?' &middot; '+esc(s.term):'')+' &middot; Fee: <b>'+(s.fee>0?naira(s.fee):'Free')+'</b>'+(s.open?'':' &middot; <b>Registration closed</b>')+'</p>';
+  var paid=r&&r.paid;
+  h+='<div class="step"><b>Step 1: Pay the exam fee</b> '+(paid?'<span class="tag">Paid</span>':'<span class="tag w">Not paid</span>');
+  if(!paid&&s.open){h+=s.fee>0?'<br><button data-pay="'+esc(s.id)+'">Pay '+naira(s.fee)+' with card</button><p class="sub" style="margin-top:6px">Paid by cash or bank transfer? The academy will record it and this step will turn green.</p>':'<br><button data-free="'+esc(s.id)+'">Continue (no fee)</button>';}
+  h+='</div>';
+  h+='<div class="step"><b>Step 2: Choose your subjects</b> '+(r&&r.submitted?'<span class="tag">Done</span>':'');
+  if(r&&r.submitted){
+    h+='<p class="sub" style="margin-top:8px">Exam number: <b>'+esc(r.examNumber)+'</b></p><ul style="margin:8px 0 0 18px;font-size:14px">'+r.subjects.map(function(x){return'<li>'+esc(x.title)+'</li>';}).join("")+'</ul>'
+      +'<a class="btn g" href="/api/pdf/exam-docket?sessionId='+encodeURIComponent(s.id)+'">Download Exam Docket (PDF)</a>';
+  }else if(!paid){h+='<p class="sub" style="margin-top:6px">Pay the fee first to unlock this step.</p>';}
+  else if(!s.open){h+='<p class="sub" style="margin-top:6px">Registration is closed.</p>';}
+  else{
+    h+='<p class="sub" style="margin-top:6px">You can only attempt the subjects you register. You cannot change them after submitting.</p>'
+      +s.subjects.map(function(x){return'<label class="sj'+(x.enrolled?'':' off')+'"><input type="checkbox" class="ck" data-s="'+esc(s.id)+'" value="'+esc(x.id)+'"'+(x.enrolled?'':' disabled')+'> '+esc(x.title)+(x.enrolled?'':' <span class="sub">(enrol in this course first)</span>')+'</label>';}).join("")
+      +'<button data-sub="'+esc(s.id)+'">Submit registration</button>';
+  }
+  return h+'</div></div>';
+}
+async function load(){
+  try{var d=await api("/me");
+    if(!d.admitted){$("root").innerHTML='<div class="card"><h2>Exam Registration</h2><p class="sub">Your admission must be approved before you can register for exams.</p></div>';return;}
+    $("root").innerHTML=d.sessions.length?d.sessions.map(card).join(""):'<div class="card"><h2>Exam Registration</h2><p class="sub">There is no exam registration open right now. Please check back later.</p></div>';
+  }catch(e){$("root").innerHTML='<div class="card"><p class="sub">'+esc(e.message)+'</p></div>';}
+}
+document.addEventListener("click",async function(e){
+  var t=e.target;if(!t.getAttribute)return;
+  var pay=t.getAttribute("data-pay"),fr=t.getAttribute("data-free"),sub=t.getAttribute("data-sub");
+  try{
+    if(pay){t.disabled=true;var d=await api("/pay",{method:"POST",body:JSON.stringify({sessionId:pay})});location.href=d.authorizationUrl;}
+    else if(fr){t.disabled=true;await api("/free",{method:"POST",body:JSON.stringify({sessionId:fr})});load();}
+    else if(sub){var ids=[].slice.call(document.querySelectorAll('.ck[data-s="'+sub+'"]:checked')).map(function(c){return c.value;});
+      if(!ids.length){say("Select at least one subject.",false);return;}
+      if(!confirm("Submit "+ids.length+" subject(s)? You cannot change them afterwards."))return;
+      t.disabled=true;var r=await api("/subjects",{method:"POST",body:JSON.stringify({sessionId:sub,courseIds:ids})});say("Registration complete. Exam number: "+r.examNumber,true);load();}
+  }catch(x){say(x.message,false);t.disabled=false;}
+});
+(async function(){
+  var ref=new URLSearchParams(location.search).get("reference")||new URLSearchParams(location.search).get("trxref");
+  if(ref){try{await api("/verify/"+encodeURIComponent(ref));say("Payment received. Now choose your subjects.",true);}catch(e){say(e.message,false);}history.replaceState(null,"","exam-register.html");}
+  load();
+})();
+</script></body></html>
