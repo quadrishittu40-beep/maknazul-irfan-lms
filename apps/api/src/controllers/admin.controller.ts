@@ -1,3 +1,4 @@
+import { ensureMatricNumber } from "../services/matric.service";
 import {
   Request,
   Response,
@@ -366,7 +367,7 @@ export async function approveStudent(
           await tx.notification.create({
             data: {
               userId: student.userId,
-              type: "APPROVAL",
+              type: "SYSTEM",
               title: "Registration Approved",
               message:
                 "Your MAKNAZUL IRFAN student registration has been approved. You can now access your student account."
@@ -376,6 +377,13 @@ export async function approveStudent(
           return updated;
         }
       );
+
+    let matricNumber: string | null = null;
+    try {
+      matricNumber = await ensureMatricNumber(student.id);
+    } catch (e) {
+      console.error("matric generation failed:", e);
+    }
 
     await createAuditLog({
       userId: req.user!.id,
@@ -390,7 +398,10 @@ export async function approveStudent(
     });
 
     return success(res, {
-      message: "Student approved successfully.",
+      message: matricNumber
+        ? `Student approved successfully. Matric number ${matricNumber} has been generated and sent to the applicant.`
+        : "Student approved successfully.",
+      matricNumber,
       student: updatedStudent
     });
   } catch (error) {
@@ -569,6 +580,14 @@ export async function updateStudentStatus(
           }
         }
       });
+
+    if (status === "APPROVED" || status === "ENROLLED") {
+      try {
+        await ensureMatricNumber(student.id);
+      } catch (e) {
+        console.error("matric generation failed:", e);
+      }
+    }
 
     await createAuditLog({
       userId: req.user!.id,

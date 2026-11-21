@@ -9,6 +9,7 @@ import { shapeArabic } from "../utils/arabic";
 import { code128Widths } from "../utils/barcode";
 import crypto from "crypto";
 import { env } from "../config/env";
+import { ensureMatricNumber } from "../services/matric.service";
 
 const GREEN = "#064e3b";
 const GOLD = "#b8932a";
@@ -1430,6 +1431,15 @@ export async function admissionLetterPdf(req: AuthenticatedRequest, res: Respons
       return failure(res, "Your admission letter is available after your admission has been approved.", 403);
     }
 
+    let matric: string | null = sp.matricNumber || null;
+    if (!matric && ["APPROVED", "ENROLLED", "GRADUATED"].includes(sp.status)) {
+      try {
+        matric = await ensureMatricNumber(sp.id, { announce: false });
+      } catch {
+        /* optional */
+      }
+    }
+
     const now = new Date();
     const events = await prisma.calendarEvent.findMany({ orderBy: { startDate: "asc" } });
     const upcoming = events.filter((e) => e.startDate >= new Date(now.getTime() - 86400000));
@@ -1474,6 +1484,7 @@ export async function admissionLetterPdf(req: AuthenticatedRequest, res: Respons
     const yRows = doc.y;
     const info: Array<[string, string]> = [
       ["Student name", fullName],
+      ["Matric number", matric || "To be issued on approval"],
       ["Email", user.email],
       ["Level / Class", [sp.level?.name, sp.class?.name].filter(Boolean).join(" / ") || "To be assigned"],
       ["Admission status", sp.status === "APPROVED" ? "Approved" : sp.status.charAt(0) + sp.status.slice(1).toLowerCase()],
@@ -1658,6 +1669,14 @@ async function loadIdCard(req: AuthenticatedRequest) {
   const year = new Date(user.createdAt).getFullYear();
   const sp: any = user.studentProfile;
   const tp: any = user.teacherProfile;
+  let matric: string | null = sp?.matricNumber || null;
+  if (!matric && sp && ["APPROVED", "ENROLLED", "GRADUATED"].includes(sp.status)) {
+    try {
+      matric = await ensureMatricNumber(sp.id, { announce: false });
+    } catch {
+      /* optional */
+    }
+  }
 
   const title =
     user.role === "TEACHER"
@@ -1695,8 +1714,8 @@ async function loadIdCard(req: AuthenticatedRequest) {
       name: `${user.firstName} ${user.lastName}`,
       role: user.role,
       title,
-      idLabel: user.role === "STUDENT" ? "STUDENT ID" : "STAFF ID",
-      idNumber: `MIA-${prefix}-${year}-${serial}`,
+      idLabel: user.role === "STUDENT" ? (matric ? "MATRIC NO" : "STUDENT ID") : "STAFF ID",
+      idNumber: matric || `MIA-${prefix}-${year}-${serial}`,
       details,
       issued: fmtDate(user.createdAt)
     }
