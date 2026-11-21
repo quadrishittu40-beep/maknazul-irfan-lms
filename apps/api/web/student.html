@@ -479,6 +479,10 @@
           through MAKNAZUL IRFAN.
         </p>
 
+        <p id="matricLine" style="display:none;font-weight:bold;margin-top:6px">
+          Matric No: <span id="matricNo"></span>
+        </p>
+
       </div>
 
 
@@ -1980,6 +1984,18 @@ document.addEventListener(
         : "Admission fee: pay NGN " + Number(d.amount).toLocaleString("en-NG") + " to complete your admission. <a href=\"admission.html\" style=\"color:#064e3b;font-weight:bold\">Pay now</a>";
       var main = document.querySelector("main");
       if (main) main.parentNode.insertBefore(bar, main);
+    })
+    .catch(function () {});
+})();
+
+(function () {
+  fetch("/api/plan/matric", { credentials: "include" })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.matricNumber) {
+        document.getElementById("matricNo").textContent = d.matricNumber;
+        document.getElementById("matricLine").style.display = "block";
+      }
     })
     .catch(function () {});
 })();
