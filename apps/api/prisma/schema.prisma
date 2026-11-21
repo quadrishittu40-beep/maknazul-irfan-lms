@@ -159,6 +159,8 @@ model StudentProfile {
 
   matricNumber String? @unique
 
+  examRegistrations ExamRegistration[]
+
   guardianName String?
 
   guardianPhone String?
@@ -358,6 +360,10 @@ model Course {
   payments Payment[]
 
   schemeItems SchemeItem[]
+
+  examSessionCourses ExamSessionCourse[]
+
+  examRegistrationCourses ExamRegistrationCourse[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1114,4 +1120,95 @@ model CalendarEvent {
 
   @@index([session])
   @@index([startDate])
+}
+
+
+// ============================================================
+// EXAM REGISTRATION
+// ============================================================
+
+model ExamSession {
+  id String @id @default(cuid())
+
+  title String
+
+  session String
+
+  term String?
+
+  fee Decimal @default(0) @db.Decimal(12, 2)
+
+  opensAt DateTime?
+
+  closesAt DateTime?
+
+  active Boolean @default(true)
+
+  courses ExamSessionCourse[]
+
+  registrations ExamRegistration[]
+
+  createdAt DateTime @default(now())
+}
+
+model ExamSessionCourse {
+  id String @id @default(cuid())
+
+  examSessionId String
+
+  courseId String
+
+  examSession ExamSession @relation(fields: [examSessionId], references: [id], onDelete: Cascade)
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([examSessionId, courseId])
+  @@index([courseId])
+}
+
+model ExamRegistration {
+  id String @id @default(cuid())
+
+  examSessionId String
+
+  studentId String
+
+  examSession ExamSession @relation(fields: [examSessionId], references: [id], onDelete: Cascade)
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  amount Decimal @db.Decimal(12, 2)
+
+  status PaymentStatus @default(PENDING)
+
+  provider PaymentProvider @default(PAYSTACK)
+
+  reference String @unique
+
+  paidAt DateTime?
+
+  examNumber String? @unique
+
+  submittedAt DateTime?
+
+  courses ExamRegistrationCourse[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([examSessionId, studentId])
+  @@index([studentId])
+}
+
+model ExamRegistrationCourse {
+  id String @id @default(cuid())
+
+  registrationId String
+
+  courseId String
+
+  registration ExamRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([registrationId, courseId])
 }
