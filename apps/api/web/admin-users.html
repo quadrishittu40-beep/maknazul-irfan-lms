@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manage Accounts | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:94%;max-width:900px;margin:22px auto}
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h2{color:#064e3b;font-size:18px;margin-bottom:6px}.sub{color:#68756d;font-size:13px;line-height:1.5}
+.f{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+input,select{padding:10px;border:1px solid #ccd8d1;border-radius:7px;font-size:15px}input{flex:1;min-width:160px}
+button{padding:10px 16px;border:0;border-radius:7px;background:#d4af37;font-weight:bold;font-size:14px;cursor:pointer}
+button.del{background:#fdecec;color:#a12626;padding:6px 10px;font-size:12px}
+.m{display:none;padding:10px;border-radius:7px;margin:10px 0;font-size:14px}.ok{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 5px;text-align:left;border-bottom:1px solid #e3ebe6;vertical-align:top}th{color:#064e3b}
+.tag{display:inline-block;background:#e8f7ed;color:#064e3b;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:bold}
+</style></head><body>
+<header><b>Manage Accounts</b><a href="admin.html">&larr; Back to admin</a></header>
+<main><div class="card"><h2>Students, teachers and staff</h2>
+<p class="sub">Deleting an account is permanent: a student's results, payments and registration are removed too. A teacher's courses, tests and live classes are kept.</p>
+<div id="msg" class="m"></div>
+<div class="f"><input id="q" placeholder="Search name or email"><select id="role"><option value="">All roles</option><option value="STUDENT">Students</option><option value="TEACHER">Teachers</option><option value="PARENT">Parents</option><option value="ADMIN">Admins</option></select><button id="go">Search</button></div>
+<div class="tw" id="list"><p class="sub">Loading...</p></div></div></main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");window.scrollTo(0,0);}
+async function api(p,o){o=o||{};o.credentials="include";var r=await fetch("/api/manage"+p,o);
+  if(r.status===401){location.href="login.html";throw new Error("Please log in.");}
+  var d=await r.json().catch(function(){return{};});if(!r.ok)throw new Error(d.message||"Request failed.");return d;}
+async function load(){
+  try{var d=await api("/users?q="+encodeURIComponent($("q").value)+"&role="+encodeURIComponent($("role").value));var u=d.users||[];
+    $("list").innerHTML=u.length?'<table><tr><th>Name</th><th>Email</th><th>Role</th><th>Matric</th><th></th></tr>'+u.map(function(x){return'<tr><td>'+esc(x.name)+(x.active?'':' <span class="sub">(inactive)</span>')+'</td><td>'+esc(x.email)+'</td><td><span class="tag">'+esc(x.role)+'</span></td><td>'+esc(x.matric||"-")+'</td><td><button class="del" data-id="'+esc(x.id)+'" data-n="'+esc(x.name)+'">Delete</button></td></tr>';}).join("")+'</table>':'<p class="sub">No accounts found.</p>';
+  }catch(e){$("list").innerHTML='<p class="sub">'+esc(e.message)+'</p>';}}
+$("go").addEventListener("click",load);
+$("q").addEventListener("keydown",function(e){if(e.key==="Enter")load();});
+$("list").addEventListener("click",async function(e){var id=e.target.getAttribute&&e.target.getAttribute("data-id");if(!id)return;
+  var n=e.target.getAttribute("data-n");
+  if(!confirm("Permanently delete "+n+"? This cannot be undone."))return;
+  try{var d=await api("/users/"+encodeURIComponent(id),{method:"DELETE"});say(d.message,true);load();}catch(x){say(x.message,false);}});
+load();
+</script></body></html>
