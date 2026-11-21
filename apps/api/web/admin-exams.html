@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exam Sessions | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:94%;max-width:860px;margin:22px auto}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h2{color:#064e3b;font-size:18px;margin-bottom:6px}.sub{color:#68756d;font-size:13px;line-height:1.5}
+label{display:block;margin:10px 0 4px;font-weight:bold;font-size:14px}
+input,select{width:100%;padding:10px;border:1px solid #ccd8d1;border-radius:7px;font-size:15px}
+button{padding:10px 16px;border:0;border-radius:7px;background:#d4af37;font-weight:bold;font-size:14px;margin:10px 8px 0 0;cursor:pointer}
+button.g{background:#064e3b;color:#fff}
+.row2{display:flex;gap:10px;flex-wrap:wrap}.row2>div{flex:1;min-width:140px}
+.m{display:none;padding:10px;border-radius:7px;margin-bottom:10px;font-size:14px}.ok{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
+.cl{max-height:220px;overflow:auto;border:1px solid #dfe9e3;border-radius:8px;padding:6px}
+.cl label{display:flex;align-items:center;gap:8px;font-weight:normal;margin:4px 0}.cl input{width:auto}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}th,td{padding:7px 5px;text-align:left;border-bottom:1px solid #e3ebe6;vertical-align:top}th{color:#064e3b}
+.sess{border:1px solid #dfe9e3;border-radius:10px;padding:12px;margin-top:12px}
+a.l{color:#064e3b;font-weight:bold}
+</style></head><body>
+<header><b>Exam Sessions</b><a href="admin.html">&larr; Back to admin</a></header>
+<main>
+<div class="card"><h2>Create an exam session</h2>
+<p class="sub">Students pay the fee, then pick from the subjects you select here. Only registered subjects can be attempted.</p>
+<div id="msg" class="m"></div>
+<form id="f">
+<label>Title</label><input id="ti" required placeholder="First Term Examination">
+<div class="row2"><div><label>Session</label><input id="se" required placeholder="2026/2027"></div><div><label>Term (optional)</label><input id="te" placeholder="First Term"></div></div>
+<div class="row2"><div><label>Exam fee (&#8358;, 0 = free)</label><input id="fe" type="number" min="0" value="0" required></div><div><label>Opens (optional)</label><input id="op" type="date"></div><div><label>Closes (optional)</label><input id="cl" type="date"></div></div>
+<label>Subjects offered</label><div class="cl" id="courses"><span class="sub">Loading...</span></div>
+<button type="submit" id="b">Create session</button></form></div>
+<div class="card"><h2>Sessions</h2><div id="list"><p class="sub">Loading...</p></div></div>
+</main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");window.scrollTo(0,0);}
+async function api(p,o){o=o||{};o.credentials="include";if(o.body)o.headers={"Content-Type":"application/json"};
+  var r=await fetch("/api/exam-reg"+p,o);if(r.status===401){location.href="login.html";throw new Error("Please log in.");}
+  var d=await r.json().catch(function(){return{};});if(!r.ok)throw new Error(d.message||"Request failed.");return d;}
+async function loadCourses(){try{var d=await api("/admin/courses");$("courses").innerHTML=d.courses.length?d.courses.map(function(c){return'<label><input type="checkbox" class="cc" value="'+esc(c.id)+'"> '+esc(c.title)+'</label>';}).join(""):'<span class="sub">No courses yet.</span>';}catch(e){$("courses").textContent=e.message;}}
+async function load(){try{var d=await api("/admin/sessions");var s=d.sessions;
+  $("list").innerHTML=s.length?s.map(function(x){return'<div class="sess"><b>'+esc(x.title)+'</b> <span class="sub">'+esc(x.session)+(x.term?' &middot; '+esc(x.term):'')+' &middot; Fee '+(x.fee>0?'₦'+Number(x.fee).toLocaleString("en-NG"):'Free')+' &middot; '+(x.active?'<b style="color:#176b3a">Open</b>':'<b style="color:#a12626">Closed</b>')+'</span>'
+    +'<p class="sub" style="margin-top:4px">Subjects: '+esc(x.subjects.join(", "))+'</p><p class="sub">Paid: '+x.paid+' &middot; Fully registered: '+x.registered+'</p>'
+    +'<button class="g" data-t="'+esc(x.id)+'">'+(x.active?'Close registration':'Re-open')+'</button><button data-r="'+esc(x.id)+'">View registrations</button><button data-p="'+esc(x.id)+'">Record cash/transfer payment</button><div id="r-'+esc(x.id)+'"></div></div>';}).join(""):'<p class="sub">No exam sessions yet.</p>';
+  }catch(e){$("list").innerHTML='<p class="sub">'+esc(e.message)+'</p>';}}
+$("list").addEventListener("click",async function(e){var t=e.target;if(!t.getAttribute)return;
+  var tg=t.getAttribute("data-t"),rg=t.getAttribute("data-r"),pg=t.getAttribute("data-p");
+  try{
+    if(tg){await api("/admin/sessions/"+encodeURIComponent(tg)+"/toggle",{method:"POST"});load();}
+    else if(rg){var d=await api("/admin/registrations/"+encodeURIComponent(rg));var box=$("r-"+rg);
+      box.innerHTML=d.registrations.length?'<div class="tw"><table><tr><th>Student</th><th>Matric</th><th>Status</th><th>Exam no.</th><th>Subjects</th><th></th></tr>'+d.registrations.map(function(x){return'<tr><td>'+esc(x.name)+'<div class="sub">'+esc(x.email)+'</div></td><td>'+esc(x.matric||"-")+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.examNumber||"-")+'</td><td>'+esc(x.subjects.join(", ")||"-")+'</td><td>'+(x.examNumber?'<a class="l" href="/api/pdf/exam-docket?userId='+encodeURIComponent(x.userId)+'&sessionId='+encodeURIComponent(rg)+'">Docket</a>':'')+'</td></tr>';}).join("")+'</table></div>':'<p class="sub" style="margin-top:8px">No registrations yet.</p>';}
+    else if(pg){var em=prompt("Student's email address:");if(!em)return;var r=await api("/admin/record",{method:"POST",body:JSON.stringify({sessionId:pg,studentEmail:em})});say(r.message,true);load();}
+  }catch(x){say(x.message,false);}});
+$("f").addEventListener("submit",async function(e){e.preventDefault();
+  var ids=[].slice.call(document.querySelectorAll(".cc:checked")).map(function(c){return c.value;});
+  if(!ids.length){say("Select at least one subject.",false);return;}
+  $("b").disabled=true;
+  try{await api("/admin/sessions",{method:"POST",body:JSON.stringify({title:$("ti").value,session:$("se").value,term:$("te").value,fee:Number($("fe").value||0),opensAt:$("op").value,closesAt:$("cl").value,courseIds:ids})});
+    say("Exam session created.",true);$("f").reset();document.querySelectorAll(".cc").forEach(function(c){c.checked=false;});load();}catch(x){say(x.message,false);}
+  $("b").disabled=false;});
+loadCourses();load();
+</script></body></html>
