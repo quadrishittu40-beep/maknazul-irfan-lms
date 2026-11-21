@@ -157,6 +157,8 @@ model StudentProfile {
 
   bloodGroup String?
 
+  matricNumber String? @unique
+
   guardianName String?
 
   guardianPhone String?
