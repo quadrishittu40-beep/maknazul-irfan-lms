@@ -31,6 +31,8 @@ import registrationRoutes from "./routes/registration.routes";
 import passwordRoutes from "./routes/password.routes";
 import parentRoutes from "./routes/parent.routes";
 import planRoutes from "./routes/plan.routes";
+import examRegRoutes, { examRegistrationGuard } from "./routes/exam-reg.routes";
+import { requireAuth as examRequireAuth } from "./middleware/auth";
 
 import { notFoundHandler as notFound } from "./middleware/error";
 
@@ -234,6 +236,10 @@ app.use(
   "/api/progress",
   progressRoutes
 );
+
+/* Exam registration: only registered subjects can be attempted */
+app.post("/api/exams/tests/:testId/start", examRequireAuth, examRegistrationGuard);
+app.use("/api/exam-reg", examRegRoutes);
 
 /* Tests and examinations */
 app.use(
