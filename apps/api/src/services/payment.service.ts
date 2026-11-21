@@ -496,6 +496,32 @@ export async function processPaystackWebhook(
     return { processed: true };
   }
 
+  /* Exam registration fee */
+  if (String(reference).startsWith("EXM-")) {
+    const reg = await prisma.examRegistration.findUnique({
+      where: { reference },
+      include: { student: { select: { userId: true } } }
+    });
+    if (!reg) return { processed: false };
+    if (reg.status === "PAID") return { processed: true, alreadyProcessed: true };
+    if (
+      payload.data.amount !== Math.round(Number(reg.amount) * 100) ||
+      payload.data.currency !== "NGN"
+    ) {
+      throw new Error("Webhook payment amount or currency mismatch.");
+    }
+    await prisma.examRegistration.update({ where: { id: reg.id }, data: { status: "PAID", paidAt: new Date() } });
+    await prisma.notification.create({
+      data: {
+        userId: reg.student.userId,
+        type: "PAYMENT",
+        title: "Exam registration fee received",
+        message: "Your exam registration fee was received. You can now choose your exam subjects."
+      }
+    });
+    return { processed: true };
+  }
+
   /* Admission fee paid from the student dashboard */
   if (String(reference).startsWith("ADM-")) {
     const fee = await prisma.admissionFee.findUnique({
@@ -743,4 +769,74 @@ export async function verifyRegistrationPayment(reference: string) {
   }
   if (tx.status !== "success") throw new Error("Payment was not successful.");
   return prisma.registrationPayment.update({ where: { id: rp.id }, data: { status: "PAID" } });
+}
+
+
+/* ---------------- Exam registration fee (Paystack) ---------------- */
+
+export async function initializeExamPayment(userId: string, sessionId: string, callbackUrl?: string) {
+  const student = await prisma.studentProfile.findUnique({ where: { userId }, include: { user: true } });
+  if (!student) throw new Error("Student profile not found.");
+  const session = await prisma.examSession.findUnique({ where: { id: sessionId } });
+  if (!session || !session.active) throw new Error("This exam registration is not open.");
+  const now = new Date();
+  if ((session.opensAt && now < session.opensAt) || (session.closesAt && now > session.closesAt)) {
+    throw new Error("Exam registration is closed for this session.");
+  }
+  const existing = await prisma.examRegistration.findUnique({
+    where: { examSessionId_studentId: { examSessionId: session.id, studentId: student.id } }
+  });
+  if (existing?.status === "PAID") throw new Error("You have already paid for this exam registration.");
+
+  const amount = Number(session.fee);
+  if (amount <= 0) throw new Error("This exam has no fee. Open the registration page to continue.");
+
+  const reference = `EXM-${Date.now()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+  await prisma.examRegistration.upsert({
+    where: { examSessionId_studentId: { examSessionId: session.id, studentId: student.id } },
+    create: { examSessionId: session.id, studentId: student.id, amount, status: "PENDING", provider: "PAYSTACK", reference },
+    update: { amount, status: "PENDING", provider: "PAYSTACK", reference }
+  });
+
+  const result = await paystackRequest<PaystackInitializeResponse>("/transaction/initialize", {
+    method: "POST",
+    body: JSON.stringify({
+      email: student.user.email,
+      amount: Math.round(amount * 100),
+      currency: "NGN",
+      reference,
+      callback_url: callbackUrl || `${env.APP_URL}/exam-register.html`,
+      metadata: { type: "EXAM_REGISTRATION", studentId: student.id, sessionId: session.id }
+    })
+  });
+  if (!result.status || !result.data) throw new Error(result.message || "Unable to start the payment.");
+  return { authorizationUrl: result.data.authorization_url, reference };
+}
+
+export async function verifyExamPayment(userId: string, reference: string) {
+  const student = await prisma.studentProfile.findUnique({ where: { userId }, select: { id: true } });
+  const reg = student ? await prisma.examRegistration.findUnique({ where: { reference } }) : null;
+  if (!student || !reg || reg.studentId !== student.id) throw new Error("Payment record not found.");
+  if (reg.status === "PAID") return reg;
+
+  const result = await paystackRequest<PaystackVerifyResponse>(
+    `/transaction/verify/${encodeURIComponent(reference)}`,
+    { method: "GET" }
+  );
+  const tx = result.data;
+  if (!result.status || !tx) throw new Error(result.message || "Unable to verify payment.");
+  if (tx.reference !== reg.reference || tx.currency !== "NGN" || tx.amount !== Math.round(Number(reg.amount) * 100)) {
+    throw new Error("Payment details do not match.");
+  }
+  if (tx.status !== "success") throw new Error("Payment was not successful.");
+  const updated = await prisma.examRegistration.update({ where: { id: reg.id }, data: { status: "PAID", paidAt: new Date() } });
+  await prisma.notification.create({
+    data: {
+      userId,
+      type: "PAYMENT",
+      title: "Exam registration fee received",
+      message: "Your exam registration fee was received. You can now choose your exam subjects."
+    }
+  });
+  return updated;
 }
