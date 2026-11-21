@@ -4,11 +4,31 @@ import { prisma } from "../config/prisma";
 import { success, failure } from "../utils/http";
 import { requireAuth } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
+import { ensureMatricNumber } from "../services/matric.service";
 
 const router = Router();
 router.use(requireAuth);
 
 const TYPES = ["RESUMPTION", "CLOSING", "EXAM", "HOLIDAY", "EVENT"] as const;
+
+/* ---------- My matric number (students) ---------- */
+router.get("/matric", requireRole("STUDENT"), async (req: any, res) => {
+  try {
+    const sp = await prisma.studentProfile.findUnique({
+      where: { userId: req.user.id },
+      select: { id: true, status: true, matricNumber: true }
+    });
+    if (!sp) return success(res, { matricNumber: null });
+    let matric = sp.matricNumber;
+    if (!matric && ["APPROVED", "ENROLLED", "GRADUATED"].includes(sp.status)) {
+      matric = await ensureMatricNumber(sp.id);
+    }
+    return success(res, { matricNumber: matric });
+  } catch (error) {
+    console.error("matric error:", error);
+    return success(res, { matricNumber: null });
+  }
+});
 
 /* ---------- Academic calendar ---------- */
 router.get("/calendar", async (_req, res) => {
