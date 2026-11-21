@@ -31,6 +31,7 @@ import registrationRoutes from "./routes/registration.routes";
 import passwordRoutes from "./routes/password.routes";
 import parentRoutes from "./routes/parent.routes";
 import planRoutes from "./routes/plan.routes";
+import userAdminRoutes from "./routes/user-admin.routes";
 import examRegRoutes, { examRegistrationGuard } from "./routes/exam-reg.routes";
 import { requireAuth as examRequireAuth } from "./middleware/auth";
 
@@ -252,6 +253,9 @@ app.use(
   "/api/live-classes",
   liveClassRoutes
 );
+
+/* Admin: manage / delete accounts */
+app.use("/api/manage", userAdminRoutes);
 
 /* Scheme of work and academic calendar */
 app.use("/api/plan", planRoutes);
