@@ -60,7 +60,7 @@ router.get("/users", async (req, res) => {
 
 /* Permanently delete a student, teacher, parent or admin account */
 router.delete("/users/:id", async (req: any, res) => {
-  const id = req.params.id;
+  const id = String(req.params.id);
   try {
     if (id === req.user.id) return failure(res, "You cannot delete your own account.", 400);
     const target = await prisma.user.findUnique({
