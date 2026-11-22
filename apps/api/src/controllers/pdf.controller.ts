@@ -1513,7 +1513,20 @@ export async function admissionLetterPdf(req: AuthenticatedRequest, res: Respons
     y += 30;
 
     // details box
-    const boxH = 80;
+    const rowsL: Array<[string, string]> = [
+      ["Student’s Name", fullName],
+      ["Email", user.email],
+      ["Level / Class", [sp.level?.name, sp.class?.name].filter(Boolean).join(" / ") || "-"],
+      ["Status", sp.status === "APPROVED" ? "Approved" : sp.status.charAt(0) + sp.status.slice(1).toLowerCase()]
+    ];
+    const rowsR: Array<[string, string]> = [
+      ["Matric No.", matric || "To be issued"],
+      ["Admission Fee", sp.admissionFee ? (sp.admissionFee.status === "PAID" ? "Paid" : sp.admissionFee.status) : "-"],
+      ["Session", sessionName || "-"],
+      ["Resumption", resumption ? longDate(resumption.startDate) : "As announced"]
+    ];
+    const rowGap = 19;
+    const boxH = 16 + rowGap * 4;
     doc.roundedRect(L, y, W, boxH, 12).lineWidth(1.5).fillAndStroke("#FBF6DF", GREEN);
     doc.lineWidth(1).strokeColor(GREEN).moveTo(L + W * 0.52, y + 8).lineTo(L + W * 0.52, y + boxH - 8).stroke();
     const colL = L + 14;
@@ -1524,24 +1537,28 @@ export async function admissionLetterPdf(req: AuthenticatedRequest, res: Respons
       doc.font("Serif").fontSize(9.5).fillColor("#111111")
         .text(value || "-", x + labelW + 12, yy, { width: valW, height: 12, ellipsis: true, lineBreak: false });
     };
-    const lvl = [sp.level?.name, sp.class?.name].filter(Boolean).join(" / ") || "-";
-    field("Student’s Name", fullName, colL, y + 12, 82, 118);
-    field("Class / Level", lvl, colL, y + 33, 82, 118);
-    field("Admission No.", matric || "To be issued", colL, y + 54, 82, 118);
-    field("Programme", sp.class?.name || "Islamic & Arabic Studies", colR, y + 12, 62, 120);
-    field("Session", sessionName || "-", colR, y + 33, 62, 120);
-    field("Start Date", resumption ? longDate(resumption.startDate) : "Immediately", colR, y + 54, 62, 120);
-    y += boxH + 16;
+    rowsL.forEach(([k, v], i) => field(k, v, colL, y + 10 + i * rowGap, 78, 140));
+    rowsR.forEach(([k, v], i) => field(k, v, colR, y + 10 + i * rowGap, 76, 110));
+    y += boxH + 12;
 
-    const para = (t: string) => {
-      doc.font("Serif").fontSize(11).fillColor("#111111").text(t, L, y, { width: W, align: "justify", lineGap: 2 });
-      y = doc.y + 8;
-    };
-    para("You are warmly welcome to our esteemed academy, where we are committed to providing quality Islamic and Arabic education, alongside sound academic knowledge, moral values and character development.");
-    para("We look forward to your active participation and hope you will make the best use of the opportunities available in our academy. Please log in to your student portal to access your courses, live classes, lectures and tests.");
-    para("May Allah make your stay with us beneficial and successful. Amin.");
+    doc.font("Serif").fontSize(10.5).fillColor("#111111")
+      .text("Please log in to your student portal to access your courses, live classes, lectures and tests. Kindly read and observe the following:", L, y, { width: W, align: "justify", lineGap: 1.5 });
+    y = doc.y + 5;
+    [
+      "Attend live classes and complete your lectures and tests on time.",
+      "Pay all course fees through the official portal and keep your receipts.",
+      "Keep your login details private. Do not share your password.",
+      "Conduct yourself with good Islamic manners (adab) towards teachers and fellow students.",
+      "Check your notifications and the academic calendar regularly."
+    ].forEach((r, i) => {
+      doc.font("Serif").fontSize(10).fillColor("#111111").text(`${i + 1}.  ${r}`, L + 12, y, { width: W - 20, lineGap: 1 });
+      y = doc.y + 2.5;
+    });
+    y += 4;
+    doc.font("Serif").fontSize(10.5).fillColor("#111111")
+      .text("We congratulate you and pray that Allah grants you beneficial knowledge. Welcome to the Maknazul ’Irfan family.", L, y, { width: W, align: "justify", lineGap: 1.5 });
 
-    // principal's signature block (replaces the sample's name area)
+    // principal's signature, stamp and verification code
     try {
       if (fs.existsSync(SIGNATURE2_PATH)) {
         doc.image(SIGNATURE2_PATH, 40, footerY + 28, { fit: [130, 46], align: "center", valign: "bottom" });
@@ -1550,11 +1567,13 @@ export async function admissionLetterPdf(req: AuthenticatedRequest, res: Respons
       /* optional */
     }
     doc.lineWidth(1).strokeColor("#222222").moveTo(26, footerY + 76).lineTo(272, footerY + 76).stroke();
-    drawStamp(doc, 360, footerY + 84, 52);
+    drawStamp(doc, 322, footerY + 84, 46);
     doc.font("Serif-Bold").fontSize(10.5).fillColor("#111111")
       .text("Ustadh Abdul Qadir Hibatullah Shittu", 26, footerY + 81, { width: 262, lineBreak: false });
     doc.font("Serif").fontSize(10).fillColor("#111111").text("Principal", 26, footerY + 96, { width: 262, lineBreak: false });
     doc.font("Serif-Bold").fontSize(10).fillColor(GREEN).text("Maknazul ’Irfan Academy", 26, footerY + 109, { width: 262, lineBreak: false });
+    drawQr(doc, `MAKNAZUL IRFAN ADMISSION|${ref}|${fullName}`, 384, footerY + 44, 62);
+    doc.font("Body").fontSize(6.5).fillColor(GREY).text(ref, 366, footerY + 110, { width: 98, align: "center", lineBreak: false });
     doc.end();
   } catch (error) {
     console.error("admissionLetterPdf error:", error);
