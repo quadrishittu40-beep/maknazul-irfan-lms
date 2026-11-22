@@ -1550,6 +1550,7 @@ export async function admissionLetterPdf(req: AuthenticatedRequest, res: Respons
       /* optional */
     }
     doc.lineWidth(1).strokeColor("#222222").moveTo(26, footerY + 76).lineTo(272, footerY + 76).stroke();
+    drawStamp(doc, 360, footerY + 84, 52);
     doc.font("Serif-Bold").fontSize(10.5).fillColor("#111111")
       .text("Ustadh Abdul Qadir Hibatullah Shittu", 26, footerY + 81, { width: 262, lineBreak: false });
     doc.font("Serif").fontSize(10).fillColor("#111111").text("Principal", 26, footerY + 96, { width: 262, lineBreak: false });
