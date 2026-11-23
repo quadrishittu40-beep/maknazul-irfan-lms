@@ -33,6 +33,7 @@ import parentRoutes from "./routes/parent.routes";
 import planRoutes from "./routes/plan.routes";
 import userAdminRoutes from "./routes/user-admin.routes";
 import examRegRoutes, { examRegistrationGuard } from "./routes/exam-reg.routes";
+import termFeeRoutes, { termFeeGuard } from "./routes/term-fee.routes";
 import { requireAuth as examRequireAuth } from "./middleware/auth";
 
 import { notFoundHandler as notFound } from "./middleware/error";
@@ -171,6 +172,24 @@ app.get("/api/health", async (_req, res) => {
 /* =========================================================
    API ROUTES
 ========================================================= */
+
+/* Quarterly fee must be paid before lectures, classes, live classes, exams and results */
+app.use(
+  [
+    "/api/lectures",
+    "/api/live-classes",
+    "/api/exams",
+    "/api/exam-reg",
+    "/api/progress",
+    "/api/pdf/results",
+    "/api/pdf/reportcard",
+    "/api/pdf/course-results",
+    "/api/pdf/exam-docket"
+  ],
+  examRequireAuth,
+  termFeeGuard
+);
+app.use("/api/term-fee", termFeeRoutes);
 
 /* Authentication */
 app.use(
