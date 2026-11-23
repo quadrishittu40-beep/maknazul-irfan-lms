@@ -2,6 +2,7 @@ import crypto from "crypto";
 
 import { prisma } from "../config/prisma";
 import { env } from "../config/env";
+import { feeForLevel, currentPeriod, periodInfo } from "./termfee.service";
 
 type PaystackInitializeResponse = {
   status: boolean;
@@ -496,6 +497,32 @@ export async function processPaystackWebhook(
     return { processed: true };
   }
 
+  /* Quarterly tuition fee */
+  if (String(reference).startsWith("TRM-")) {
+    const fee = await prisma.termFee.findUnique({
+      where: { reference },
+      include: { student: { select: { userId: true } } }
+    });
+    if (!fee) return { processed: false };
+    if (fee.status === "PAID") return { processed: true, alreadyProcessed: true };
+    if (
+      payload.data.amount !== Math.round(Number(fee.amount) * 100) ||
+      payload.data.currency !== "NGN"
+    ) {
+      throw new Error("Webhook payment amount or currency mismatch.");
+    }
+    await prisma.termFee.update({ where: { id: fee.id }, data: { status: "PAID", paidAt: new Date() } });
+    await prisma.notification.create({
+      data: {
+        userId: fee.student.userId,
+        type: "PAYMENT",
+        title: "Quarterly fee received",
+        message: `Your quarterly fee for ${periodInfo(fee.period).label} was received. You now have full access.`
+      }
+    });
+    return { processed: true };
+  }
+
   /* Exam registration fee */
   if (String(reference).startsWith("EXM-")) {
     const reg = await prisma.examRegistration.findUnique({
@@ -836,6 +863,73 @@ export async function verifyExamPayment(userId: string, reference: string) {
       type: "PAYMENT",
       title: "Exam registration fee received",
       message: "Your exam registration fee was received. You can now choose your exam subjects."
+    }
+  });
+  return updated;
+}
+
+
+/* ---------------- Quarterly tuition fee (Paystack) ---------------- */
+
+export async function initializeTermPayment(userId: string, callbackUrl?: string) {
+  const student = await prisma.studentProfile.findUnique({
+    where: { userId },
+    include: { user: true, level: true }
+  });
+  if (!student) throw new Error("Student profile not found.");
+  const amount = feeForLevel(student.level?.name);
+  if (amount === null) throw new Error("No quarterly fee is set for your level.");
+  const { period } = currentPeriod();
+  const existing = await prisma.termFee.findUnique({
+    where: { studentId_period: { studentId: student.id, period } }
+  });
+  if (existing?.status === "PAID") throw new Error("Your fee for this quarter is already paid.");
+
+  const reference = `TRM-${Date.now()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+  await prisma.termFee.upsert({
+    where: { studentId_period: { studentId: student.id, period } },
+    create: { studentId: student.id, period, amount, status: "PENDING", provider: "PAYSTACK", reference },
+    update: { amount, status: "PENDING", provider: "PAYSTACK", reference }
+  });
+
+  const result = await paystackRequest<PaystackInitializeResponse>("/transaction/initialize", {
+    method: "POST",
+    body: JSON.stringify({
+      email: student.user.email,
+      amount: Math.round(amount * 100),
+      currency: "NGN",
+      reference,
+      callback_url: callbackUrl || `${env.APP_URL}/fees.html`,
+      metadata: { type: "TERM_FEE", studentId: student.id, period }
+    })
+  });
+  if (!result.status || !result.data) throw new Error(result.message || "Unable to start the payment.");
+  return { authorizationUrl: result.data.authorization_url, reference };
+}
+
+export async function verifyTermPayment(userId: string, reference: string) {
+  const student = await prisma.studentProfile.findUnique({ where: { userId }, select: { id: true } });
+  const fee = student ? await prisma.termFee.findUnique({ where: { reference } }) : null;
+  if (!student || !fee || fee.studentId !== student.id) throw new Error("Payment record not found.");
+  if (fee.status === "PAID") return fee;
+
+  const result = await paystackRequest<PaystackVerifyResponse>(
+    `/transaction/verify/${encodeURIComponent(reference)}`,
+    { method: "GET" }
+  );
+  const tx = result.data;
+  if (!result.status || !tx) throw new Error(result.message || "Unable to verify payment.");
+  if (tx.reference !== fee.reference || tx.currency !== "NGN" || tx.amount !== Math.round(Number(fee.amount) * 100)) {
+    throw new Error("Payment details do not match.");
+  }
+  if (tx.status !== "success") throw new Error("Payment was not successful.");
+  const updated = await prisma.termFee.update({ where: { id: fee.id }, data: { status: "PAID", paidAt: new Date() } });
+  await prisma.notification.create({
+    data: {
+      userId,
+      type: "PAYMENT",
+      title: "Quarterly fee received",
+      message: `Your quarterly fee for ${periodInfo(fee.period).label} was received. You now have full access.`
     }
   });
   return updated;
