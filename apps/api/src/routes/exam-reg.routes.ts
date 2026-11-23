@@ -25,7 +25,7 @@ export async function examRegistrationGuard(req: Request, res: Response, next: N
   try {
     const user: any = (req as any).user;
     if (!user || user.role !== "STUDENT") return next();
-    const test = await prisma.test.findUnique({ where: { id: req.params.testId }, select: { courseId: true } });
+    const test = await prisma.test.findUnique({ where: { id: String(req.params.testId) }, select: { courseId: true } });
     if (!test) return next();
     const offered = await prisma.examSessionCourse.findMany({
       where: { courseId: test.courseId, examSession: { active: true } },
@@ -121,7 +121,7 @@ router.post("/pay", requireRole("STUDENT"), async (req: any, res) => {
 
 router.get("/verify/:reference", requireRole("STUDENT"), async (req: any, res) => {
   try {
-    const reg = await verifyExamPayment(req.user.id, req.params.reference);
+    const reg = await verifyExamPayment(req.user.id, String(req.params.referenc)e);
     return success(res, { paid: reg.status === "PAID" });
   } catch (e) {
     return failure(res, e instanceof Error ? e.message : "Unable to verify the payment.", 400);
@@ -287,7 +287,7 @@ router.post("/admin/sessions", requireRole("ADMIN"), async (req, res) => {
 });
 
 router.post("/admin/sessions/:id/toggle", requireRole("ADMIN"), async (req, res) => {
-  const s = await prisma.examSession.findUnique({ where: { id: req.params.id } });
+  const s = await prisma.examSession.findUnique({ where: { id: String(req.params.id) } });
   if (!s) return failure(res, "Not found.", 404);
   await prisma.examSession.update({ where: { id: s.id }, data: { active: !s.active } });
   return success(res, { message: s.active ? "Session closed." : "Session opened." });
@@ -296,7 +296,7 @@ router.post("/admin/sessions/:id/toggle", requireRole("ADMIN"), async (req, res)
 router.get("/admin/registrations/:sessionId", requireRole("ADMIN"), async (req, res) => {
   try {
     const regs = await prisma.examRegistration.findMany({
-      where: { examSessionId: req.params.sessionId },
+      where: { examSessionId: String(req.params.sessionId) },
       orderBy: { createdAt: "desc" },
       include: {
         student: { select: { matricNumber: true, user: { select: { id: true, firstName: true, lastName: true, email: true } } } },

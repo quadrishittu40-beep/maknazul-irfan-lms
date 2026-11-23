@@ -205,7 +205,7 @@ router.get("/admin/list", requireRole("ADMIN"), async (_req, res) => {
 
 router.delete("/admin/:id", requireRole("ADMIN"), async (req, res) => {
   try {
-    await prisma.parentLink.delete({ where: { id: req.params.id } });
+    await prisma.parentLink.delete({ where: { id: String(req.params.id) } });
     return success(res, { message: "Link removed." });
   } catch {
     return failure(res, "Link not found.", 404);

@@ -80,7 +80,7 @@ router.post("/calendar", requireRole("ADMIN"), async (req, res) => {
 
 router.delete("/calendar/:id", requireRole("ADMIN"), async (req, res) => {
   try {
-    await prisma.calendarEvent.delete({ where: { id: req.params.id } });
+    await prisma.calendarEvent.delete({ where: { id: String(req.params.id) } });
     return success(res, { message: "Event removed." });
   } catch {
     return failure(res, "Event not found.", 404);
@@ -91,7 +91,7 @@ router.delete("/calendar/:id", requireRole("ADMIN"), async (req, res) => {
 router.get("/scheme/:courseId", async (req: any, res) => {
   try {
     const course = await prisma.course.findUnique({
-      where: { id: req.params.courseId },
+      where: { id: String(req.params.courseId) },
       select: { id: true, title: true, teacherId: true, teacher: { select: { firstName: true, lastName: true } } }
     });
     if (!course) return failure(res, "Course not found.", 404);
@@ -132,7 +132,7 @@ router.put("/scheme/:courseId", requireRole("ADMIN", "TEACHER"), async (req: any
   const p = schemeSchema.safeParse(req.body);
   if (!p.success) return failure(res, "Each row needs a week number and a topic.", 422);
   try {
-    const course = await prisma.course.findUnique({ where: { id: req.params.courseId }, select: { id: true, teacherId: true } });
+    const course = await prisma.course.findUnique({ where: { id: String(req.params.courseId) }, select: { id: true, teacherId: true } });
     if (!course) return failure(res, "Course not found.", 404);
     if (req.user.role === "TEACHER" && course.teacherId !== req.user.id) return failure(res, "Access denied.", 403);
     await prisma.$transaction([
