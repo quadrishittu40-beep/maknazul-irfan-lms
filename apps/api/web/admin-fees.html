@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quarterly Fees | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:96%;max-width:900px;margin:20px auto}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+.sub{color:#68756d;font-size:13px;line-height:1.5}
+input,select{padding:10px;border:1px solid #cfd9d3;border-radius:7px;font-size:14px;width:100%;margin-top:8px}
+.row{padding:12px 0;border-bottom:1px solid #e6eee9;font-size:14px}
+.tag{display:inline-block;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:bold;background:#e8f7ed;color:#064e3b}.tag.w{background:#fff4d6;color:#8a6a00}.tag.n{background:#eee;color:#555}
+button{padding:8px 12px;border:0;border-radius:7px;background:#064e3b;color:#fff;font-weight:bold;font-size:13px;margin:6px 6px 0 0;cursor:pointer}
+button.r{background:#a12626}
+.m{display:none;padding:11px;border-radius:7px;margin-bottom:12px;font-size:14px}.ok{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
+</style></head><body>
+<header><b>Quarterly Fees</b><a href="admin.html">&larr; Admin</a></header>
+<main><div id="msg" class="m"></div>
+<div class="card"><b id="lbl">Loading...</b><p class="sub" id="sum"></p>
+<input id="q" placeholder="Search name, email or matric number"><select id="f"><option value="">All students</option><option value="UNPAID">Not paid</option><option value="PAID">Paid</option></select></div>
+<div class="card" id="list"></div></main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function naira(n){return "₦"+Number(n||0).toLocaleString("en-NG");}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");window.scrollTo(0,0);}
+async function api(p,o){o=o||{};o.credentials="include";if(o.body)o.headers={"Content-Type":"application/json"};
+  var r=await fetch("/api/term-fee"+p,o);if(r.status===401||r.status===403){location.href="login.html";throw new Error("Admin only.");}
+  var d=await r.json().catch(function(){return{};});if(!r.ok)throw new Error(d.message||"Request failed.");return d;}
+var rows=[];
+function draw(){
+  var f=$("f").value;var v=rows.filter(function(r){return !f||r.status===f;});
+  $("list").innerHTML=v.length?v.map(function(r){
+    var t=r.status==="PAID"?'<span class="tag">Paid'+(r.provider?' &middot; '+esc(r.provider.replace("_"," ").toLowerCase()):'')+'</span>':r.status==="NO_FEE"?'<span class="tag n">No fee</span>':'<span class="tag w">Not paid</span>';
+    var b=r.status==="UNPAID"?'<button data-c="'+esc(r.studentId)+'" data-p="CASH">Record cash</button><button data-c="'+esc(r.studentId)+'" data-p="BANK_TRANSFER">Record bank transfer</button>':(r.status==="PAID"&&r.provider!=="PAYSTACK"&&r.feeId?'<button class="r" data-u="'+esc(r.feeId)+'">Undo</button>':'');
+    return'<div class="row"><b>'+esc(r.name)+'</b> '+t+'<br><span class="sub">'+esc(r.level||"No level")+(r.amount!=null?' &middot; '+naira(r.amount):'')+(r.matric?' &middot; '+esc(r.matric):'')+' &middot; '+esc(r.email)+'</span><br>'+b+'</div>';
+  }).join(""):'<p class="sub">No students found.</p>';
+}
+async function load(){
+  try{var d=await api("/admin/list?q="+encodeURIComponent($("q").value));rows=d.rows;$("lbl").textContent=d.label;
+    var paid=rows.filter(function(r){return r.status==="PAID";}).length,un=rows.filter(function(r){return r.status==="UNPAID";}).length;
+    $("sum").textContent=paid+" paid, "+un+" not paid";draw();}
+  catch(e){$("list").innerHTML='<p class="sub">'+esc(e.message)+'</p>';}
+}
+$("f").onchange=draw;var tm;$("q").oninput=function(){clearTimeout(tm);tm=setTimeout(load,350);};
+document.addEventListener("click",async function(e){
+  var t=e.target;if(!t.getAttribute)return;var c=t.getAttribute("data-c"),u=t.getAttribute("data-u");
+  try{
+    if(c){if(!confirm("Record this fee as paid ("+t.getAttribute("data-p").replace("_"," ").toLowerCase()+")?"))return;
+      await api("/admin/record",{method:"POST",body:JSON.stringify({studentId:c,provider:t.getAttribute("data-p")})});say("Payment recorded.",true);load();}
+    else if(u){if(!confirm("Remove this payment record?"))return;await api("/admin/"+encodeURIComponent(u),{method:"DELETE"});say("Record removed.",true);load();}
+  }catch(x){say(x.message,false);}
+});
+load();
+</script></body></html>

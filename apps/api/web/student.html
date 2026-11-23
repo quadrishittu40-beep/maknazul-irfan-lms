@@ -575,6 +575,7 @@
         My Results
       </h2>
 
+      <a href="fees.html" id="feeLink" style="display:inline-block;background:#a12626;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Quarterly Fee</a>
       <a href="/api/pdf/admission-letter" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Admission Letter (PDF)</a>
       <a href="exam-register.html" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Exam Registration</a>
       <a href="calendar.html" style="display:inline-block;background:#064e3b;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Academic Calendar</a>
@@ -1999,6 +2000,23 @@ document.addEventListener(
       }
     })
     .catch(function () {});
+})();
+</script>
+<script>
+(function () {
+  fetch("/api/term-fee/me", { credentials: "include" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || !d.required || d.paid) return;
+      var m = document.querySelector("main");
+      if (!m) return;
+      var b = document.createElement("div");
+      b.style.cssText = "background:#fdecec;border:1px solid #e3b4b4;color:#7a1f1f;padding:14px;border-radius:9px;margin:0 0 16px;font-size:14px;line-height:1.5";
+      b.innerHTML = "<b>Quarterly fee due:</b> \u20A6" + Number(d.amount).toLocaleString("en-NG") + " for " + d.label +
+        ". Lectures, classes, live classes, exams and results open after payment. " +
+        '<a href="fees.html" style="color:#064e3b;font-weight:bold">Pay now</a>';
+      m.insertBefore(b, m.firstChild);
+    }).catch(function () {});
 })();
 </script>
 </body>

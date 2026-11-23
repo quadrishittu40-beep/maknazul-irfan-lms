@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quarterly Fee | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:94%;max-width:640px;margin:22px auto}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h2{color:#064e3b;font-size:19px;margin-bottom:6px}.sub{color:#68756d;font-size:13px;line-height:1.5}
+.amt{font-size:30px;font-weight:bold;color:#064e3b;margin:10px 0}
+button{display:inline-block;padding:12px 20px;border:0;border-radius:7px;background:#d4af37;color:#1a1a1a;font-weight:bold;font-size:16px;margin-top:10px;cursor:pointer}
+button:disabled{opacity:.6}
+.m{display:none;padding:11px;border-radius:7px;margin-bottom:12px;font-size:14px;line-height:1.5}.ok{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
+.tag{display:inline-block;border-radius:10px;padding:3px 10px;font-size:12px;font-weight:bold;background:#e8f7ed;color:#064e3b}.tag.w{background:#fff4d6;color:#8a6a00}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}td,th{padding:8px 4px;border-bottom:1px solid #e6eee9;text-align:left}
+</style></head><body>
+<header><b>Quarterly Fee</b><a href="student.html">&larr; Dashboard</a></header>
+<main><div id="msg" class="m"></div><div id="root"><div class="card"><p class="sub">Loading...</p></div></div></main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function naira(n){return "₦"+Number(n||0).toLocaleString("en-NG");}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");window.scrollTo(0,0);}
+async function api(p,o){o=o||{};o.credentials="include";if(o.body)o.headers={"Content-Type":"application/json"};
+  var r=await fetch("/api/term-fee"+p,o);if(r.status===401){location.href="login.html";throw new Error("Please log in.");}
+  var d=await r.json().catch(function(){return{};});if(!r.ok)throw new Error(d.message||"Request failed.");return d;}
+async function load(){
+  try{var d=await api("/me");var h='<div class="card"><h2>'+esc(d.label)+'</h2><p class="sub">'+esc(d.level||"")+' &middot; Quarterly fee</p>';
+    if(!d.required){h+='<p class="sub" style="margin-top:10px">No quarterly fee applies to your level.</p>';}
+    else{h+='<div class="amt">'+naira(d.amount)+'</div>'+(d.paid?'<span class="tag">Paid &mdash; full access</span>':'<span class="tag w">Not paid</span>');
+      if(!d.paid){h+='<p class="sub" style="margin-top:10px">Pay this fee to open lectures, classes, live classes, exams and results.</p><button id="pay">Pay '+naira(d.amount)+' with card</button><p class="sub" style="margin-top:8px">Paid by cash or bank transfer? The academy will record it and your access opens automatically.</p>';}}
+    h+='</div>';
+    if(d.history.length){h+='<div class="card"><h2>Payment history</h2><table><tr><th>Quarter</th><th>Amount</th><th>Status</th></tr>'+d.history.map(function(x){return'<tr><td>'+esc(x.label)+'</td><td>'+naira(x.amount)+'</td><td>'+esc(x.status)+'</td></tr>';}).join("")+'</table></div>';}
+    $("root").innerHTML=h;
+  }catch(e){$("root").innerHTML='<div class="card"><p class="sub">'+esc(e.message)+'</p></div>';}
+}
+document.addEventListener("click",async function(e){
+  if(e.target.id==="pay"){e.target.disabled=true;try{var d=await api("/pay",{method:"POST",body:"{}"});location.href=d.authorizationUrl;}catch(x){say(x.message,false);e.target.disabled=false;}}
+});
+(async function(){
+  var q=new URLSearchParams(location.search),ref=q.get("reference")||q.get("trxref");
+  if(ref){try{await api("/verify/"+encodeURIComponent(ref));say("Payment received. You now have full access.",true);}catch(e){say(e.message,false);}history.replaceState(null,"","fees.html");}
+  load();
+})();
+</script></body></html>
