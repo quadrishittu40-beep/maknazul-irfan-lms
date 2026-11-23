@@ -161,6 +161,8 @@ model StudentProfile {
 
   examRegistrations ExamRegistration[]
 
+  termFees TermFee[]
+
   guardianName String?
 
   guardianPhone String?
@@ -1211,4 +1213,35 @@ model ExamRegistrationCourse {
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([registrationId, courseId])
+}
+
+
+model TermFee {
+  id String @id @default(cuid())
+
+  studentId String
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  period String
+
+  amount Decimal @db.Decimal(12, 2)
+
+  status PaymentStatus @default(PENDING)
+
+  provider PaymentProvider @default(PAYSTACK)
+
+  reference String @unique
+
+  note String?
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, period])
+  @@index([period])
+  @@index([status])
 }
