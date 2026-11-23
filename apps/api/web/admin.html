@@ -1461,6 +1461,19 @@
         </div>
       </div>
 
+      <div class="card" style="margin-top:18px">
+        <div class="toolbar">
+          <h3 style="margin:0;flex:1">Quarterly Fees</h3>
+          <a class="action-btn primary" href="admin-fees.html" style="text-decoration:none">Record / Manage</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Quarter</th><th>Amount</th><th>Method</th><th>Status</th><th>Reference</th></tr></thead>
+            <tbody id="termFeeTable"><tr><td colspan="6" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
     </section>
 
 
@@ -3744,6 +3757,7 @@
       renderPayments();
 
       loadAdmissionFees();
+      loadTermFees();
 
       updateDashboardStats();
 
@@ -3756,6 +3770,25 @@
           </td>
         </tr>
       `;
+    }
+  }
+
+
+  async function loadTermFees() {
+    const t = document.getElementById("termFeeTable");
+    try {
+      const d = await api("/term-fee/admin/payments");
+      const list = d.payments || (d.data && d.data.payments) || [];
+      if (!list.length) {
+        t.innerHTML = '<tr><td colspan="6" class="empty">No quarterly fee payments yet.</td></tr>';
+        return;
+      }
+      t.innerHTML = list.map(function (f) {
+        const who = escapeHtml(f.name) + '<div style="font-size:11px;color:#758178">' + escapeHtml(f.level || "") + (f.matric ? " · " + escapeHtml(f.matric) : "") + "</div>";
+        return "<tr><td>" + who + "</td><td>" + escapeHtml(f.label) + "</td><td>\u20A6" + Number(f.amount).toLocaleString("en-NG") + "</td><td>" + escapeHtml(String(f.provider).replace("_", " ")) + "</td><td>" + statusBadge(f.status) + "</td><td>" + escapeHtml(f.reference) + "</td></tr>";
+      }).join("");
+    } catch (e) {
+      t.innerHTML = '<tr><td colspan="6" class="empty">' + escapeHtml(e.message) + "</td></tr>";
     }
   }
 
