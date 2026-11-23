@@ -158,6 +158,43 @@ router.get("/admin/list", requireRole("ADMIN"), async (req, res) => {
   }
 });
 
+router.get("/admin/payments", requireRole("ADMIN"), async (_req, res) => {
+  try {
+    const recs = await prisma.termFee.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 300,
+      include: {
+        student: {
+          select: {
+            matricNumber: true,
+            user: { select: { firstName: true, lastName: true, email: true } },
+            level: { select: { name: true } }
+          }
+        }
+      }
+    });
+    return success(res, {
+      payments: recs.map((r) => ({
+        id: r.id,
+        name: `${r.student.user.firstName} ${r.student.user.lastName}`.trim(),
+        email: r.student.user.email,
+        matric: r.student.matricNumber,
+        level: r.student.level?.name || null,
+        period: r.period,
+        label: periodInfo(r.period).label,
+        amount: Number(r.amount),
+        status: r.status,
+        provider: r.provider,
+        reference: r.reference,
+        paidAt: r.paidAt
+      }))
+    });
+  } catch (error) {
+    console.error("term-fee payments error:", error);
+    return failure(res, "Unable to load quarterly payments.", 500);
+  }
+});
+
 const recordSchema = z.object({
   studentId: z.string().min(1),
   provider: z.enum(["CASH", "BANK_TRANSFER"]),
