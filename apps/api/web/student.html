@@ -1405,111 +1405,77 @@ async function joinLiveClass(id) {
 
 async function loadPayments() {
 
-  const container =
-    document.getElementById(
-      "paymentsList"
-    );
-
+  const container = document.getElementById("paymentsList");
 
   try {
 
-    const result =
-      await apiRequest(
-        "/payments/my"
-      );
+    let rows = [];
 
+    try {
+      const result = await apiRequest("/payments/my");
+      const list = result.data?.payments || result.payments || result.data || [];
+      rows = (Array.isArray(list) ? list : []).map(p => ({
+        item: (p.course && p.course.title) ? p.course.title : "Course payment",
+        reference: p.reference,
+        amount: p.amount,
+        currency: p.currency || "NGN",
+        status: p.status,
+        date: p.createdAt,
+        receipt: p.status === "PAID" && p.id ? "/api/pdf/receipt/" + encodeURIComponent(p.id) : ""
+      }));
+    } catch (e) { /* course payments are optional */ }
 
-    const payments =
-      result.data?.payments ||
-      result.data ||
-      [];
+    try {
+      const t = await apiRequest("/term-fee/me");
+      const hist = t.history || t.data?.history || [];
+      hist.forEach(h => rows.push({
+        item: "Quarterly Fee - " + h.label,
+        reference: h.reference,
+        amount: h.amount,
+        currency: "NGN",
+        status: h.status,
+        date: h.paidAt || h.createdAt,
+        receipt: h.receiptUrl || ""
+      }));
+    } catch (e) { /* quarterly fees are optional */ }
 
-
-    if (!payments.length) {
-
-      container.innerHTML = `
-        <div class="empty">
-          No payment records found.
-        </div>
-      `;
-
+    if (!rows.length) {
+      container.innerHTML = `<div class="empty">No payment records found.</div>`;
       return;
-
     }
 
+    rows.sort((x, y) => new Date(y.date || 0) - new Date(x.date || 0));
 
     container.innerHTML = `
-
       <table>
-
         <thead>
-
           <tr>
+            <th>Payment for</th>
             <th>Reference</th>
             <th>Amount</th>
             <th>Status</th>
             <th>Date</th>
+            <th>Receipt</th>
           </tr>
-
         </thead>
-
         <tbody>
-
-          ${payments.map(payment => `
-
+          ${rows.map(r => `
             <tr>
-
-              <td>
-                ${escapeHtml(
-                  payment.reference ||
-                  "-"
-                )}
-              </td>
-
-              <td>
-                ${escapeHtml(
-                  String(
-                    payment.amount ??
-                    "-"
-                  )
-                )}
-                ${escapeHtml(
-                  payment.currency ||
-                  "NGN"
-                )}
-              </td>
-
-              <td>
-                ${escapeHtml(
-                  payment.status ||
-                  "-"
-                )}
-              </td>
-
-              <td>
-                ${formatDate(
-                  payment.createdAt
-                )}
-              </td>
-
+              <td>${escapeHtml(r.item)}</td>
+              <td>${escapeHtml(r.reference || "-")}</td>
+              <td>${escapeHtml(Number(r.amount || 0).toLocaleString("en-NG"))} ${escapeHtml(r.currency)}</td>
+              <td>${escapeHtml(r.status || "-")}</td>
+              <td>${formatDate(r.date)}</td>
+              <td>${r.receipt ? `<a href="${r.receipt}" style="color:#064e3b;font-weight:bold">Receipt PDF</a>` : "-"}</td>
             </tr>
-
           `).join("")}
-
         </tbody>
-
       </table>
-
     `;
-
 
   } catch (error) {
 
-    container.innerHTML = `
-      <div class="error">
-        ${escapeHtml(error.message)}
-      </div>
-    `;
+    container.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
 
   }
 
