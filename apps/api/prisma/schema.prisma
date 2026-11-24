@@ -163,6 +163,8 @@ model StudentProfile {
 
   termFees TermFee[]
 
+  courseRequests CourseRequest[]
+
   guardianName String?
 
   guardianPhone String?
@@ -352,6 +354,8 @@ model Course {
   topics Topic[]
 
   enrollments CourseEnrollment[]
+
+  requests CourseRequest[]
 
   lectures Lecture[]
 
@@ -1243,5 +1247,32 @@ model TermFee {
 
   @@unique([studentId, period])
   @@index([period])
+  @@index([status])
+}
+
+
+model CourseRequest {
+  id String @id @default(cuid())
+
+  studentId String
+
+  courseId String
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  status String @default("PENDING")
+
+  note String?
+
+  decidedById String?
+
+  decidedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, courseId])
+  @@index([courseId])
   @@index([status])
 }
