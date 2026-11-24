@@ -13,7 +13,7 @@ const OK_STATUS = ["APPROVED", "ENROLLED"];
 async function studentContext(userId: string) {
   return prisma.studentProfile.findUnique({
     where: { userId },
-    select: { id: true, status: true, levelId: true, level: { select: { name: true } } }
+    select: { id: true, status: true, levelId: true, classId: true, level: { select: { name: true } } }
   });
 }
 
@@ -41,6 +41,7 @@ router.get("/available", requireRole("STUDENT"), async (req: any, res) => {
       orderBy: { title: "asc" },
       select: {
         id: true,
+        classId: true,
         title: true,
         description: true,
         subject: { select: { name: true } },
@@ -61,7 +62,9 @@ router.get("/available", requireRole("STUDENT"), async (req: any, res) => {
     return success(res, {
       admitted,
       feePaid: paid,
-      courses: courses.map((c) => {
+      courses: courses
+        .filter((c) => !c.classId || !student.classId || c.classId === student.classId)
+        .map((c) => {
         const r = reqMap.get(c.id);
         return {
           id: c.id,
@@ -94,11 +97,14 @@ router.post("/:courseId", requireRole("STUDENT"), async (req: any, res) => {
     }
     const course = await prisma.course.findUnique({
       where: { id: courseId },
-      select: { id: true, title: true, status: true, levelId: true, teacherId: true }
+      select: { id: true, title: true, status: true, levelId: true, classId: true, teacherId: true }
     });
     if (!course || course.status !== "PUBLISHED") return failure(res, "This course is not available.", 404);
     if (course.levelId && student.levelId && course.levelId !== student.levelId) {
       return failure(res, "This course is not for your class level.", 403);
+    }
+    if (course.classId && student.classId && course.classId !== student.classId) {
+      return failure(res, "This course is not for your class.", 403);
     }
     const already = await prisma.courseEnrollment.findUnique({
       where: { studentId_courseId: { studentId: student.id, courseId } }
