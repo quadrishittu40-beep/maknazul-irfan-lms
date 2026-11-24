@@ -846,6 +846,35 @@ export async function admissionReceiptPdf(req: AuthenticatedRequest, res: Respon
   }
 }
 
+export async function termFeeReceiptPdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const me = req.user!;
+    const fee = await prisma.termFee.findUnique({
+      where: { id: String(req.params.id) },
+      include: { student: { include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } } } }
+    });
+    if (!fee) return failure(res, "Payment not found.", 404);
+    if (me.role !== "ADMIN" && fee.student.user.id !== me.id) return failure(res, "Access denied.", 403);
+    if (fee.status !== "PAID") return failure(res, "A receipt is only available for paid fees.", 400);
+    const u = fee.student.user;
+    const m = /^(\d{4})-Q([1-4])$/.exec(fee.period);
+    const label = m ? `Quarterly Fee - Quarter ${m[2]}, ${m[1]}` : "Quarterly Fee";
+    renderReceipt(res, {
+      reference: fee.reference,
+      name: `${u.firstName} ${u.lastName}`.trim(),
+      email: u.email,
+      purpose: label,
+      method: String(fee.provider).replace("_", " "),
+      amount: Number(fee.amount),
+      currency: "NGN",
+      paidAt: fee.paidAt || fee.updatedAt
+    });
+  } catch (error) {
+    console.error("termFeeReceiptPdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the receipt.", 500);
+  }
+}
+
 /* =========================================================
    REPORT CARD
 ========================================================= */
