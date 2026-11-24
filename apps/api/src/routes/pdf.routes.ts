@@ -13,6 +13,7 @@ import {
   examDocketPdf,
   receiptPdf,
   admissionReceiptPdf,
+  termFeeReceiptPdf,
   idCardPdf,
   idCardJson
 } from "../controllers/pdf.controller";
@@ -34,6 +35,7 @@ router.get("/scheme/:courseId", schemePdf);
 router.get("/calendar", calendarPdf);
 router.get("/exam-docket", examDocketPdf);
 router.get("/receipt/admission/:id", admissionReceiptPdf);
+router.get("/receipt/termfee/:id", termFeeReceiptPdf);
 router.get("/receipt/:id", requireAuth, receiptPdf);
 router.get("/idcard", idCardPdf);
 router.get("/idcard-data", idCardJson);

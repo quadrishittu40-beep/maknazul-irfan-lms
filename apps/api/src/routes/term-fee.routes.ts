@@ -76,7 +76,8 @@ router.get("/me", requireRole("STUDENT"), async (req: any, res) => {
         status: h.status,
         provider: h.provider,
         reference: h.reference,
-        paidAt: h.paidAt
+        paidAt: h.paidAt,
+        receiptUrl: h.status === "PAID" ? `/api/pdf/receipt/termfee/${h.id}` : null
       }))
     });
   } catch (error) {
