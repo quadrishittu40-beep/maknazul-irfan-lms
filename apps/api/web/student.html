@@ -451,6 +451,13 @@
 
     <button
       class="nav-btn"
+      onclick="showSection('admission', this)"
+    >
+      Admission
+    </button>
+
+    <button
+      class="nav-btn"
       onclick="showSection('profile', this)"
     >
       My Profile
@@ -535,6 +542,8 @@
         My Courses
       </h2>
 
+      <a href="register-courses.html" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Register Courses</a>
+
       <div id="coursesList" class="cards">
         <div class="loading">
           Loading courses...
@@ -554,6 +563,8 @@
       <h2 class="section-title">
         Tests & Examinations
       </h2>
+
+      <a href="exam-register.html" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Exam Registration</a>
 
       <div id="testsList" class="cards">
         <div class="loading">
@@ -575,10 +586,6 @@
         My Results
       </h2>
 
-      <a href="register-courses.html" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Register Courses</a>
-      <a href="fees.html" id="feeLink" style="display:inline-block;background:#a12626;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Quarterly Fee</a>
-      <a href="/api/pdf/admission-letter" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Admission Letter (PDF)</a>
-      <a href="exam-register.html" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Exam Registration</a>
       <a href="calendar.html" style="display:inline-block;background:#064e3b;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Academic Calendar</a>
       <a href="/api/pdf/reportcard" style="display:inline-block;background:#064e3b;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Download Report Card (PDF)</a>
       <a href="/api/pdf/results" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 0 14px">Download Results (PDF)</a>
@@ -612,6 +619,28 @@
     </section>
 
 
+    <!-- ADMISSION -->
+
+    <section
+      id="admission"
+      class="section"
+    >
+
+      <h2 class="section-title">
+        Admission
+      </h2>
+
+      <div class="card">
+        <h3>Admission Letter</h3>
+        <p style="color:#68756d;font-size:14px;margin:6px 0 14px">
+          Download your official admission letter with your matric number.
+        </p>
+        <a href="/api/pdf/admission-letter" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Download Admission Letter (PDF)</a>
+      </div>
+
+    </section>
+
+
     <!-- PAYMENTS -->
 
     <section
@@ -622,6 +651,8 @@
       <h2 class="section-title">
         Payment History
       </h2>
+
+      <a href="fees.html" id="feeLink" style="display:inline-block;background:#a12626;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Quarterly Fee</a>
 
       <div id="paymentsList">
         <div class="loading">
