@@ -794,7 +794,7 @@
     if (String(status).toUpperCase() === "PAID" && payment.id) {
       details.innerHTML += `
         <div style="margin-top:14px">
-          <a href="/api/pdf/receipt/${encodeURIComponent(payment.id)}"
+          <a href="${payment.termFee ? payment.receiptUrl : "/api/pdf/receipt/" + encodeURIComponent(payment.id)}"
              style="display:inline-block;background:#064e3b;color:#fff;text-decoration:none;font-weight:bold;padding:11px 16px;border-radius:8px;font-size:14px">
             Download Receipt (PDF)
           </a>
@@ -926,6 +926,18 @@
       }
       box.innerHTML = h;
       box.style.display = "block";
+      payments = payments.filter(function (x) { return !x.termFee; }).concat(
+        (d.history || []).filter(function (x) { return x.status === "PAID"; }).map(function (x) {
+          return {
+            id: x.id, termFee: true, receiptUrl: x.receiptUrl,
+            course: { title: "Quarterly Fee - " + x.label }, amount: x.amount, currency: "NGN",
+            reference: x.reference, status: x.status, provider: x.provider === "PAYSTACK" ? "Paystack" : x.provider,
+            createdAt: x.paidAt, paidAt: x.paidAt
+          };
+        })
+      );
+      renderSummary();
+      renderPayments();
     } catch (e) {}
   }
 

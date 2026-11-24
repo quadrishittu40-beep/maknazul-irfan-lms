@@ -4095,7 +4095,7 @@
 
             <td>
               ${String(payment.status).toUpperCase() === "PAID" && payment.id
-                ? `<a href="/api/pdf/receipt/${encodeURIComponent(payment.id)}" style="color:#064e3b;font-weight:bold;text-decoration:none">Receipt PDF</a>`
+                ? `<a href="/api/pdf/receipt/${payment.termFee ? "termfee/" : ""}${encodeURIComponent(payment.id)}" style="color:#064e3b;font-weight:bold;text-decoration:none">Receipt PDF</a>`
                 : (String(payment.status).toUpperCase() === "PENDING" && payment.provider === "BANK_TRANSFER"
                   ? `<a href="/api/payments/bank/${encodeURIComponent(payment.id)}/proof" target="_blank" style="color:#064e3b;font-weight:bold">View proof</a><br>
                      <a href="#" onclick="bankDecide('${payment.id}','approve');return false" style="color:#176b3a;font-weight:bold">Approve</a> ·
