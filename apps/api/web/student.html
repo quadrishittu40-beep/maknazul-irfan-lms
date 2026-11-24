@@ -575,6 +575,7 @@
         My Results
       </h2>
 
+      <a href="register-courses.html" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Register Courses</a>
       <a href="fees.html" id="feeLink" style="display:inline-block;background:#a12626;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Quarterly Fee</a>
       <a href="/api/pdf/admission-letter" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Admission Letter (PDF)</a>
       <a href="exam-register.html" style="display:inline-block;background:#d4af37;color:#1a1a1a;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px;font-size:14px;margin:0 6px 14px 0">Exam Registration</a>
@@ -945,7 +946,7 @@ async function loadCourses() {
 
           target.innerHTML = `
             <div class="empty">
-              You are not enrolled in any course yet.
+              You are not enrolled in any course yet. <a href="register-courses.html" style="color:#064e3b;font-weight:bold">Register your courses</a>
             </div>
           `;
 

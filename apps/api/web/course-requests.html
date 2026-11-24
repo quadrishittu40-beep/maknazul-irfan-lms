@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Course Requests | MAKNAZUL IRFAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:96%;max-width:820px;margin:20px auto}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+.sub{color:#68756d;font-size:13px;line-height:1.5}
+button{padding:9px 14px;border:0;border-radius:7px;background:#064e3b;color:#fff;font-weight:bold;font-size:13px;margin:8px 6px 0 0;cursor:pointer}button.r{background:#a12626}
+.m{display:none;padding:11px;border-radius:7px;margin-bottom:12px;font-size:14px}.ok{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
+</style></head><body>
+<header><b>Course Registration Requests</b><a href="javascript:history.back()">&larr; Back</a></header>
+<main><div id="msg" class="m"></div><div id="root"><div class="card"><p class="sub">Loading...</p></div></div></main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok":"er");window.scrollTo(0,0);}
+async function api(p,o){o=o||{};o.credentials="include";if(o.body)o.headers={"Content-Type":"application/json"};
+  var r=await fetch("/api/course-requests"+p,o);if(r.status===401){location.href="login.html?portal=staff";throw new Error("Please log in.");}
+  var d=await r.json().catch(function(){return{};});if(!r.ok)throw new Error(d.message||"Request failed.");return d;}
+async function load(){
+  try{var d=await api("/pending");var list=d.requests||[];
+    $("root").innerHTML=list.length?list.map(function(r){return'<div class="card"><b>'+esc(r.name)+'</b> <span class="sub">'+esc(r.level||"")+(r.matric?' &middot; '+esc(r.matric):'')+'</span><p class="sub">wants to register for <b>'+esc(r.course)+'</b></p><button data-a="'+esc(r.id)+'">Approve</button><button class="r" data-r="'+esc(r.id)+'">Reject</button></div>';}).join(""):'<div class="card"><p class="sub">No pending requests.</p></div>';
+  }catch(e){$("root").innerHTML='<div class="card"><p class="sub">'+esc(e.message)+'</p></div>';}
+}
+document.addEventListener("click",async function(e){
+  var t=e.target;if(!t.getAttribute)return;var a=t.getAttribute("data-a"),r=t.getAttribute("data-r");
+  try{
+    if(a){t.disabled=true;await api("/"+encodeURIComponent(a)+"/approve",{method:"POST",body:"{}"});say("Student enrolled.",true);load();}
+    else if(r){var n=prompt("Reason (optional):")||"";t.disabled=true;await api("/"+encodeURIComponent(r)+"/reject",{method:"POST",body:JSON.stringify({note:n})});say("Request declined.",true);load();}
+  }catch(x){say(x.message,false);t.disabled=false;}
+});
+load();
+</script></body></html>

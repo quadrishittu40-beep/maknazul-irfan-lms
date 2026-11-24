@@ -102,6 +102,11 @@
   </div>
 
   <div class="card">
+    <h2>Course registration requests</h2>
+    <div id="reqList"><p class="empty">Loading...</p></div>
+  </div>
+
+  <div class="card">
     <h2>Enrol a student</h2>
     <label for="sQuery">Search approved students (name or email)</label>
     <input id="sQuery" placeholder="Type a name or email, or leave empty to list">
@@ -318,11 +323,41 @@
     });
   }
 
+  async function loadRequests() {
+    var box = document.getElementById("reqList");
+    try {
+      var d = await api("/course-requests/pending?courseId=" + encodeURIComponent(courseId));
+      var list = d.requests || (d.data && d.data.requests) || [];
+      box.innerHTML = "";
+      if (!list.length) { box.appendChild(el("p", "No pending requests.", "empty")); return; }
+      list.forEach(function (r) {
+        var row = el("div", undefined, "item");
+        row.appendChild(el("span", r.name + (r.level ? " (" + r.level + ")" : "") + " - " + r.email));
+        var ok = el("button", "Approve", "small");
+        var no = el("button", "Reject", "small");
+        ok.addEventListener("click", async function () {
+          ok.disabled = no.disabled = true;
+          try { await api("/course-requests/" + encodeURIComponent(r.id) + "/approve", { method: "POST", body: "{}" }); note("Student enrolled.", true); await loadRequests(); await load(); }
+          catch (e) { note(e.message, false); ok.disabled = no.disabled = false; }
+        });
+        no.addEventListener("click", async function () {
+          var reason = prompt("Reason (optional):") || "";
+          ok.disabled = no.disabled = true;
+          try { await api("/course-requests/" + encodeURIComponent(r.id) + "/reject", { method: "POST", body: JSON.stringify({ note: reason }) }); note("Request declined.", true); await loadRequests(); }
+          catch (e) { note(e.message, false); ok.disabled = no.disabled = false; }
+        });
+        row.appendChild(ok); row.appendChild(no);
+        box.appendChild(row);
+      });
+    } catch (e) { box.innerHTML = ""; box.appendChild(el("p", e.message, "empty")); }
+  }
+
   async function load() {
     var data = await api("/teacher/courses/" + encodeURIComponent(courseId));
     course = (data.course) || (data.data && data.data.course);
     if (!course) throw new Error("Course not found.");
     render();
+    loadRequests();
   }
 
   document.getElementById("saveCourse").addEventListener("click", async function () {

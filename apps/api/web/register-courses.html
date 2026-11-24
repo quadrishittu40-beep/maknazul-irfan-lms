@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register Courses | MAKNAZUL IRFAN</title>
+<script src="/termfee.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f8f6;color:#17251e}
+header{background:#064e3b;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-size:14px}
+main{width:94%;max-width:760px;margin:22px auto}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h3{color:#064e3b;font-size:17px}.sub{color:#68756d;font-size:13px;line-height:1.5;margin-top:3px}
+button,a.btn{display:inline-block;padding:10px 16px;border:0;border-radius:7px;background:#d4af37;color:#1a1a1a;font-weight:bold;font-size:14px;margin-top:10px;cursor:pointer;text-decoration:none}
+button.g{background:#eee;color:#444}
+.tag{display:inline-block;border-radius:10px;padding:3px 10px;font-size:12px;font-weight:bold;margin-top:10px}
+.tag.ok{background:#e8f7ed;color:#064e3b}.tag.w{background:#fff4d6;color:#8a6a00}.tag.r{background:#fdecec;color:#a12626}
+.m{display:none;padding:11px;border-radius:7px;margin-bottom:12px;font-size:14px;line-height:1.5}.ok2{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
+.warn{background:#fff4d6;color:#7a5b00;padding:13px;border-radius:9px;margin-bottom:14px;font-size:14px;line-height:1.5}
+</style></head><body>
+<header><b>Register Courses</b><a href="student.html">&larr; Dashboard</a></header>
+<main><div id="msg" class="m"></div><div id="root"><div class="card"><p class="sub">Loading...</p></div></div></main>
+<script>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function say(t,ok){var m=$("msg");m.textContent=t;m.className="m "+(ok?"ok2":"er");window.scrollTo(0,0);}
+async function api(p,o){o=o||{};o.credentials="include";if(o.body)o.headers={"Content-Type":"application/json"};
+  var r=await fetch("/api/course-requests"+p,o);if(r.status===401){location.href="login.html";throw new Error("Please log in.");}
+  var d=await r.json().catch(function(){return{};});if(!r.ok)throw new Error(d.message||"Request failed.");return d;}
+async function load(){
+  try{var d=await api("/available");var h="";
+    if(!d.admitted)h+='<div class="warn">Your admission must be approved before you can register courses.</div>';
+    else if(!d.feePaid)h+='<div class="warn">Pay your quarterly fee first, then you can register your courses. <a href="fees.html" style="color:#064e3b;font-weight:bold">Pay now</a></div>';
+    if(!d.courses.length)h+='<div class="card"><p class="sub">No courses are open for your class yet.</p></div>';
+    d.courses.forEach(function(c){
+      h+='<div class="card"><h3>'+esc(c.title)+'</h3><p class="sub">'+esc(c.subject||"")+(c.teacher?' &middot; Teacher: '+esc(c.teacher):'')+'</p>'+(c.description?'<p class="sub">'+esc(c.description)+'</p>':'');
+      if(c.enrolled)h+='<span class="tag ok">Enrolled</span>';
+      else if(c.requestStatus==="PENDING")h+='<span class="tag w">Waiting for teacher approval</span><br><button class="g" data-cancel="'+esc(c.id)+'">Cancel request</button>';
+      else{
+        if(c.requestStatus==="REJECTED")h+='<span class="tag r">Declined'+(c.requestNote?': '+esc(c.requestNote):'')+'</span><br>';
+        h+='<button data-reg="'+esc(c.id)+'"'+(d.admitted&&d.feePaid?'':' disabled style="opacity:.5"')+'>Register for this course</button>';
+      }
+      h+='</div>';
+    });
+    $("root").innerHTML=h;
+  }catch(e){$("root").innerHTML='<div class="card"><p class="sub">'+esc(e.message)+'</p></div>';}
+}
+document.addEventListener("click",async function(e){
+  var t=e.target;if(!t.getAttribute)return;var r=t.getAttribute("data-reg"),c=t.getAttribute("data-cancel");
+  try{
+    if(r){t.disabled=true;var d=await api("/"+encodeURIComponent(r),{method:"POST",body:"{}"});say(d.message||"Request sent.",true);load();}
+    else if(c){t.disabled=true;await api("/"+encodeURIComponent(c),{method:"DELETE"});say("Request cancelled.",true);load();}
+  }catch(x){say(x.message,false);t.disabled=false;}
+});
+load();
+</script></body></html>
