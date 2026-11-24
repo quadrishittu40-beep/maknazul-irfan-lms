@@ -32,7 +32,7 @@ async function load(){
     else{h+='<div class="amt">'+naira(d.amount)+'</div>'+(d.paid?'<span class="tag">Paid &mdash; full access</span>':'<span class="tag w">Not paid</span>');
       if(!d.paid){h+='<p class="sub" style="margin-top:10px">Pay this fee to open lectures, classes, live classes, exams and results.</p><button id="pay">Pay '+naira(d.amount)+' with card</button><p class="sub" style="margin-top:8px">Paid by cash or bank transfer? The academy will record it and your access opens automatically.</p>';}}
     h+='</div>';
-    if(d.history.length){h+='<div class="card"><h2>Payment history</h2><table><tr><th>Quarter</th><th>Amount</th><th>Status</th></tr>'+d.history.map(function(x){return'<tr><td>'+esc(x.label)+'</td><td>'+naira(x.amount)+'</td><td>'+esc(x.status)+'</td></tr>';}).join("")+'</table></div>';}
+    if(d.history.length){h+='<div class="card"><h2>Payment history</h2><table><tr><th>Quarter</th><th>Amount</th><th>Status</th><th>Receipt</th></tr>'+d.history.map(function(x){return'<tr><td>'+esc(x.label)+'</td><td>'+naira(x.amount)+'</td><td>'+esc(x.status)+'</td><td>'+(x.receiptUrl?'<a href="'+x.receiptUrl+'" style="color:#064e3b;font-weight:bold">Receipt PDF</a>':'-')+'</td></tr>';}).join("")+'</table></div>';}
     $("root").innerHTML=h;
   }catch(e){$("root").innerHTML='<div class="card"><p class="sub">'+esc(e.message)+'</p></div>';}
 }

@@ -921,8 +921,8 @@
         (d.paid ? '<span style="color:#176b3a;font-weight:bold">Paid</span>'
                 : '<a href="fees.html" style="background:#d4af37;color:#1a1a1a;padding:8px 14px;border-radius:7px;text-decoration:none;font-weight:bold;font-size:14px">Pay now</a>');
       if (d.history && d.history.length) {
-        h += '<table style="width:100%;font-size:13px;margin-top:10px"><tr><th align="left">Quarter</th><th align="left">Amount</th><th align="left">Status</th><th align="left">Reference</th></tr>' +
-          d.history.map(function (x) { return "<tr><td>" + x.label + "</td><td>" + n(x.amount) + "</td><td>" + x.status + "</td><td>" + x.reference + "</td></tr>"; }).join("") + "</table>";
+        h += '<table style="width:100%;font-size:13px;margin-top:10px"><tr><th align="left">Quarter</th><th align="left">Amount</th><th align="left">Status</th><th align="left">Reference</th><th align="left">Receipt</th></tr>' +
+          d.history.map(function (x) { return "<tr><td>" + x.label + "</td><td>" + n(x.amount) + "</td><td>" + x.status + "</td><td>" + x.reference + "</td><td>" + (x.receiptUrl ? '<a href="' + x.receiptUrl + '" style="color:#064e3b;font-weight:bold">Receipt PDF</a>' : "-") + "</td></tr>"; }).join("") + "</table>";
       }
       box.innerHTML = h;
       box.style.display = "block";
