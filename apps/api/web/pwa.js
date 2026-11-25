@@ -1,4 +1,14 @@
 (function () {
+  // Live presence (green "online" signal) on every page that loads this file.
+  try {
+    if (!window.__presenceOn && !document.querySelector('script[src="/presence.js"]')) {
+      var ps = document.createElement("script");
+      ps.src = "/presence.js";
+      ps.defer = true;
+      document.head.appendChild(ps);
+    }
+  } catch (e) {}
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker.register("/sw.js").catch(function () {});
