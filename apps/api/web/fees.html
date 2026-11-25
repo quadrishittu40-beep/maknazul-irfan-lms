@@ -15,7 +15,9 @@ button:disabled{opacity:.6}
 .m{display:none;padding:11px;border-radius:7px;margin-bottom:12px;font-size:14px;line-height:1.5}.ok{display:block;background:#e8f7ed;color:#176b3a}.er{display:block;background:#fdecec;color:#a12626}
 .tag{display:inline-block;border-radius:10px;padding:3px 10px;font-size:12px;font-weight:bold;background:#e8f7ed;color:#064e3b}.tag.w{background:#fff4d6;color:#8a6a00}
 table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}td,th{padding:8px 4px;border-bottom:1px solid #e6eee9;text-align:left}
-</style></head><body>
+</style><script src="/presence.js" defer></script>
+<script src="/receipt-prompt.js"></script>
+</head><body>
 <header><b>Quarterly Fee</b><a href="student.html">&larr; Dashboard</a></header>
 <main><div id="msg" class="m"></div><div id="root"><div class="card"><p class="sub">Loading...</p></div></div></main>
 <script>
@@ -41,7 +43,7 @@ document.addEventListener("click",async function(e){
 });
 (async function(){
   var q=new URLSearchParams(location.search),ref=q.get("reference")||q.get("trxref");
-  if(ref){try{await api("/verify/"+encodeURIComponent(ref));say("Payment received. You now have full access.",true);}catch(e){say(e.message,false);}history.replaceState(null,"","fees.html");}
+  if(ref){try{await api("/verify/"+encodeURIComponent(ref));say("Payment received. You now have full access.",true);if(window.promptReceipt)promptReceipt(ref,"Quarterly fee paid");}catch(e){say(e.message,false);}history.replaceState(null,"","fees.html");}
   load();
 })();
 </script></body></html>

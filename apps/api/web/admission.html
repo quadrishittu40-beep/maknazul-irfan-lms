@@ -16,7 +16,8 @@ input{width:100%;padding:10px;border:1px solid #ccc;border-radius:7px;font-size:
 .ok{background:#e4f5ea;color:#0b5c3b}.er{background:#fde8e6;color:#b3261e}
 .big{font-size:28px;font-weight:bold;color:#0b5c3b}
 small{color:#666}
-</style></head><body>
+</style><script src="/receipt-prompt.js"></script>
+</head><body>
 <header><b>Admission Fee</b><a href="student.html">&larr; Dashboard</a></header>
 <main>
 <div class="card"><div>Admission fee</div><div class="big" id="amount">NGN 10,000</div><div id="status" style="margin-top:6px"></div><div id="paid"></div></div>
@@ -59,7 +60,7 @@ async function load(){
   }catch(e){$("status").textContent=e.message;}
 }
 async function verify(ref){
-  try{await call("/verify/"+encodeURIComponent(ref));}catch(e){say(e.message,false);$("pay").style.display="block";}
+  try{await call("/verify/"+encodeURIComponent(ref));if(window.promptReceipt)promptReceipt(ref,"Admission fee paid");}catch(e){say(e.message,false);$("pay").style.display="block";}
   history.replaceState(null,"","admission.html");load();
 }
 $("card").onclick=async function(){
