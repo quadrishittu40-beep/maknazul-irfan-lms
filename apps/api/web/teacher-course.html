@@ -97,8 +97,31 @@
   </div>
 
   <div class="card">
-    <h2>Tests</h2>
+    <h2 id="testsCard">Tests &amp; Exams</h2>
     <div id="testList"><p class="empty">Loading...</p></div>
+    <div style="border-top:1px solid #e4ece7;margin-top:14px;padding-top:12px">
+      <h3 style="color:#064e3b;font-size:16px;margin-bottom:8px">Create a test or exam</h3>
+      <div class="row2">
+        <div><label for="tType">Type</label>
+          <select id="tType"><option value="Test">Test</option><option value="Exam">Exam</option></select></div>
+        <div><label for="tTitle">Title</label><input id="tTitle" placeholder="e.g. First Quarter Test"></div>
+      </div>
+      <div class="row2">
+        <div><label for="tDur">Duration (minutes)</label><input id="tDur" type="number" min="1" value="30"></div>
+        <div><label for="tPass">Pass mark (%)</label><input id="tPass" type="number" min="0" max="100" value="50"></div>
+      </div>
+      <div class="row2">
+        <div><label for="tAtt">Attempts allowed</label><input id="tAtt" type="number" min="1" max="20" value="1"></div>
+        <div><label for="tDesc">Instructions (optional)</label><input id="tDesc" placeholder="Short instructions for students"></div>
+      </div>
+      <div class="row2">
+        <div><label for="tFrom">Opens (optional)</label><input id="tFrom" type="datetime-local"></div>
+        <div><label for="tUntil">Closes (optional)</label><input id="tUntil" type="datetime-local"></div>
+      </div>
+      <label style="display:block;margin-top:10px;font-size:14px"><input type="checkbox" id="tRq" style="width:auto"> Shuffle questions</label>
+      <label style="display:block;margin-top:6px;font-size:14px"><input type="checkbox" id="tRo" style="width:auto"> Shuffle answer options</label>
+      <button class="green" id="addTest">Create (saved as draft)</button>
+    </div>
   </div>
 
   <div class="card">
@@ -268,21 +291,7 @@
       ll.appendChild(mat);
     });
 
-    var tl = document.getElementById("testList");
-    tl.textContent = "";
-    if (!course.tests.length) tl.appendChild(el("p", "No tests for this course yet.", "empty"));
-    course.tests.forEach(function (t) {
-      var row = el("div", undefined, "item");
-      var left = el("div");
-      left.appendChild(el("strong", t.title));
-      left.appendChild(el("small",
-        (t._count ? t._count.questions : 0) + " questions, " +
-        t.durationMinutes + " min, " +
-        (t._count ? t._count.attempts : 0) + " attempts"));
-      row.appendChild(left);
-      row.appendChild(badge(t.published));
-      tl.appendChild(row);
-    });
+    renderTests();
 
     var sl = document.getElementById("studentList");
     sl.textContent = "";
@@ -351,6 +360,212 @@
       });
     } catch (e) { box.innerHTML = ""; box.appendChild(el("p", e.message, "empty")); }
   }
+
+  var reopenId = null;
+
+  function dtISO(id) {
+    var v = document.getElementById(id).value;
+    return v ? new Date(v).toISOString() : null;
+  }
+
+  function renderTests() {
+    var tl = document.getElementById("testList");
+    tl.textContent = "";
+    if (!course.tests.length) tl.appendChild(el("p", "No tests or exams for this course yet.", "empty"));
+    course.tests.forEach(function (t) {
+      var wrap = el("div");
+      var row = el("div", undefined, "item");
+      var left = el("div");
+      left.appendChild(el("strong", t.title));
+      left.appendChild(el("small",
+        (t._count ? t._count.questions : 0) + " questions, " +
+        t.durationMinutes + " min, " +
+        (t._count ? t._count.attempts : 0) + " attempts"));
+      row.appendChild(left);
+      var right = el("div");
+      right.appendChild(badge(t.published));
+
+      var qb = el("button", "Questions", "small");
+      var pb = el("button", t.published ? "Unpublish" : "Publish", "small");
+      var db = el("button", "Delete", "small");
+      right.appendChild(qb); right.appendChild(pb); right.appendChild(db);
+      row.appendChild(right);
+      wrap.appendChild(row);
+
+      var panel = el("div");
+      panel.style.display = "none";
+      wrap.appendChild(panel);
+      var open = false;
+      if (reopenId === t.id) { open = true; reopenId = null; renderQuestions(t, panel); }
+      qb.addEventListener("click", async function () {
+        open = !open;
+        panel.style.display = open ? "block" : "none";
+        if (open) await renderQuestions(t, panel);
+      });
+      pb.addEventListener("click", async function () {
+        pb.disabled = true;
+        try {
+          await api("/teacher-tests/" + encodeURIComponent(t.id), { method: "PATCH", body: JSON.stringify({ published: !t.published }) });
+          note(t.published ? "Unpublished. Students can no longer open it." : "Published. Enrolled students can now take it.", true);
+          await load();
+        } catch (e) { note(e.message, false); pb.disabled = false; }
+      });
+      db.addEventListener("click", async function () {
+        if (!confirm("Delete this test? This cannot be undone.")) return;
+        db.disabled = true;
+        try {
+          await api("/teacher-tests/" + encodeURIComponent(t.id), { method: "DELETE" });
+          note("Deleted.", true);
+          await load();
+        } catch (e) { note(e.message, false); db.disabled = false; }
+      });
+      tl.appendChild(wrap);
+    });
+  }
+
+  async function renderQuestions(t, panel) {
+    panel.textContent = "";
+    panel.style.cssText = "display:block;background:#f6faf7;border-radius:9px;padding:12px;margin:6px 0 10px";
+    var data;
+    try { data = await api("/teacher-tests/" + encodeURIComponent(t.id)); }
+    catch (e) { panel.appendChild(el("p", e.message, "empty")); return; }
+    var qs = data.questions || (data.data && data.data.questions) || [];
+    if (!qs.length) panel.appendChild(el("p", "No questions yet. Add the first one below.", "empty"));
+    qs.forEach(function (q, i) {
+      var r = el("div", undefined, "item");
+      var l = el("div");
+      l.appendChild(el("strong", (i + 1) + ". " + q.text));
+      l.appendChild(el("small", q.options.map(function (o) { return (o.isCorrect ? "\u2714 " : "\u2022 ") + o.text; }).join("   ")));
+      r.appendChild(l);
+      var rm = el("button", "Remove", "small");
+      rm.addEventListener("click", async function () {
+        if (!confirm("Remove this question?")) return;
+        rm.disabled = true;
+        try { await api("/teacher-tests/" + encodeURIComponent(t.id) + "/questions/" + encodeURIComponent(q.id), { method: "DELETE" }); reopenId = t.id; await load(); }
+        catch (e) { note(e.message, false); rm.disabled = false; }
+      });
+      r.appendChild(rm);
+      panel.appendChild(r);
+    });
+
+    var g = el("div");
+    g.style.cssText = "border-top:1px solid #dbe7df;margin-top:10px;padding-top:10px";
+    g.appendChild(el("strong", "Generate questions from notes"));
+    g.appendChild(el("small", "Paste your notes, or use this course's lecture notes and uploaded text/Word files. Review the questions afterwards and remove any you do not want."));
+    var gt = document.createElement("textarea");
+    gt.placeholder = "Paste notes here (full sentences work best)"; gt.style.cssText = "margin-top:8px;min-height:90px";
+    var gl = document.createElement("label"); gl.style.cssText = "display:block;font-weight:normal;margin-top:8px";
+    var gc1 = document.createElement("input"); gc1.type = "checkbox"; gc1.style.cssText = "width:auto";
+    gl.appendChild(gc1); gl.appendChild(document.createTextNode(" Use this course's lecture notes"));
+    var gl2 = document.createElement("label"); gl2.style.cssText = "display:block;font-weight:normal;margin-top:4px";
+    var gc2 = document.createElement("input"); gc2.type = "checkbox"; gc2.style.cssText = "width:auto";
+    gl2.appendChild(gc2); gl2.appendChild(document.createTextNode(" Use uploaded materials (.txt and .docx; PDFs cannot be read)"));
+    var gn = document.createElement("select");
+    gn.innerHTML = '<option value="5">5 questions</option><option value="10" selected>10 questions</option><option value="15">15 questions</option><option value="20">20 questions</option><option value="30">30 questions</option>';
+    gn.style.marginTop = "8px";
+    var gk = document.createElement("select");
+    gk.innerHTML = '<option value="MIXED">Mixed (multiple choice + true/false)</option><option value="MCQ">Multiple choice only</option><option value="TRUE_FALSE">True / False only</option>';
+    gk.style.marginTop = "8px";
+    var gb = el("button", "Generate questions", "green");
+    gb.addEventListener("click", async function () {
+      gb.disabled = true; gb.textContent = "Generating...";
+      try {
+        var d = await api("/teacher-tests/" + encodeURIComponent(t.id) + "/generate", {
+          method: "POST",
+          body: JSON.stringify({ text: gt.value.slice(0, 30000), useLectures: gc1.checked, useMaterials: gc2.checked, count: Number(gn.value), kind: gk.value })
+        });
+        var r = d.data || d;
+        note(r.added + " questions added" + (r.engine === "AI" ? " (written by AI)" : "") + ". Please review them before publishing." + (r.skipped && r.skipped.length ? " Could not read: " + r.skipped.join(", ") + "." : ""), true);
+        reopenId = t.id;
+        await load();
+      } catch (e) { note(e.message, false); gb.disabled = false; gb.textContent = "Generate questions"; }
+    });
+    g.appendChild(gt); g.appendChild(gl); g.appendChild(gl2); g.appendChild(gn); g.appendChild(gk); g.appendChild(gb);
+    panel.appendChild(g);
+
+    var f = el("div");
+    f.style.cssText = "border-top:1px solid #dbe7df;margin-top:10px;padding-top:10px";
+    f.appendChild(el("strong", "Add a question"));
+    var kind = document.createElement("select");
+    kind.innerHTML = '<option value="MCQ">Multiple choice</option><option value="TRUE_FALSE">True / False</option>';
+    kind.style.marginTop = "8px";
+    var qt = document.createElement("textarea");
+    qt.placeholder = "Type the question"; qt.style.cssText = "margin-top:8px;min-height:60px";
+    var opts = el("div");
+    var radioName = "ok" + t.id;
+    var optInputs = [];
+    function buildOpts() {
+      opts.textContent = ""; optInputs = [];
+      var tf = kind.value === "TRUE_FALSE";
+      var n = tf ? 2 : 4;
+      for (var k = 0; k < n; k++) {
+        var line = el("div");
+        line.style.cssText = "display:flex;gap:8px;align-items:center;margin-top:8px";
+        var rd = document.createElement("input");
+        rd.type = "radio"; rd.name = radioName; rd.style.cssText = "width:auto"; rd.value = String(k);
+        if (k === 0) rd.checked = true;
+        var inp = document.createElement("input");
+        inp.placeholder = tf ? "" : "Option " + String.fromCharCode(65 + k);
+        if (tf) { inp.value = k === 0 ? "True" : "False"; inp.readOnly = true; }
+        line.appendChild(rd); line.appendChild(inp);
+        opts.appendChild(line);
+        optInputs.push({ rd: rd, inp: inp });
+      }
+      opts.appendChild(el("small", "Tick the circle beside the correct answer."));
+    }
+    kind.addEventListener("change", buildOpts);
+    buildOpts();
+    var ex = document.createElement("input");
+    ex.placeholder = "Explanation (optional)"; ex.style.marginTop = "8px";
+    var add = el("button", "Add question", "green");
+    add.addEventListener("click", async function () {
+      add.disabled = true;
+      try {
+        var options = optInputs.map(function (x) { return { text: x.inp.value.trim(), isCorrect: x.rd.checked }; })
+          .filter(function (o) { return o.text; });
+        if (qt.value.trim().length < 2) throw new Error("Type the question first.");
+        if (options.length < 2) throw new Error("Enter at least two options.");
+        if (!options.some(function (o) { return o.isCorrect; })) throw new Error("Tick the correct answer (it must have text).");
+        await api("/teacher-tests/" + encodeURIComponent(t.id) + "/questions", {
+          method: "POST",
+          body: JSON.stringify({ text: qt.value.trim(), type: kind.value, explanation: ex.value.trim() || undefined, options: options })
+        });
+        note("Question added.", true);
+        reopenId = t.id;
+        await load();
+      } catch (e) { note(e.message, false); add.disabled = false; }
+    });
+    f.appendChild(kind); f.appendChild(qt); f.appendChild(opts); f.appendChild(ex); f.appendChild(add);
+    panel.appendChild(f);
+  }
+
+  document.getElementById("addTest").addEventListener("click", async function () {
+    var b = this; b.disabled = true;
+    try {
+      var title = document.getElementById("tTitle").value.trim();
+      if (title.length < 2) throw new Error("Enter a title for the test or exam.");
+      var type = document.getElementById("tType").value;
+      if (type === "Exam" && !/^exam/i.test(title)) title = "Exam: " + title;
+      await api("/teacher-tests/course/" + encodeURIComponent(courseId), {
+        method: "POST",
+        body: JSON.stringify({
+          title: title,
+          description: document.getElementById("tDesc").value.trim() || undefined,
+          durationMinutes: Number(document.getElementById("tDur").value) || 30,
+          passMark: Number(document.getElementById("tPass").value),
+          maxAttempts: Number(document.getElementById("tAtt").value) || 1,
+          randomQuestions: document.getElementById("tRq").checked,
+          randomOptions: document.getElementById("tRo").checked,
+          availableFrom: dtISO("tFrom"),
+          availableUntil: dtISO("tUntil")
+        })
+      });
+      document.getElementById("tTitle").value = "";
+      note("Created as a draft. Tap Questions to add questions, then Publish.", true);
+      await load();
+    } catch (e) { note(e.message, false); }
+    b.disabled = false;
+  });
 
   async function load() {
     var data = await api("/teacher/courses/" + encodeURIComponent(courseId));

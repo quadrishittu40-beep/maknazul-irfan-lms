@@ -9,6 +9,16 @@
     }
   } catch (e) {}
 
+  // Teacher dashboard extras (create tests / add questions).
+  try {
+    if (/teacher\.html$/i.test(location.pathname) && !document.querySelector('script[src="/teacher-patch.js"]')) {
+      var tp = document.createElement("script");
+      tp.src = "/teacher-patch.js";
+      tp.defer = true;
+      document.head.appendChild(tp);
+    }
+  } catch (e) {}
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker.register("/sw.js").catch(function () {});
