@@ -846,6 +846,51 @@ export async function admissionReceiptPdf(req: AuthenticatedRequest, res: Respon
   }
 }
 
+/* Receipt looked up by payment reference: used to offer an instant download after any payment */
+export async function receiptByReferencePdf(req: AuthenticatedRequest, res: Response) {
+  try {
+    const me = req.user!;
+    const reference = String(req.params.reference);
+    const userSel = { select: { id: true, firstName: true, lastName: true, email: true } };
+
+    const term = await prisma.termFee.findUnique({ where: { reference }, select: { id: true } });
+    if (term) { req.params.id = term.id; return termFeeReceiptPdf(req, res); }
+
+    const adm = await prisma.admissionFee.findUnique({ where: { reference }, select: { id: true } });
+    if (adm) { req.params.id = adm.id; return admissionReceiptPdf(req, res); }
+
+    const pay = await prisma.payment.findUnique({ where: { reference }, select: { id: true } });
+    if (pay) { req.params.id = pay.id; return receiptPdf(req, res); }
+
+    const exam = await prisma.examRegistration.findUnique({
+      where: { reference },
+      include: {
+        examSession: { select: { title: true } },
+        student: { include: { user: userSel } }
+      }
+    });
+    if (exam) {
+      if (me.role !== "ADMIN" && exam.student.user.id !== me.id) return failure(res, "Access denied.", 403);
+      if (exam.status !== "PAID") return failure(res, "A receipt is only available for paid fees.", 400);
+      const u = exam.student.user;
+      return renderReceipt(res, {
+        reference: exam.reference,
+        name: `${u.firstName} ${u.lastName}`.trim(),
+        email: u.email,
+        purpose: `Exam Registration - ${exam.examSession.title}`,
+        method: String(exam.provider).replace("_", " "),
+        amount: Number(exam.amount),
+        currency: "NGN",
+        paidAt: exam.paidAt || exam.createdAt
+      });
+    }
+    return failure(res, "Payment not found.", 404);
+  } catch (error) {
+    console.error("receiptByReferencePdf error:", error);
+    if (!res.headersSent) failure(res, "Unable to create the receipt.", 500);
+  }
+}
+
 export async function termFeeReceiptPdf(req: AuthenticatedRequest, res: Response) {
   try {
     const me = req.user!;
