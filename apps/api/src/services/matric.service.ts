@@ -46,8 +46,8 @@ export async function ensureMatricNumber(
           data: {
             userId: profile.userId,
             type: "SYSTEM",
-            title: "Your Matric Number",
-            message: `Congratulations! Your matric number is ${matric}. Keep it safe - you will need it for your records.`
+            title: "Your Student ID Number",
+            message: `Congratulations! Your student ID number is ${matric}. Use it with your password to log in. Keep it safe.`
           }
         });
       } catch (e) {
@@ -57,8 +57,8 @@ export async function ensureMatricNumber(
         const link = (env.APP_URL || "").replace(/\/$/, "");
         void sendMail(
           profile.user.email,
-          "Your Matric Number - MAKNAZUL IRFAN ACADEMY",
-          `Assalamu alaikum ${profile.user.firstName},\n\nCongratulations! Your admission has been approved.\n\nYour matric number is: ${matric}\n\nPlease keep it safe. You can log in and download your admission letter here: ${link}/login.html\n\nMAKNAZUL IRFAN ACADEMY`
+          "Your Student ID Number - MAKNAZUL IRFAN ACADEMY",
+          `Assalamu alaikum ${profile.user.firstName},\n\nCongratulations! Your admission has been approved.\n\nYour student ID number is: ${matric}\n\nTo log in, open ${link}/login.html and enter this ID number with the password you chose when registering (use "Forgot password" if you need a new one). Please keep the ID safe.\n\nMAKNAZUL IRFAN ACADEMY`
         ).catch((e) => console.error("matric email failed:", e));
       }
     }
