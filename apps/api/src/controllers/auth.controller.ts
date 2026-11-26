@@ -10,8 +10,7 @@ import {
 import { ADMISSION_FEE_AMOUNT } from "../services/payment.service";
 import crypto from "crypto";
 import {
-  registerSchema,
-  loginSchema
+  registerSchema
 } from "../validators/auth";
 
 export async function register(
@@ -196,28 +195,41 @@ export async function login(
   next: NextFunction
 ) {
   try {
-    const parsed = loginSchema.safeParse(req.body);
+    const body: any = req.body || {};
+    const rawId = String(body.identifier ?? body.email ?? body.matricNumber ?? "").trim();
+    const password = String(body.password ?? "");
 
-    if (!parsed.success) {
-      return failure(
-        res,
-        "Invalid email or password.",
-        422
-      );
+    if (!rawId || !password) {
+      return failure(res, "Enter your ID number and password.", 422);
     }
 
-    const { email, password } = parsed.data;
+    let user: any = null;
 
-    const user = await prisma.user.findUnique({
-      where: {
-        email: email.toLowerCase()
+    if (rawId.includes("@")) {
+      user = await prisma.user.findUnique({
+        where: { email: rawId.toLowerCase() }
+      });
+
+      if (user && user.role === "STUDENT") {
+        return failure(
+          res,
+          "Students log in with the ID number sent after admission approval, not email.",
+          403
+        );
       }
-    });
+    } else {
+      const idNumber = rawId.toUpperCase().replace(/\s+/g, "");
+      const profile = await prisma.studentProfile.findUnique({
+        where: { matricNumber: idNumber },
+        select: { user: true }
+      });
+      user = profile ? profile.user : null;
+    }
 
     if (!user || !user.isActive) {
       return failure(
         res,
-        "Invalid email or password.",
+        "Invalid ID number or password.",
         401
       );
     }
@@ -230,7 +242,7 @@ export async function login(
     if (!passwordValid) {
       return failure(
         res,
-        "Invalid email or password.",
+        "Invalid ID number or password.",
         401
       );
     }
