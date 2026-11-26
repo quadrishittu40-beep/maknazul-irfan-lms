@@ -1,4 +1,13 @@
 (function () {
+  // Light / dark mode switch.
+  try {
+    if (!document.querySelector('script[src="/theme.js"]')) {
+      var th = document.createElement("script");
+      th.src = "/theme.js";
+      document.head.appendChild(th);
+    }
+  } catch (e) {}
+
   // Live presence (green "online" signal) on every page that loads this file.
   try {
     if (!window.__presenceOn && !document.querySelector('script[src="/presence.js"]')) {
