@@ -2321,6 +2321,18 @@
     box.style.color = ok ? "#176b3a" : "#a12626";
   }
 
+  async function makeAccessCode(who) {
+    try {
+      const d = await api("/staff-access/generate", { method: "POST", body: JSON.stringify(who) });
+      const code = d.code || (d.data && d.data.code);
+      const em = d.email || (d.data && d.data.email) || "";
+      staffNote("Access code for " + em + ": " + code + "  (copy it now - it is shown once" + ((d.emailed || (d.data && d.data.emailed)) ? "; also emailed to them" : "") + ")", true);
+      window.prompt("Access code for " + em + " - copy it now:", code);
+    } catch (e) {
+      staffNote(e.message, false);
+    }
+  }
+
   async function loadStaff() {
     const list = document.getElementById("staffList");
     try {
@@ -2359,6 +2371,12 @@
           }
         });
         cell.appendChild(btn);
+        const cbtn = document.createElement("button");
+        cbtn.className = "btn";
+        cbtn.style.marginLeft = "6px";
+        cbtn.textContent = "New access code";
+        cbtn.addEventListener("click", function () { makeAccessCode({ userId: u.id }); });
+        cell.appendChild(cbtn);
       });
       list.appendChild(table);
     } catch (e) {
@@ -2382,9 +2400,11 @@
           specialization: document.getElementById("staffSpec").value.trim() || undefined
         })
       });
-      staffNote("Account created. Share the email and temporary password with the staff member.", true);
+      const newEmail = document.getElementById("staffEmail").value.trim();
+      staffNote("Account created. Creating the access code...", true);
       event.target.reset();
       loadStaff();
+      await makeAccessCode({ email: newEmail });
     } catch (e) {
       staffNote(e.message, false);
     } finally {

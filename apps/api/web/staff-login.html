@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="/theme.js"></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#064e3b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Maknazul Irfan">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/assets/icon-192.png">
+<script src="/pwa.js" defer></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Login | MAKNAZUL IRFAN</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f8f6;
+      color: #17251e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #064e3b;
+      color: white;
+      padding: 18px 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo { font-size: 20px; font-weight: bold; }
+
+    .logo span {
+      display: block;
+      font-size: 12px;
+      font-weight: normal;
+      color: #d8f3dc;
+      margin-top: 3px;
+    }
+
+    header a { color: white; text-decoration: none; font-size: 14px; }
+    header a:hover { color: #d4af37; }
+
+    .container { width: 92%; max-width: 440px; margin: 60px auto; }
+
+    .card {
+      background: white;
+      padding: 35px;
+      border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 { color: #064e3b; text-align: center; margin-bottom: 8px; }
+
+    .intro {
+      text-align: center;
+      color: #68756d;
+      margin-bottom: 28px;
+      font-size: 14px;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: bold;
+      color: #263b31;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccd8d1;
+      border-radius: 7px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus { border-color: #087f5b; }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 7px;
+      background: #d4af37;
+      color: #102018;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .message {
+      display: none;
+      padding: 12px;
+      border-radius: 7px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .message.success {
+      display: block;
+      background: #e8f7ed;
+      color: #176b3a;
+      border: 1px solid #b8dfc5;
+    }
+
+    .message.error {
+      display: block;
+      background: #fdecec;
+      color: #a12626;
+      border: 1px solid #efb8b8;
+    }
+
+    .alt-link {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 14px;
+      color: #68756d;
+    }
+
+    .alt-link a { color: #064e3b; font-weight: bold; text-decoration: none; }
+
+    .forgot {
+      text-align: right;
+      margin: -8px 0 14px;
+      font-size: 13px;
+    }
+
+    .forgot a { color: #064e3b; font-weight: bold; text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .card { padding: 25px 20px; }
+      header { flex-direction: column; gap: 10px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    MAKNAZUL IRFAN
+    <span>Online Islamic &amp; Arabic Institute</span>
+  </div>
+  <a href="index.html">&larr; Back to Home</a>
+</header>
+
+<main class="container">
+  <div class="card">
+
+    <h1>Staff &amp; Admin Login</h1>
+    <p class="intro">Teachers and administrators: sign in with your email and access code.</p>
+
+    <div id="message" class="message"></div>
+
+    <form id="loginForm">
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" required autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Access Code</label>
+        <input type="password" id="password" name="password" required autocomplete="one-time-code" autocapitalize="characters" placeholder="e.g. K7M2P-9XQ4R">
+      </div>
+
+      <div class="forgot" style="font-size:13px;color:#68756d">Lost your access code? Ask the administrator for a new one.</div>
+
+      <button type="submit" id="loginButton">Login</button>
+
+    </form>
+
+    <div class="alt-link">Student? <a href="login.html">Student login</a></div>
+
+  </div>
+</main>
+
+<script>
+  var form = document.getElementById("loginForm");
+  var message = document.getElementById("message");
+  var button = document.getElementById("loginButton");
+
+  function showMessage(text, type) {
+    message.textContent = text;
+    message.className = "message " + type;
+  }
+
+  function pageForRole(role) {
+    if (role === "ADMIN") return "admin.html";
+    if (role === "TEACHER") return "teacher.html";
+    if (role === "PARENT") return "parent.html";
+    return "student.html";
+  }
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    button.disabled = true;
+    button.textContent = "Signing in...";
+    message.className = "message";
+
+    try {
+      var response = await fetch("/api/staff-access/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          email: document.getElementById("email").value.trim(),
+          code: document.getElementById("password").value
+        })
+      });
+
+      var text = await response.text();
+      var result = {};
+
+      if (text.trim()) {
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error("The server returned an invalid response.");
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result.message ||
+          "Login failed. Server returned " + response.status + "."
+        );
+      }
+
+      var user =
+        result.user ||
+        (result.data && result.data.user) ||
+        result.data ||
+        {};
+
+      showMessage("Login successful. Redirecting...", "success");
+
+      window.location.href = pageForRole(user.role);
+
+    } catch (error) {
+      showMessage(
+        error.message || "Unable to log in. Please try again.",
+        "error"
+      );
+      button.disabled = false;
+      button.textContent = "Login";
+    }
+  });
+</script>
+
+</body>
+</html>
