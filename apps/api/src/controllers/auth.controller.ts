@@ -226,6 +226,14 @@ export async function login(
       user = profile ? profile.user : null;
     }
 
+    if (user && (user.role === "ADMIN" || user.role === "TEACHER") && user.accessCodeHash) {
+      return failure(
+        res,
+        "Teachers and admins sign in from the Staff Portal (staff-login.html) with email and access code.",
+        403
+      );
+    }
+
     if (!user || !user.isActive) {
       return failure(
         res,
