@@ -33,7 +33,9 @@ import parentRoutes from "./routes/parent.routes";
 import planRoutes from "./routes/plan.routes";
 import userAdminRoutes from "./routes/user-admin.routes";
 import examRegRoutes, { examRegistrationGuard } from "./routes/exam-reg.routes";
+import teacherTestsRoutes from "./routes/teacher-tests.routes";
 import presenceRoutes from "./routes/presence.routes";
+import staffAccessRoutes from "./routes/staff-access.routes";
 import courseRequestRoutes from "./routes/course-request.routes";
 import termFeeRoutes, { termFeeGuard } from "./routes/term-fee.routes";
 import { requireAuth as examRequireAuth } from "./middleware/auth";
@@ -194,6 +196,8 @@ app.use(
 app.use("/api/term-fee", termFeeRoutes);
 app.use("/api/course-requests", courseRequestRoutes);
 app.use("/api/presence", presenceRoutes);
+app.use("/api/staff-access", staffAccessRoutes);
+app.use("/api/teacher-tests", teacherTestsRoutes);
 
 /* Authentication */
 app.use(
