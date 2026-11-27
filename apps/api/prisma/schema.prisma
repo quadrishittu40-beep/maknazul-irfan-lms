@@ -113,6 +113,8 @@ model User {
 
   isActive Boolean @default(true)
 
+  accessCodeHash String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -136,6 +138,8 @@ model User {
   parentLinks ParentLink[] @relation("ParentOf")
 
   childLinks ParentLink[] @relation("ChildOf")
+
+  lastSeenAt DateTime?
 }
 
 // ============================================================
